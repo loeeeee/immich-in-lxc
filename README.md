@@ -4,7 +4,7 @@ Install Immich in LXC with optional CUDA support
 
 ## Introduction
 
-(Immich)[https://github.com/immich-app/immich] is a
+[Immich](https://github.com/immich-app/immich) is a
 
 > High performance self-hosted photo and video management solution
 
