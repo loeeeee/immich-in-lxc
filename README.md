@@ -37,8 +37,36 @@ As one could tell, it is a lot of works, and a lot of things to get right. Howev
 
 For the simplicity of the guide, all the components are installed in a single LXC container. However, it is always possible to run different components in different LXC containers. It is always a design choice.
 
+## Host setup
+
+I am using `Proxmox VE 8` as the LXC host. It is based on `Debian`, and I have a NVIDIA GPU, including NVIDIA proprietary driver (550) installed. 
+
 ## Prepare the LXC container
 
-For LXC container, it is recommend to use Ubuntu 22.04 LTS even though a newer LTS has been released. The reason is that the CuDNN shipped with the newer release is too advanced for the current Immich Onnx GPU runtime. If one only plans to use CPU, it should not be a problem.
+For LXC container, it is recommend to use `Ubuntu 22.04 LTS` even though a newer LTS has been released. The reason is that the CuDNN shipped with the newer release is too advanced for the current Onnx GPU runtime, which machine learning component depends on (As for Immich Version 102.3). If one only plans to use CPU, it should not be a problem.
 
+First, create a LXC normally. Make sure there is reasonable amount CPU and memory. Because we are going to install and compile a lot of things, it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB. Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
+
+### Mount host volume to LXC container (Optional)
+
+This part of the guide is about mounting a directory from the host to a unprivileged container. The directory can be a SMB or a NFS share that is already mounted on the host, or any other local directory, as long as they have proper permission set.
+
+Edit `/etc/pve/lxc/<lxc-id>.conf` with your favorite editor. Mine is `nano`, BTW.
+
+Add something like following example,
+
+```config
+mp0: /mnt/DigitalMemory/,mp=/mnt/DigitalMemory
+mp1: /<path on the host>/,mp=/<path in the container>
+```
+
+Note: Do not put a space after the comma, it breaks the config file.
+
+Now, let's set up the directory permission on the host machine.
+
+First, some background knowledge. An unprivileged LXC container runs as a normal user with a unprivileged user id in the host machine (Let's refer to this normal user as the agent user, and the group that normal user is in as the agent group). A privileged container will have its root user has the same user id as the host root user, which makes it considered less secure. In our case, we are using a unprivileged container, and what we need to do is to **allow the agent group to access the desired directory in the host machine**. Luckily, we can predict the agent group's id based on its id in the container.
+
+The formula is as follow,
+
+$\text{GroupID}_{agent} = \text{GroupID}_{container} - 100000$
 
