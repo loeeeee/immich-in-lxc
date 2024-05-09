@@ -161,6 +161,7 @@ First, let's look at the permission of the usage of GPU in the host machine.
 
 ```bash
 ls -l /dev/nvidia*
+ls -l /dev/dri/
 ```
 
 The output will be something like this.
@@ -176,15 +177,22 @@ crw-rw-rw- 1 root root 508,   1 May  3 22:34 /dev/nvidia-uvm-tools
 total 0
 cr-------- 1 root root 511, 1 May  3 22:34 nvidia-cap1
 cr--r--r-- 1 root root 511, 2 May  3 22:34 nvidia-cap2
+
+total 0
+drwxr-xr-x 2 root root      60 May  3 22:34 by-path
+crw-rw---- 1 root video 226, 0 May  1 23:34 card0
 ```
 
-Take a note of numbers, `195, 255, 254, 508, 511`. Note that these number may be different on different system, even different between kernel updates.
+
+Take a note of numbers, `60, 195, 226, 255, 254, 508, 511`. Note that these number may be different on different system, even different between kernel updates.
 
 Open the `/etc/pve/<lxc-id>.conf`, add the following lines, change the numbers accordingly.
 
 ```config
 # ... Existing config
+lxc.cgroup2.devices.allow: c 60:* rwm
 lxc.cgroup2.devices.allow: c 195:* rwm
+lxc.cgroup2.devices.allow: c 226:* rwm
 lxc.cgroup2.devices.allow: c 254:* rwm
 lxc.cgroup2.devices.allow: c 255:* rwm
 lxc.cgroup2.devices.allow: c 508:* rwm
@@ -215,6 +223,12 @@ Note:
 - **NO KERNEL MODULES**
 
 After all these, we should be able to run `nvidia-smi` inside the LXC without error.
+
+For immich machine learning support, we also need to install CuDNN,
+
+```bash
+apt install cudnn
+```
 
 Zu easy, innit?
 
