@@ -226,7 +226,7 @@ apt install curl git python3-venv python3-dev
 
 #### Postgresql
 
-As for postgresql, visit (official guide)[https://www.postgresql.org/download/linux/ubuntu/] and install postgresql 16, as immich depends on a vector extension on version 16.
+As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) and install postgresql 16, as immich depends on a vector extension on version 16.
 
 ```bash
 apt install -y postgresql-common
@@ -258,7 +258,7 @@ Note: change password.
 
 #### FFmpeg
 
-To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo. Instead, a static build version is recommended. Download one from (FFmpeg Static Builds)[https://johnvansickle.com/ffmpeg/].
+To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo. Instead, a static build version is recommended. Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/).
 
 ```bash
 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
@@ -276,7 +276,7 @@ apt install redis
 
 #### Node.js
 
-Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to (Node.js's website)[https://nodejs.org/en/download/package-manager] for the desired version.
+Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's website](https://nodejs.org/en/download/package-manager) for the desired version.
 
 The following script is copy-pasted from the node.js's website. One should go to the website for the latest version of the code.
 
