@@ -27,6 +27,7 @@ But, not providing a bare-metal installation guide for immich can be justified a
 - System
     - ffmpeg
     - Node.js
+    - git
 - (Optional) Reverse Proxy
     - Nginx
 - (Optional) NVIDIA
@@ -124,3 +125,184 @@ And, that is it, EZ, right?
 
 Let's move on the next part.
 
+### NVIDIA go-brrrrrrrrrrr (NVIDIA GPU LXC pass-through) (Optional)
+
+In this part of the guide, I will cover how to pass through nVidia GPU to the LXC container.
+
+If we oversimplify things a little bit, everything is a file in Linux. Thus, the principle of this part is quite similar to the (last part)[Mount host volume to LXC container (Optional)]. We mount the nVidia "device file" into the LXC and install the driver.
+
+First, we need to get the nVidia "device file" in the host. By default, Linux use nouveau driver for nVidia. It is a great project, but it does not support CUDA program or CuDNN in this case. (Maybe NVK driver will in one day, hopefully.) So, the "device files" that are available to us are from nouveau driver, and are not what we want. And we need to install nVidia proprietary driver (Sad face). 
+
+Because we eventually need to have two nVidia driver running in both host and container, we do not want the package manager of the host or the container OS update the driver by themselves. Thus, we are going to use the universal `.run` file from nVidia download center.
+
+You can copy the link by right click the download.
+
+Inside the host machine,
+
+```bash
+wget https://us.download.nvidia.com/XFree86/Linux-x86_64/550.78/NVIDIA-Linux-x86_64-550.78.run
+chmod +x NVIDIA-Linux-x86_64-550.78.run
+./NVIDIA-Linux-x86_64-550.78.run
+```
+
+Note:
+
+- If your download failed and you start download again, the file will be named og name.1 and so on.
+- Please check compatible driver version with your installed GPU. The link above is only an example.
+- This method requires a driver reinstallation for every kernel update.
+
+After the installation, proceed with a reboot of the host.
+
+After the reboot, when running `nvidia-smi` there should be a tui output.
+
+Now, let's set up the permission and mount the GPU.
+
+First, let's look at the permission of the usage of GPU in the host machine.
+
+```bash
+ls -l /dev/nvidia*
+```
+
+The output will be something like this.
+
+```bash
+crw-rw-rw- 1 root root 195,   0 May  3 22:34 /dev/nvidia0
+crw-rw-rw- 1 root root 195, 255 May  3 22:34 /dev/nvidiactl
+crw-rw-rw- 1 root root 195, 254 May  3 22:34 /dev/nvidia-modeset
+crw-rw-rw- 1 root root 508,   0 May  3 22:34 /dev/nvidia-uvm
+crw-rw-rw- 1 root root 508,   1 May  3 22:34 /dev/nvidia-uvm-tools
+
+/dev/nvidia-caps:
+total 0
+cr-------- 1 root root 511, 1 May  3 22:34 nvidia-cap1
+cr--r--r-- 1 root root 511, 2 May  3 22:34 nvidia-cap2
+```
+
+Take a note of numbers, `195, 255, 254, 508, 511`. Note that these number may be different on different system, even different between kernel updates.
+
+Open the `/etc/pve/<lxc-id>.conf`, add the following lines, change the numbers accordingly.
+
+```config
+# ... Existing config
+lxc.cgroup2.devices.allow: c 195:* rwm
+lxc.cgroup2.devices.allow: c 254:* rwm
+lxc.cgroup2.devices.allow: c 255:* rwm
+lxc.cgroup2.devices.allow: c 508:* rwm
+lxc.cgroup2.devices.allow: c 511:* rwm
+lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
+lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
+lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
+lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
+lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+```
+
+After saving the config, boot the LXC container.
+
+Inside the LXC container, install the nVidia driver but with a catch.
+
+```bash
+wget https://us.download.nvidia.com/XFree86/Linux-x86_64/550.78/NVIDIA-Linux-x86_64-550.78.run
+chmod +x NVIDIA-Linux-x86_64-550.78.run
+./NVIDIA-Linux-x86_64-550.78.run --no-kernel-modules
+```
+
+We install the driver without kernel modules because LXC containers shares kernel with the host machine. Because we already install the driver on the host and its kernel, and we share the kernel, we do not need the kernel modules.
+
+Note:
+
+- One must use the same version of nVidia driver.
+- **NO KERNEL MODULES**
+
+After all these, we should be able to run `nvidia-smi` inside the LXC without error.
+
+Zu easy, innit?
+
+### Install utilities and databases
+
+```bash
+apt install curl git python3-venv python3-dev
+```
+
+#### Postgresql
+
+As for postgresql, visit (official guide)[https://www.postgresql.org/download/linux/ubuntu/] and install postgresql 16, as immich depends on a vector extension on version 16.
+
+```bash
+apt install -y postgresql-common
+/usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+apt -y install postgresql
+apt install postgresql-pgvector
+```
+
+To prepare the database, we need to make some configuration.
+
+First, we need to become user `postgres`, and connect to the database,
+
+```bash
+su postgres
+psql
+```
+
+In the psql interface, we type in following SQL command,
+
+```SQL
+CREATE DATABASE immich;
+CREATE USER immich WITH ENCRYPTED PASSWORD 'A_SEHR_SAFE_PASSWORD';
+GRANT ALL PRIVILEGES ON DATABASE immich to immich;
+ALTER USER immich WITH SUPERUSER;
+\q # To exit
+```
+
+Note: change password.
+
+#### FFmpeg
+
+To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo. Instead, a static build version is recommended. Download one from (FFmpeg Static Builds)[https://johnvansickle.com/ffmpeg/].
+
+```bash
+wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
+tar -xf ffmpeg-git-amd64-static.tar.xz
+cp ffmpeg-git-amd64-static/ffmpeg /bin/ffmpeg
+```
+
+#### Redis
+
+Immich works fine with the Redis in Ubuntu 22.04 APT repo. No additional config is needed.
+
+```bash
+apt install redis
+```
+
+#### Node.js
+
+Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to (Node.js's website)[https://nodejs.org/en/download/package-manager] for the desired version.
+
+The following script is copy-pasted from the node.js's website. One should go to the website for the latest version of the code.
+
+```bash
+# installs NVM (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# download and install Node.js
+nvm install 20
+
+# verifies the right Node.js version is in the environment
+node -v # should print `v20.13.1`
+
+# verifies the right NPM version is in the environment
+npm -v # should print `10.5.2`
+```
+
+Now, we are ready to install the Immich server.
+
+## Install Immich Server
+
+Create a immich user, if you already done so in the above optional section, you may safely skip the following code block.
+
+```bash
+useradd -m immich
+chsh immich # Optional: Change the default shell the immich user is using.
+```
+
+After creating the user, 
