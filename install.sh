@@ -6,117 +6,148 @@ REPO_TAG=v1.103.1
 
 IMMICH_INSTALL_PATH=/var/lib/immich
 IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
+# -------------------
+# Clean previous build
+# -------------------
 
-if [[ "$USER" != "immich" ]]; then
-  # Disable systemd services, if installed
-  (
-    for i in immich*.service; do
-      systemctl stop $i && \
-        systemctl disable $i && \
-        rm /etc/systemd/system/$i &&
-        systemctl daemon-reload
-    done
-  ) || true
+clean_previous_build () {
 
-  mkdir -p $IMMICH_INSTALL_PATH
-  chown immich:immich $IMMICH_INSTALL_PATH
+    BASEDIR=$(dirname "$0")
 
-  mkdir -p /var/log/immich
-  chown immich:immich /var/log/immich
+    rm -rf $IMMICH_INSTALL_PATH_APP
+    mkdir -p $IMMICH_INSTALL_PATH_APP
 
-  echo "Restarting the script as user immich"
-  exec sudo -u immich $0 $*
-fi
+    # Wipe npm, pypoetry, etc
+    # This expects immich user's home directory to be on $IMMICH_INSTALL_PATH/home
+    rm -rf $IMMICH_INSTALL_PATH/home
+    mkdir -p $IMMICH_INSTALL_PATH/home
+}
 
-BASEDIR=$(dirname "$0")
+clean_previous_build
 
-rm -rf $IMMICH_INSTALL_PATH_APP
-mkdir -p $IMMICH_INSTALL_PATH_APP
+# -------------------
+# Clone the repo
+# -------------------
 
-# Wipe npm, pypoetry, etc
-# This expects immich user's home directory to be on $IMMICH_INSTALL_PATH/home
-rm -rf $IMMICH_INSTALL_PATH/home
-mkdir -p $IMMICH_INSTALL_PATH/home
+clone_the_repo () {
 
+    REPO_BASE=/tmp/immich
+    REPO_URL="https://github.com/immich-app/immich"
 
-# Clone repo
-REPO_BASE=/tmp/immich
-REPO_URL="https://github.com/immich-app/immich"
+    if [ ! -d "$REPO_BASE" ]; then
+    git clone "$REPO_URL"
+    fi
 
-if [ ! -d "$REPO_BASE" ]; then
-  git clone "$REPO_URL"
-fi
+    cd $REPO_BASE
+    git reset --hard $REPO_TAG
+}
 
-cd $REPO_BASE
-git reset --hard $REPO_TAG
+# -------------------
+# Install immich-web-server
+# -------------------
 
-# Install immich-server
-cd server
-npm ci
-npm run build
-npm prune --omit=dev --omit=optional
-cd -
+install_immich_web_server () {
+    cd server
+    npm ci
+    npm run build
+    npm prune --omit=dev --omit=optional
+    cd -
 
-cd open-api/typescript-sdk
-npm ci
-npm run build
-cd -
+    cd open-api/typescript-sdk
+    npm ci
+    npm run build
+    cd -
 
-cd web
-npm ci
-npm run build
-cd -
+    cd web
+    npm ci
+    npm run build
+    cd -
 
-cp -a server/node_modules server/dist server/bin $IMMICH_INSTALL_PATH_APP/
-cp -a web/build $IMMICH_INSTALL_PATH_APP/www
-cp -a server/resources server/package.json server/package-lock.json $IMMICH_INSTALL_PATH_APP/
-cp -a server/start*.sh $IMMICH_INSTALL_PATH_APP/
-cp -a LICENSE $IMMICH_INSTALL_PATH_APP/
-cd $IMMICH_INSTALL_PATH_APP
-# npm cache clean --force
-cd -
+    cp -a server/node_modules server/dist server/bin $IMMICH_INSTALL_PATH_APP/
+    cp -a web/build $IMMICH_INSTALL_PATH_APP/www
+    cp -a server/resources server/package.json server/package-lock.json $IMMICH_INSTALL_PATH_APP/
+    cp -a server/start*.sh $IMMICH_INSTALL_PATH_APP/
+    cp -a LICENSE $IMMICH_INSTALL_PATH_APP/
+    cd $IMMICH_INSTALL_PATH_APP
+    # npm cache clean --force
+    cd -
+}
 
-# immich-machine-learning
-IMMICH_MACHINE_LEARNING_PATH=$IMMICH_INSTALL_PATH_APP/machine-learning
-mkdir -p $IMMICH_MACHINE_LEARNING_PATH
-python3 -m venv $IMMICH_MACHINE_LEARNING_PATH/venv
-(
-  # Initiate subshell to setup venv
-  . $IMMICH_MACHINE_LEARNING_PATH/venv/bin/activate
-  pip3 install poetry
-  cd machine-learning
-  export POETRY_PYPI_MIRROR_URL=https://mirror.sjtu.edu.cn/pypi/web/simple
-  if false; then # Set this to true to force poetry update
-    # Allow Python 3.12 (e.g., Ubuntu 24.04)
-    sed -i -e 's/<3.12/<4/g' pyproject.toml
-    poetry update
-  fi
-  poetry install --no-root --with dev --with cuda
-  cd ..
-)
-cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $IMMICH_MACHINE_LEARNING_PATH/
+install_immich_web_server
 
+# -------------------
+# Install Immich-machine-learning
+# -------------------
+
+install_immich_machine_learning () {
+    IMMICH_MACHINE_LEARNING_PATH=$IMMICH_INSTALL_PATH_APP/machine-learning
+    mkdir -p $IMMICH_MACHINE_LEARNING_PATH
+    python3 -m venv $IMMICH_MACHINE_LEARNING_PATH/venv
+    (
+    # Initiate subshell to setup venv
+    . $IMMICH_MACHINE_LEARNING_PATH/venv/bin/activate
+    pip3 install poetry
+    cd machine-learning
+    export POETRY_PYPI_MIRROR_URL=https://mirror.sjtu.edu.cn/pypi/web/simple
+    if false; then # Set this to true to force poetry update
+        # Allow Python 3.12 (e.g., Ubuntu 24.04)
+        sed -i -e 's/<3.12/<4/g' pyproject.toml
+        poetry update
+    fi
+    poetry install --no-root --with dev --with cuda
+    cd ..
+    )
+    cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $IMMICH_MACHINE_LEARNING_PATH/
+}
+
+install_immich_machine_learning
+
+# -------------------
 # Replace /usr/src
-cd $IMMICH_INSTALL_PATH_APP
-grep -Rl /usr/src | xargs -n1 sed -i -e "s@/usr/src@$IMMICH_INSTALL_PATH@g"
-ln -sf $IMMICH_INSTALL_PATH/app/resources $IMMICH_INSTALL_PATH/
-mkdir -p $IMMICH_INSTALL_PATH/cache
-sed -i -e "s@\"/cache\"@\"$IMMICH_INSTALL_PATH/cache\"@g" $IMMICH_MACHINE_LEARNING_PATH/app/config.py
+# -------------------
 
+# Honestly, I do not understand what does this part of the script does.
+
+replace_usr_src () {
+    cd $IMMICH_INSTALL_PATH_APP
+    grep -Rl /usr/src | xargs -n1 sed -i -e "s@/usr/src@$IMMICH_INSTALL_PATH@g"
+    ln -sf $IMMICH_INSTALL_PATH/app/resources $IMMICH_INSTALL_PATH/
+    mkdir -p $IMMICH_INSTALL_PATH/cache
+    sed -i -e "s@\"/cache\"@\"$IMMICH_INSTALL_PATH/cache\"@g" $IMMICH_MACHINE_LEARNING_PATH/app/config.py
+}
+
+replace_usr_src
+
+# -------------------
 # Install sharp
-cd $IMMICH_INSTALL_PATH_APP
-npm install sharp
+# -------------------
 
+install_sharp () {
+    cd $IMMICH_INSTALL_PATH_APP
+    npm install sharp
+}
+
+install_sharp
+
+# -------------------
 # Setup upload directory
-mkdir -p $IMMICH_INSTALL_PATH/upload
-ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_INSTALL_PATH_APP/
-ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_MACHINE_LEARNING_PATH/
+# -------------------
+
+setup_upload_folder () {
+    mkdir -p $IMMICH_INSTALL_PATH/upload
+    ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_INSTALL_PATH_APP/
+    ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_MACHINE_LEARNING_PATH/
+}
 
 # Use 127.0.0.1
 # sed -i -e "s@app.listen(port)@app.listen(port, '127.0.0.1')@g" $IMMICH_INSTALL_PATH_APP/dist/main.js
 
-# Custom start.sh script
-cat <<EOF > $IMMICH_INSTALL_PATH_APP/start.sh
+# -------------------
+# Create custom start.sh script
+# -------------------
+
+create_custom_start_script () {
+    cat <<EOF > $IMMICH_INSTALL_PATH_APP/start.sh
 #!/bin/bash
 
 set -a
@@ -127,7 +158,7 @@ cd $IMMICH_INSTALL_PATH_APP
 exec node $IMMICH_INSTALL_PATH_APP/dist/main "\$@"
 EOF
 
-cat <<EOF > $IMMICH_MACHINE_LEARNING_PATH/start.sh
+    cat <<EOF > $IMMICH_MACHINE_LEARNING_PATH/start.sh
 #!/bin/bash
 
 set -a
@@ -150,6 +181,7 @@ exec gunicorn app.main:app \
         --log-config-json log_conf.json \
         --graceful-timeout 0
 EOF
+}
 
 # Cleanup
 # rm -rf $REPO_BASE
