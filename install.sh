@@ -1,8 +1,56 @@
 #!/bin/bash
 
-set -xeuo pipefail
+set -xeuo pipefail # Make people's life easier
 
 REPO_TAG=v1.103.1
+
+# -------------------
+# Review environment variables
+# -------------------
+review_install_information () {
+    # Install Version
+    # Install Location
+    # Cuda or CPU
+    # npm proxy
+    # poetry proxy
+}
+
+review_install_information
+
+# -------------------
+# Check if dependency are met
+# -------------------
+review_dependency () {
+    # ffmpeg
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "ERROR: ffmpeg is not installed."
+    fi
+
+    # node.js
+    if ! command -v node &> /dev/null; then
+        echo "ERROR: Node.js is not installed."
+    fi
+
+    # python3
+    if ! command -v python3 &> /dev/null; then
+        echo "ERROR: Python is not installed."
+    fi
+
+    # git
+    if ! command -v git &> /dev/null; then
+        echo "ERROR: Git is not installed."
+    fi
+
+    # (Optional) Nvidia Driver
+    # You might need to replace nvidia-smi with the appropriate command to check for the driver
+    if ! nvidia-smi &> /dev/null; then
+        echo "WARNING: Nvidia driver might not be installed."
+    fi
+
+    # (Optional) Nvidia CuDNN
+}
+
+review_dependency
 
 IMMICH_INSTALL_PATH=/var/lib/immich
 IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
