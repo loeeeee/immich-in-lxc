@@ -8,7 +8,7 @@ Install Immich in LXC with optional CUDA support. This guide should be appliable
 
 > High performance self-hosted photo and video management solution
 
-I really like Immich and its corherent experience in both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user.
+I really like Immich and its coherent experience in both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user.
 
 But, not providing a bare-metal installation guide for immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
 
@@ -272,7 +272,47 @@ Note: change password.
 
 #### FFmpeg
 
-To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo. Instead, a static build version is recommended. Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/).
+To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
+
+First, we need to add the repository of Jellyfin to the system package manager.
+
+```bash
+apt install curl gnupg software-properties-common
+add-apt-repository universe
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg
+export VERSION_OS="$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release )"
+export VERSION_CODENAME="$( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release )"
+export DPKG_ARCHITECTURE="$( dpkg --print-architecture )"
+cat <<EOF | sudo tee /etc/apt/sources.list.d/jellyfin.sources
+Types: deb
+URIs: https://repo.jellyfin.org/${VERSION_OS}
+Suites: ${VERSION_CODENAME}
+Components: main
+Architectures: ${DPKG_ARCHITECTURE}
+Signed-By: /etc/apt/keyrings/jellyfin.gpg
+EOF
+apt update
+```
+
+Then, we install the ffmpeg from Jellyfin.
+
+```bash
+apt install jellyfin-ffmpeg6
+```
+
+Finally, we soft link the Jellyfin ffmpeg to `/bin/`
+
+```bash
+ln -s /usr/lib/jellyfin/jellyfin-ffmpeg  /bin/ffmpeg
+ln -s /usr/lib/jellyfin/jellyfin-ffprobe  /bin/ffprobe
+```
+
+Now, calling `ffmpeg` should output a long gibberish.
+
+##### Alternative way of installing FFmpeg (Static build)
+
+Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/).
 
 ```bash
 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
