@@ -32,7 +32,7 @@ But, not providing a bare-metal installation guide for immich can be justified a
     - Nginx
 - (Optional) NVIDIA
     - Driver
-    - CuDNN
+    - CuDNN (Version 8)
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware-acceleration does not work.
 
@@ -127,107 +127,14 @@ Let's move on the next part.
 
 ### NVIDIA go-brrrrrrrrrrr (NVIDIA GPU LXC pass-through) (Optional)
 
-In this part of the guide, I will cover how to pass through nVidia GPU to the LXC container.
+Follow the guide at [another repository](https://github.com/loeeeee/lxc-gpu-passthrough) of mine.
 
-If we oversimplify things a little bit, everything is a file in Linux. Thus, the principle of this part is quite similar to the (last part)[Mount host volume to LXC container (Optional)]. We mount the nVidia "device file" into the LXC and install the driver.
-
-First, we need to get the nVidia "device file" in the host. By default, Linux use nouveau driver for nVidia. It is a great project, but it does not support CUDA program or CuDNN in this case. (Maybe NVK driver will in one day, hopefully.) So, the "device files" that are available to us are from nouveau driver, and are not what we want. And we need to install nVidia proprietary driver (Sad face). 
-
-Because we eventually need to have two nVidia driver running in both host and container, we do not want the package manager of the host or the container OS update the driver by themselves. Thus, we are going to use the universal `.run` file from nVidia download center.
-
-You can copy the link by right click the download.
-
-Inside the host machine,
-
-```bash
-wget https://us.download.nvidia.com/XFree86/Linux-x86_64/550.78/NVIDIA-Linux-x86_64-550.78.run
-chmod +x NVIDIA-Linux-x86_64-550.78.run
-./NVIDIA-Linux-x86_64-550.78.run
-```
-
-Note:
-
-- If your download failed and you start download again, the file will be named og name.1 and so on.
-- Please check compatible driver version with your installed GPU. The link above is only an example.
-- This method requires a driver reinstallation for every kernel update.
-
-After the installation, proceed with a reboot of the host.
-
-After the reboot, when running `nvidia-smi` there should be a tui output.
-
-Now, let's set up the permission and mount the GPU.
-
-First, let's look at the permission of the usage of GPU in the host machine.
-
-```bash
-ls -l /dev/nvidia*
-ls -l /dev/dri/
-```
-
-The output will be something like this.
-
-```bash
-crw-rw-rw- 1 root root 195,   0 May  3 22:34 /dev/nvidia0
-crw-rw-rw- 1 root root 195, 255 May  3 22:34 /dev/nvidiactl
-crw-rw-rw- 1 root root 195, 254 May  3 22:34 /dev/nvidia-modeset
-crw-rw-rw- 1 root root 508,   0 May  3 22:34 /dev/nvidia-uvm
-crw-rw-rw- 1 root root 508,   1 May  3 22:34 /dev/nvidia-uvm-tools
-
-/dev/nvidia-caps:
-total 0
-cr-------- 1 root root 511, 1 May  3 22:34 nvidia-cap1
-cr--r--r-- 1 root root 511, 2 May  3 22:34 nvidia-cap2
-
-total 0
-drwxr-xr-x 2 root root      60 May  3 22:34 by-path
-crw-rw---- 1 root video 226, 0 May  1 23:34 card0
-```
-
-
-Take a note of numbers, `60, 195, 226, 255, 254, 508, 511`. Note that these number may be different on different system, even different between kernel updates.
-
-Open the `/etc/pve/<lxc-id>.conf`, add the following lines, change the numbers accordingly.
-
-```config
-# ... Existing config
-lxc.cgroup2.devices.allow: c 60:* rwm
-lxc.cgroup2.devices.allow: c 195:* rwm
-lxc.cgroup2.devices.allow: c 226:* rwm
-lxc.cgroup2.devices.allow: c 254:* rwm
-lxc.cgroup2.devices.allow: c 255:* rwm
-lxc.cgroup2.devices.allow: c 508:* rwm
-lxc.cgroup2.devices.allow: c 511:* rwm
-lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file
-lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file
-lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file
-lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file
-lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file
-lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
-```
-
-After saving the config, boot the LXC container.
-
-Inside the LXC container, install the nVidia driver but with a catch.
-
-```bash
-wget https://us.download.nvidia.com/XFree86/Linux-x86_64/550.78/NVIDIA-Linux-x86_64-550.78.run
-chmod +x NVIDIA-Linux-x86_64-550.78.run
-./NVIDIA-Linux-x86_64-550.78.run --no-kernel-modules
-```
-
-We install the driver without kernel modules because LXC containers shares kernel with the host machine. Because we already install the driver on the host and its kernel, and we share the kernel, we do not need the kernel modules.
-
-Note:
-
-- One must use the same version of nVidia driver.
-- **NO KERNEL MODULES**
-
-After all these, we should be able to run `nvidia-smi` inside the LXC without error.
+After finishing all of the steps in that guide, the guest OS should execute command `nvidia-smi` without any error.
 
 For immich machine learning support, we also need to install CuDNN,
 
 ```bash
-apt install cudnn
+apt install nvidia-cudnn
 ```
 
 Zu easy, innit?
