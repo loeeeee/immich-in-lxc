@@ -48,7 +48,7 @@ For LXC container, it is recommend to use `Ubuntu 22.04 LTS` even though a newer
 
 First, create a LXC normally. Make sure there is reasonable amount CPU and memory. Because we are going to install and compile a lot of things, it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB. Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
 
-### Mount host volume to LXC container (Optional)
+## Mount host volume to LXC container (Optional)
 
 This part of the guide is about mounting a directory from the host to a unprivileged container. The directory can be a SMB or a NFS share that is already mounted on the host, or any other local directory.
 
@@ -56,7 +56,7 @@ Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook
 
 And, that is it, EZ, right?
 
-### NVIDIA go-brrrrrrrrrrr (NVIDIA GPU LXC pass-through) (Optional)
+## NVIDIA go-brrrrrrrrrrr (NVIDIA GPU LXC pass-through) (Optional)
 
 Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook-of-gpu-in-lxc/blob/main/src/gpu-passthrough.md) of mine.
 
@@ -70,13 +70,13 @@ apt install nvidia-cudnn
 
 Zu easy, innit?
 
-### Install utilities and databases
+## Install utilities and databases
 
 ```bash
 apt install curl git python3-venv python3-dev
 ```
 
-#### Postgresql
+### Postgresql
 
 As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) and install postgresql 16, as immich depends on a vector extension on version 16.
 
@@ -108,7 +108,7 @@ ALTER USER immich WITH SUPERUSER;
 
 Note: change password.
 
-#### FFmpeg
+### FFmpeg
 
 To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
 
@@ -148,7 +148,7 @@ ln -s /usr/lib/jellyfin/jellyfin-ffprobe  /bin/ffprobe
 
 Now, calling `ffmpeg` should output a long gibberish.
 
-##### Alternative way of installing FFmpeg (Static build)
+#### Alternative way of installing FFmpeg (Static build)
 
 Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/).
 
@@ -158,7 +158,7 @@ tar -xf ffmpeg-git-amd64-static.tar.xz
 cp ffmpeg-git-amd64-static/ffmpeg /bin/ffmpeg
 ```
 
-#### Redis
+### Redis
 
 Immich works fine with the Redis in Ubuntu 22.04 APT repo. No additional config is needed.
 
@@ -166,7 +166,7 @@ Immich works fine with the Redis in Ubuntu 22.04 APT repo. No additional config 
 apt install redis
 ```
 
-#### Node.js
+### Node.js
 
 Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's website](https://nodejs.org/en/download/package-manager) for the desired version.
 
