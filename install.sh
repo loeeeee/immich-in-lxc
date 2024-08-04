@@ -19,6 +19,7 @@ create_local_env_file () {
         fi
     fi
 }
+
 create_local_env_file
 
 # -------------------
@@ -33,6 +34,7 @@ load_environment_variables () {
     fi
     done < .env
 }
+
 load_environment_variables
 
 # -------------------
@@ -42,9 +44,13 @@ review_install_information () {
     # Install Version
     echo $REPO_TAG
     # Install Location
+    echo $INSTALL_DIR
     # Cuda or CPU
+    echo $isCUDA
     # npm proxy
+    echo $PROXY_NPM
     # poetry proxy
+    echo $PROXY_POETRY
 }
 
 review_install_information
@@ -74,9 +80,11 @@ review_dependency () {
     fi
 
     # (Optional) Nvidia Driver
-    # You might need to replace nvidia-smi with the appropriate command to check for the driver
-    if ! nvidia-smi &> /dev/null; then
-        echo "INFO: Optional Nvidia driver is not installed."
+    if [ $isCUDA = true ]; then
+        if ! nvidia-smi &> /dev/null; then
+            echo "ERROR: Nvidia driver is not installed, and isCUDA is set to true"
+            exit 1
+        fi
     fi
 
     # (Optional) Nvidia CuDNN
