@@ -137,6 +137,8 @@ clone_the_repo () {
     cd $INSTALL_DIR_src
     git reset --hard $REPO_TAG
 }
+
+clone_the_repo
 exit 0
 
 # -------------------
