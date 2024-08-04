@@ -120,7 +120,7 @@ clean_previous_build () {
     mkdir -p $INSTALL_DIR/home
 }
 
-clean_previous_build
+# clean_previous_build
 
 # -------------------
 # Clone the repo
