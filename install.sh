@@ -5,6 +5,7 @@ set -xeuo pipefail # Make people's life easier
 # -------------------
 # Create env file if it does not exists
 # -------------------
+
 create_local_env_file () {
     # Check if env file exists
     if [ ! -f .env ]; then
@@ -25,6 +26,7 @@ create_local_env_file
 # -------------------
 # Load environment variables from env file
 # -------------------
+
 load_environment_variables () {
     # Read the .env file into variables
     while IFS= read -r line
@@ -40,6 +42,7 @@ load_environment_variables
 # -------------------
 # Review environment variables
 # -------------------
+
 review_install_information () {
     # Install Version
     echo $REPO_TAG
@@ -58,6 +61,7 @@ review_install_information
 # -------------------
 # Check if dependency are met
 # -------------------
+
 review_dependency () {
     # ffmpeg
     if ! command -v ffmpeg &> /dev/null; then
@@ -92,16 +96,20 @@ review_dependency () {
 
 review_dependency
 
+# -------------------
+# Common variables
+# -------------------
+
 IMMICH_INSTALL_PATH=/var/lib/immich
 IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
 INSTALL_DIR_app=$INSTALL_DIR/app
+
 # -------------------
 # Clean previous build
 # -------------------
 
 clean_previous_build () {
-
-    BASEDIR=$(dirname "$0")
+    # BASEDIR=$(dirname "$0")
 
     rm -rf $INSTALL_DIR_app
     mkdir -p $INSTALL_DIR_app
@@ -118,16 +126,15 @@ clean_previous_build
 # Clone the repo
 # -------------------
 
+INSTALL_DIR_src=$INSTALL_DIR/source
+REPO_BASE=$INSTALL_DIR/source
+REPO_URL="https://github.com/immich-app/immich"
 clone_the_repo () {
-
-    REPO_BASE=/tmp/immich
-    REPO_URL="https://github.com/immich-app/immich"
-
-    if [ ! -d "$REPO_BASE" ]; then
-        git clone "$REPO_URL"
+    if [ ! -d "$INSTALL_DIR_src" ]; then
+        git clone "$REPO_URL" "$INSTALL_DIR_src"
     fi
 
-    cd $REPO_BASE
+    cd $INSTALL_DIR_src
     git reset --hard $REPO_TAG
 }
 exit 0
@@ -137,6 +144,8 @@ exit 0
 # -------------------
 
 install_immich_web_server () {
+    cd $INSTALL_DIR_src
+
     cd server
     npm ci
     npm run build
