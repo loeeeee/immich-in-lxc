@@ -2,13 +2,45 @@
 
 set -xeuo pipefail # Make people's life easier
 
-REPO_TAG=v1.103.1
+# -------------------
+# Create env file if it does not exists
+# -------------------
+create_local_env_file () {
+    # Check if env file exists
+    if [ ! -f .env ]; then
+        # If not, create a new one based on the template
+        if [ -f .env.template ]; then
+            cp .env.template .env
+            echo "New .env file created from the template, exiting"
+            exit 0
+        else
+            echo ".env.template not found, please clone the entire repo, exiting"
+            exit 1
+        fi
+    fi
+}
+create_local_env_file
+
+# -------------------
+# Load environment variables from env file
+# -------------------
+load_environment_variables () {
+    # Read the .env file into variables
+    while IFS= read -r line
+    do
+    if [[ $line =~ ^([A-Za-z0-9_]+)=(.*)$ ]]; then
+        declare ${BASH_REMATCH[1]}="${BASH_REMATCH[2]}"
+    fi
+    done < .env
+}
+load_environment_variables
 
 # -------------------
 # Review environment variables
 # -------------------
 review_install_information () {
     # Install Version
+    echo $REPO_TAG
     # Install Location
     # Cuda or CPU
     # npm proxy
@@ -44,7 +76,7 @@ review_dependency () {
     # (Optional) Nvidia Driver
     # You might need to replace nvidia-smi with the appropriate command to check for the driver
     if ! nvidia-smi &> /dev/null; then
-        echo "WARNING: Nvidia driver might not be installed."
+        echo "INFO: Optional Nvidia driver is not installed."
     fi
 
     # (Optional) Nvidia CuDNN
