@@ -30,7 +30,7 @@ load_environment_variables () {
     while IFS= read -r line
     do
     if [[ $line =~ ^([A-Za-z0-9_]+)=(.*)$ ]]; then
-        declare ${BASH_REMATCH[1]}="${BASH_REMATCH[2]}"
+        declare -g ${BASH_REMATCH[1]}="${BASH_REMATCH[2]}"
     fi
     done < .env
 }
@@ -94,6 +94,7 @@ review_dependency
 
 IMMICH_INSTALL_PATH=/var/lib/immich
 IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
+INSTALL_DIR_app=$INSTALL_DIR/app
 # -------------------
 # Clean previous build
 # -------------------
@@ -102,13 +103,13 @@ clean_previous_build () {
 
     BASEDIR=$(dirname "$0")
 
-    rm -rf $IMMICH_INSTALL_PATH_APP
-    mkdir -p $IMMICH_INSTALL_PATH_APP
+    rm -rf $INSTALL_DIR_app
+    mkdir -p $INSTALL_DIR_app
 
     # Wipe npm, pypoetry, etc
     # This expects immich user's home directory to be on $IMMICH_INSTALL_PATH/home
-    rm -rf $IMMICH_INSTALL_PATH/home
-    mkdir -p $IMMICH_INSTALL_PATH/home
+    rm -rf $INSTALL_DIR/home
+    mkdir -p $INSTALL_DIR/home
 }
 
 clean_previous_build
@@ -123,12 +124,13 @@ clone_the_repo () {
     REPO_URL="https://github.com/immich-app/immich"
 
     if [ ! -d "$REPO_BASE" ]; then
-    git clone "$REPO_URL"
+        git clone "$REPO_URL"
     fi
 
     cd $REPO_BASE
     git reset --hard $REPO_TAG
 }
+exit 0
 
 # -------------------
 # Install immich-web-server
@@ -151,12 +153,12 @@ install_immich_web_server () {
     npm run build
     cd -
 
-    cp -a server/node_modules server/dist server/bin $IMMICH_INSTALL_PATH_APP/
-    cp -a web/build $IMMICH_INSTALL_PATH_APP/www
-    cp -a server/resources server/package.json server/package-lock.json $IMMICH_INSTALL_PATH_APP/
-    cp -a server/start*.sh $IMMICH_INSTALL_PATH_APP/
-    cp -a LICENSE $IMMICH_INSTALL_PATH_APP/
-    cd $IMMICH_INSTALL_PATH_APP
+    cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
+    cp -a web/build $INSTALL_DIR_app/www
+    cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
+    cp -a server/start*.sh $INSTALL_DIR_app/
+    cp -a LICENSE $INSTALL_DIR_app/
+    cd $INSTALL_DIR_app
     # npm cache clean --force
     cd -
 }
