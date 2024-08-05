@@ -193,8 +193,6 @@ install_immich_web_server () {
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
     cp -a server/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
-    cd $INSTALL_DIR_app
-    # npm cache clean --force
     cd -
 }
 
@@ -332,8 +330,22 @@ EOF
 
 create_custom_start_script
 
+# -------------------
 # Cleanup
-# rm -rf $INSTALL_DIR_src
+# -------------------
+
+cleanup () {
+    # Remove source
+    rm -rf $INSTALL_DIR_src
+
+    # Remove npm build cache
+    cd $INSTALL_DIR_app
+    npm cache clean --force
+
+}
+
+# No need to clean up
+# cleanup
 
 echo "----------------------------------------------------------------"
 echo "Done. Please install the systemd services to start using Immich."
