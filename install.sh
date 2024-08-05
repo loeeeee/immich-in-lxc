@@ -108,6 +108,7 @@ REPO_BASE=$INSTALL_DIR/source
 # New
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
+INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
 REPO_URL="https://github.com/immich-app/immich"
 
 # -------------------
@@ -119,7 +120,7 @@ create_folders () {
     mkdir -p $INSTALL_DIR_app
 
     # Machine learning component
-    mkdir -p $INSTALL_DIR_app/machine-learning
+    mkdir -p $INSTALL_DIR_ml
 }
 
 create_folders
@@ -198,7 +199,7 @@ install_immich_web_server () {
     cd -
 }
 
-install_immich_web_server
+#install_immich_web_server
 
 # -------------------
 # Install Immich-machine-learning
@@ -206,18 +207,22 @@ install_immich_web_server
 
 install_immich_machine_learning () {
     IMMICH_MACHINE_LEARNING_PATH=$INSTALL_DIR_app/machine-learning
-    python3 -m venv $IMMICH_MACHINE_LEARNING_PATH/venv
+    python3 -m venv $INSTALL_DIR_ml/venv
     (
     # Initiate subshell to setup venv
-    . $IMMICH_MACHINE_LEARNING_PATH/venv/bin/activate
-    pip3 install poetry
+    . $INSTALL_DIR_ml/venv/bin/activate
+    pip3 install poetry -i $PROXY_POETRY
     cd machine-learning
     export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
-    if false; then # Set this to true to force poetry update
+
+    # Deal with python 3.12
+    python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
+    if [ $python3_version = "12"]; then # Set this to true to force poetry update
         # Allow Python 3.12 (e.g., Ubuntu 24.04)
         sed -i -e 's/<3.12/<4/g' pyproject.toml
         poetry update
     fi
+
     # Install CUDA parts only when necessary
     if [ $isCUDA = true ]; then
         poetry install --no-root --with dev --with cuda
@@ -226,7 +231,9 @@ install_immich_machine_learning () {
     fi
     cd ..
     )
-    cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $IMMICH_MACHINE_LEARNING_PATH/
+    
+    # Copy results
+    cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
 }
 
 install_immich_machine_learning
@@ -239,11 +246,11 @@ exit 0
 # Honestly, I do not understand what does this part of the script does.
 
 replace_usr_src () {
-    cd $IMMICH_INSTALL_PATH_APP
-    grep -Rl /usr/src | xargs -n1 sed -i -e "s@/usr/src@$IMMICH_INSTALL_PATH@g"
-    ln -sf $IMMICH_INSTALL_PATH/app/resources $IMMICH_INSTALL_PATH/
-    mkdir -p $IMMICH_INSTALL_PATH/cache
-    sed -i -e "s@\"/cache\"@\"$IMMICH_INSTALL_PATH/cache\"@g" $IMMICH_MACHINE_LEARNING_PATH/app/config.py
+    cd $INSTALL_DIR_app
+    grep -Rl /usr/src | xargs -n1 sed -i -e "s@/usr/src@$INSTALL_DIR@g"
+    ln -sf $INSTALL_DIR_app/resources $INSTALL_DIR/
+    mkdir -p $INSTALL_DIR/cache
+    sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/app/config.py
 }
 
 replace_usr_src
@@ -253,7 +260,7 @@ replace_usr_src
 # -------------------
 
 install_sharp () {
-    cd $IMMICH_INSTALL_PATH_APP
+    cd $INSTALL_DIR_app
     npm install sharp
 }
 
