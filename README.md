@@ -246,12 +246,12 @@ Let us go ahead and execute the script. No worry, when `.env` file is not found,
 
 Then, we should have a `.env` file in current directory. 
 
-- REPO_TAG is the version of the immich that we are going to install,
-- INSTALL_DIR is where the `app`, `source` folder will resides in,
-- UPLOAD_DIR is where the user uploads goes to, 
-- isCUDA when set to true, will install immich with CUDA supprt, otherwise, only CPU will be used by Immich,
-- PROXY_NPM sets the mirror URL that npm will use, if empty, it will use the official one, and
-- PROXY_POETRY sets the mirror URL that poetry will use, if empty, it will use the official one.
+- `REPO_TAG` is the version of the immich that we are going to install,
+- `INSTALL_DIR` is where the `app`, `source` folder will resides in,
+- `UPLOAD_DIR` is where the user uploads goes to, 
+- `isCUDA` when set to true, will install immich with CUDA supprt, otherwise, only CPU will be used by Immich,
+- `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
+- `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
 Note: The `immich` user should have read and write access to both INSTALL_DIR and UPLOAD_DIR.
 
