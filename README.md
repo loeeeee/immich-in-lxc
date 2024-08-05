@@ -73,7 +73,7 @@ Zu easy, innit?
 ## Install utilities and databases
 
 ```bash
-apt install curl git python3-venv python3-dev
+apt install curl git python3-venv python3-dev gcc
 ```
 
 ### Postgresql
