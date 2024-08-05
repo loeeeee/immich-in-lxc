@@ -148,19 +148,19 @@ install_immich_web_server () {
     cd $INSTALL_DIR_src
 
     cd server
-    npm ci
-    npm run build --registry=$PROXY_NPM
+    npm ci  --registry=$PROXY_NPM
+    npm run build
     npm prune --omit=dev --omit=optional
     cd -
 
     cd open-api/typescript-sdk
-    npm ci
-    npm run build --registry=$PROXY_NPM
+    npm ci --registry=$PROXY_NPM
+    npm run build
     cd -
 
     cd web
-    npm ci
-    npm run build --registry=$PROXY_NPM
+    npm ci --registry=$PROXY_NPM
+    npm run build
     cd -
 
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
