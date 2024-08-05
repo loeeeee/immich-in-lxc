@@ -103,7 +103,7 @@ CREATE DATABASE immich;
 CREATE USER immich WITH ENCRYPTED PASSWORD 'A_SEHR_SAFE_PASSWORD';
 GRANT ALL PRIVILEGES ON DATABASE immich to immich;
 ALTER USER immich WITH SUPERUSER;
-\q # To exit
+\q
 ```
 
 Note: change password.
@@ -185,6 +185,8 @@ node -v # should print `v20.13.1`
 # verifies the right NPM version is in the environment
 npm -v # should print `10.5.2`
 ```
+
+Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
 
 Now, we are ready to install the Immich server.
 
