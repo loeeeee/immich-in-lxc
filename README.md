@@ -142,8 +142,8 @@ apt install jellyfin-ffmpeg6
 Finally, we soft link the Jellyfin ffmpeg to `/bin/`
 
 ```bash
-ln -s /usr/lib/jellyfin/ffmpeg  /bin/ffmpeg
-ln -s /usr/lib/jellyfin/ffprobe  /bin/ffprobe
+ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /bin/ffmpeg
+ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /bin/ffprobe
 ```
 
 Now, calling `ffmpeg` should output a long gibberish.
