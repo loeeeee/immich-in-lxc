@@ -102,12 +102,6 @@ review_dependency
 # Common variables
 # -------------------
 
-# Legacy
-IMMICH_INSTALL_PATH=/var/lib/immich
-IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
-REPO_BASE=$INSTALL_DIR/source
-
-# New
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
@@ -139,7 +133,7 @@ clean_previous_build () {
     mkdir -p $INSTALL_DIR_app
 
     # Wipe npm, pypoetry, etc
-    # This expects immich user's home directory to be on $IMMICH_INSTALL_PATH/home
+    # This expects immich user's home directory to be on $INSTALL_DIR/home
     rm -rf $INSTALL_DIR/home
     mkdir -p $INSTALL_DIR/home
 }
@@ -291,35 +285,34 @@ setup_upload_folder () {
 }
 
 setup_upload_folder
-exit 0
 
 # Use 127.0.0.1
-# sed -i -e "s@app.listen(port)@app.listen(port, '127.0.0.1')@g" $IMMICH_INSTALL_PATH_APP/dist/main.js
+# sed -i -e "s@app.listen(port)@app.listen(port, '127.0.0.1')@g" $INSTALL_DIR_app/dist/main.js
 
 # -------------------
 # Create custom start.sh script
 # -------------------
 
 create_custom_start_script () {
-    cat <<EOF > $IMMICH_INSTALL_PATH_APP/start.sh
+    cat <<EOF > $INSTALL_DIR_app/start.sh
 #!/bin/bash
 
 set -a
-. $IMMICH_INSTALL_PATH/env
+. $INSTALL_DIR/env
 set +a
 
-cd $IMMICH_INSTALL_PATH_APP
-exec node $IMMICH_INSTALL_PATH_APP/dist/main "\$@"
+cd $INSTALL_DIR_app
+exec node $INSTALL_DIR_app/dist/main "\$@"
 EOF
 
-    cat <<EOF > $IMMICH_MACHINE_LEARNING_PATH/start.sh
+    cat <<EOF > $INSTALL_DIR_ml/start.sh
 #!/bin/bash
 
 set -a
-. $IMMICH_INSTALL_PATH/env
+. $INSTALL_DIR/env
 set +a
 
-cd $IMMICH_MACHINE_LEARNING_PATH
+cd $INSTALL_DIR_ml
 . venv/bin/activate
 
 : "\${MACHINE_LEARNING_HOST:=127.0.0.1}"
@@ -337,9 +330,11 @@ exec gunicorn app.main:app \
 EOF
 }
 
-# Cleanup
-# rm -rf $REPO_BASE
+create_custom_start_script
 
-echo
+# Cleanup
+# rm -rf $INSTALL_DIR_src
+
+echo "----------------------------------------------------------------"
 echo "Done. Please install the systemd services to start using Immich."
-echo
+echo "----------------------------------------------------------------"
