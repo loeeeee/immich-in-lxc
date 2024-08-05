@@ -176,7 +176,7 @@ install_immich_web_server () {
     cd open-api/typescript-sdk
     npm ci
     npm run build
-    cd ..
+    cd ../..
 
     cd web
     npm ci
