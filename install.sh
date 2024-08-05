@@ -217,7 +217,7 @@ install_immich_machine_learning () {
 
     # Deal with python 3.12
     python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
-    if [ $python3_version = "12"]; then # Set this to true to force poetry update
+    if [ $python3_version = 12 ]; then
         # Allow Python 3.12 (e.g., Ubuntu 24.04)
         sed -i -e 's/<3.12/<4/g' pyproject.toml
         poetry update
