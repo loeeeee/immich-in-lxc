@@ -203,13 +203,12 @@ install_immich_web_server
 # -------------------
 
 install_immich_machine_learning () {
-    IMMICH_MACHINE_LEARNING_PATH=$INSTALL_DIR_app/machine-learning
+    cd $INSTALL_DIR_ml
     python3 -m venv $INSTALL_DIR_ml/venv
     (
     # Initiate subshell to setup venv
     . $INSTALL_DIR_ml/venv/bin/activate
     pip3 install poetry -i $PROXY_POETRY
-    cd machine-learning
     export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
 
     # Deal with python 3.12
