@@ -48,6 +48,8 @@ review_install_information () {
     echo $REPO_TAG
     # Install Location
     echo $INSTALL_DIR
+    # Upload Location
+    echo $UPLOAD_DIR
     # Cuda or CPU
     echo $isCUDA
     # npm proxy
@@ -121,6 +123,9 @@ create_folders () {
 
     # Machine learning component
     mkdir -p $INSTALL_DIR_ml
+
+    # Upload directory
+    mkdir -p $UPLOAD_DIR
 }
 
 create_folders
@@ -237,7 +242,6 @@ install_immich_machine_learning () {
 }
 
 install_immich_machine_learning
-exit 0
 
 # -------------------
 # Replace /usr/src
@@ -261,7 +265,18 @@ replace_usr_src
 
 install_sharp () {
     cd $INSTALL_DIR_app
+
+    # Set mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config set registry=$PROXY_NPM
+    fi
+
     npm install sharp
+
+    # Unset mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config delete registry
+    fi
 }
 
 install_sharp
@@ -271,10 +286,12 @@ install_sharp
 # -------------------
 
 setup_upload_folder () {
-    mkdir -p $IMMICH_INSTALL_PATH/upload
-    ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_INSTALL_PATH_APP/
-    ln -s $IMMICH_INSTALL_PATH/upload $IMMICH_MACHINE_LEARNING_PATH/
+    ln -s $UPLOAD_DIR $INSTALL_DIR_app/
+    ln -s $UPLOAD_DIR $INSTALL_DIR_ml/
 }
+
+setup_upload_folder
+exit 0
 
 # Use 127.0.0.1
 # sed -i -e "s@app.listen(port)@app.listen(port, '127.0.0.1')@g" $IMMICH_INSTALL_PATH_APP/dist/main.js
