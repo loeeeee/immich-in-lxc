@@ -171,17 +171,17 @@ install_immich_web_server () {
     npm ci
     npm run build
     npm prune --omit=dev --omit=optional
-    cd -
+    cd ..
 
     cd open-api/typescript-sdk
     npm ci
     npm run build
-    cd -
+    cd ..
 
     cd web
     npm ci
     npm run build
-    cd -
+    cd ..
 
     # Unset mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
@@ -193,7 +193,7 @@ install_immich_web_server () {
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
     cp -a server/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
-    cd -
+    cd ..
 }
 
 install_immich_web_server
@@ -203,7 +203,7 @@ install_immich_web_server
 # -------------------
 
 install_immich_machine_learning () {
-    cd $INSTALL_DIR_ml
+    cd $INSTALL_DIR_src/machine-learning
     python3 -m venv $INSTALL_DIR_ml/venv
     (
     # Initiate subshell to setup venv
@@ -225,10 +225,10 @@ install_immich_machine_learning () {
     else
         poetry install --no-root --with dev --with cpu
     fi
-    cd ..
     )
     
     # Copy results
+    cd $INSTALL_DIR_src
     cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
 }
 
