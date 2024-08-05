@@ -196,7 +196,7 @@ install_immich_web_server () {
     cd -
 }
 
-#install_immich_web_server
+install_immich_web_server
 
 # -------------------
 # Install Immich-machine-learning
