@@ -110,7 +110,7 @@ Note: change password.
 
 ### FFmpeg
 
-To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
+To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) that supports hardware acceleration is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
 
 First, we need to add the repository of Jellyfin to the system package manager.
 
@@ -166,11 +166,36 @@ Immich works fine with the Redis in Ubuntu 22.04 APT repo. No additional config 
 apt install redis
 ```
 
+Now, we are mostly ready to install the Immich server.
+
+## Install Immich Server
+
+Create a immich user, if you already done so in the above optional section, you may safely skip the following code block.
+
+```bash
+useradd -m immich
+chsh immich # Optional: Change the default shell the immich user is using. Typically to /bin/bash
+```
+
+After creating the user, we should first install node.js for the user, immich.
+
 ### Node.js
 
-Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's website](https://nodejs.org/en/download/package-manager) for the desired version.
+Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for a modern version.
 
-The following script is copy-pasted from the node.js's website. One should go to the website for the latest version of the code.
+Because npm/nvm by default use user installation, i.e, install the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs immich. Other installations in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
+
+Assume one is currently login as user root, to change to the user we just created,
+
+```bash
+su immich
+```
+
+To change back to the pre-su user, `exit` should do the trick.
+
+After change to the immich user, 
+
+(The following script is copy-pasted from the node.js's download website.)
 
 ```bash
 # installs NVM (Node Version Manager)
@@ -188,15 +213,3 @@ npm -v # should print `10.5.2`
 
 Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
 
-Now, we are ready to install the Immich server.
-
-## Install Immich Server
-
-Create a immich user, if you already done so in the above optional section, you may safely skip the following code block.
-
-```bash
-useradd -m immich
-chsh immich # Optional: Change the default shell the immich user is using.
-```
-
-After creating the user, 
