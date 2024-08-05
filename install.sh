@@ -199,7 +199,6 @@ install_immich_web_server () {
 }
 
 install_immich_web_server
-exit 0
 
 # -------------------
 # Install Immich-machine-learning
