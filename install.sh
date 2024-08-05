@@ -100,17 +100,35 @@ review_dependency
 # Common variables
 # -------------------
 
+# Legacy
 IMMICH_INSTALL_PATH=/var/lib/immich
 IMMICH_INSTALL_PATH_APP=$IMMICH_INSTALL_PATH/app
+REPO_BASE=$INSTALL_DIR/source
+
+# New
+INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
+REPO_URL="https://github.com/immich-app/immich"
+
+# -------------------
+# Common variables
+# -------------------
+
+create_folders () {
+    # No need to create source folder
+    mkdir -p $INSTALL_DIR_app
+
+    # Machine learning component
+    mkdir -p $INSTALL_DIR_app/machine-learning
+}
+
+create_folders
 
 # -------------------
 # Clean previous build
 # -------------------
 
 clean_previous_build () {
-    # BASEDIR=$(dirname "$0")
-
     rm -rf $INSTALL_DIR_app
     mkdir -p $INSTALL_DIR_app
 
@@ -126,9 +144,6 @@ clean_previous_build () {
 # Clone the repo
 # -------------------
 
-INSTALL_DIR_src=$INSTALL_DIR/source
-REPO_BASE=$INSTALL_DIR/source
-REPO_URL="https://github.com/immich-app/immich"
 clone_the_repo () {
     if [ ! -d "$INSTALL_DIR_src" ]; then
         git clone "$REPO_URL" "$INSTALL_DIR_src"
@@ -147,21 +162,31 @@ clone_the_repo
 install_immich_web_server () {
     cd $INSTALL_DIR_src
 
+    # Set mirror for npm
+    if [ -z "${PROXY_NPM}" ]; then
+        npm config set registry=$PROXY_NPM
+    fi
+
     cd server
-    npm ci  --registry=$PROXY_NPM
+    npm ci
     npm run build
     npm prune --omit=dev --omit=optional
     cd -
 
     cd open-api/typescript-sdk
-    npm ci --registry=$PROXY_NPM
+    npm ci
     npm run build
     cd -
 
     cd web
-    npm ci --registry=$PROXY_NPM
+    npm ci
     npm run build
     cd -
+
+    # Unset mirrot for npm
+    if [ -z "${PROXY_NPM}" ]; then
+        npm config delete registry
+    fi
 
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
     cp -a web/build $INSTALL_DIR_app/www
@@ -181,27 +206,32 @@ exit 0
 # -------------------
 
 install_immich_machine_learning () {
-    IMMICH_MACHINE_LEARNING_PATH=$IMMICH_INSTALL_PATH_APP/machine-learning
-    mkdir -p $IMMICH_MACHINE_LEARNING_PATH
+    IMMICH_MACHINE_LEARNING_PATH=$INSTALL_DIR_app/machine-learning
     python3 -m venv $IMMICH_MACHINE_LEARNING_PATH/venv
     (
     # Initiate subshell to setup venv
     . $IMMICH_MACHINE_LEARNING_PATH/venv/bin/activate
     pip3 install poetry
     cd machine-learning
-    export POETRY_PYPI_MIRROR_URL=https://mirror.sjtu.edu.cn/pypi/web/simple
+    export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
     if false; then # Set this to true to force poetry update
         # Allow Python 3.12 (e.g., Ubuntu 24.04)
         sed -i -e 's/<3.12/<4/g' pyproject.toml
         poetry update
     fi
-    poetry install --no-root --with dev --with cuda
+    # Install CUDA parts only when necessary
+    if [ $isCUDA = true ]; then
+        poetry install --no-root --with dev --with cuda
+    else
+        poetry install --no-root --with dev --with cpu
+    fi
     cd ..
     )
     cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $IMMICH_MACHINE_LEARNING_PATH/
 }
 
 install_immich_machine_learning
+exit 0
 
 # -------------------
 # Replace /usr/src
