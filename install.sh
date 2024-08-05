@@ -139,7 +139,6 @@ clone_the_repo () {
 }
 
 clone_the_repo
-exit 0
 
 # -------------------
 # Install immich-web-server
@@ -150,18 +149,18 @@ install_immich_web_server () {
 
     cd server
     npm ci
-    npm run build
+    npm run build --registry=$PROXY_NPM
     npm prune --omit=dev --omit=optional
     cd -
 
     cd open-api/typescript-sdk
     npm ci
-    npm run build
+    npm run build --registry=$PROXY_NPM
     cd -
 
     cd web
     npm ci
-    npm run build
+    npm run build --registry=$PROXY_NPM
     cd -
 
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
@@ -175,6 +174,7 @@ install_immich_web_server () {
 }
 
 install_immich_web_server
+exit 0
 
 # -------------------
 # Install Immich-machine-learning
