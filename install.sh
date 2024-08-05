@@ -163,7 +163,7 @@ install_immich_web_server () {
     cd $INSTALL_DIR_src
 
     # Set mirror for npm
-    if [ -z "${PROXY_NPM}" ]; then
+    if [ ! -z "${PROXY_NPM}" ]; then
         npm config set registry=$PROXY_NPM
     fi
 
@@ -183,8 +183,8 @@ install_immich_web_server () {
     npm run build
     cd -
 
-    # Unset mirrot for npm
-    if [ -z "${PROXY_NPM}" ]; then
+    # Unset mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
         npm config delete registry
     fi
 
