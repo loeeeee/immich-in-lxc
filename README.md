@@ -142,8 +142,8 @@ apt install jellyfin-ffmpeg6
 Finally, we soft link the Jellyfin ffmpeg to `/bin/`
 
 ```bash
-ln -s /usr/lib/jellyfin/jellyfin-ffmpeg  /bin/ffmpeg
-ln -s /usr/lib/jellyfin/jellyfin-ffprobe  /bin/ffprobe
+ln -s /usr/lib/jellyfin/ffmpeg  /bin/ffmpeg
+ln -s /usr/lib/jellyfin/ffprobe  /bin/ffprobe
 ```
 
 Now, calling `ffmpeg` should output a long gibberish.
@@ -201,6 +201,7 @@ After change to the immich user,
 # installs NVM (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
+# Logout and login to reload the terminal so that nvm is available
 # download and install Node.js
 nvm install 20
 
