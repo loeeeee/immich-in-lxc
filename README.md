@@ -214,3 +214,61 @@ npm -v # should print `10.5.2`
 
 Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
 
+### The install script
+
+The install script is the `install.sh` in this repo. It installs or update the current immich instance. The immich instance itself is stateless, thanks to its containerized nature. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. **DO NOT DELETE UPLOAD FOLDER IN THE `INSTALL_DIR`**. It stores all the uploaded content. Also, one should always a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
+
+#### Clone this repo
+
+Just in case one does not know, 
+
+```bash
+git clone https://github.com/loeeeee/immich-in-lxc.git
+```
+
+#### Change directory
+
+It is recommend to have our working directory set to the repo's directory.
+
+```bash
+cd immich-in-lxc
+```
+
+#### The environment variables
+
+An example .env file that will be generated when no `.env` file is found inside current working directory when executing the script.
+
+Let us go ahead and execute the script. No worry, when `.env` file is not found, the script will gracefully exit and do no change to the file system.
+
+```bash
+./install.sh
+```
+
+Then, we should have a `.env` file in current directory. 
+
+- REPO_TAG is the version of the immich that we are going to install,
+- INSTALL_DIR is where the `app`, `source` folder will resides in,
+- UPLOAD_DIR is where the user uploads goes to, 
+- isCUDA when set to true, will install immich with CUDA supprt, otherwise, only CPU will be used by Immich,
+- PROXY_NPM sets the mirror URL that npm will use, if empty, it will use the official one, and
+- PROXY_POETRY sets the mirror URL that poetry will use, if empty, it will use the official one.
+
+Note: The `immich` user should have read and write access to both INSTALL_DIR and UPLOAD_DIR.
+
+#### Run the script
+
+After the `.env` is properly configured, we are now ready to do the actual installation.
+
+```bash
+./install.sh
+```
+
+It should go without errors, just like ever dev says.
+
+After several minutes, ideally, it would say,
+
+```bash
+Done. Please install the systemd services to start using Immich.
+```
+
+Now, we are ready to boot up our immich instance.
