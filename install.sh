@@ -5,13 +5,14 @@ set -xeuo pipefail # Make people's life easier
 # -------------------
 # Create env file if it does not exists
 # -------------------
+SCRIPT_DIR=$(dirname "$0")
 
-create_local_env_file () {
+create_install_env_file () {
     # Check if env file exists
-    if [ ! -f .env ]; then
+    if [ ! -f $SCRIPT_DIR/.env ]; then
         # If not, create a new one based on the template
-        if [ -f .env.template ]; then
-            cp .env.template .env
+        if [ -f $SCRIPT_DIR/install.env ]; then
+            cp install.env .env
             echo "New .env file created from the template, exiting"
             exit 0
         else
@@ -21,7 +22,7 @@ create_local_env_file () {
     fi
 }
 
-create_local_env_file
+create_install_env_file
 
 # -------------------
 # Load environment variables from env file
@@ -328,6 +329,28 @@ EOF
 }
 
 create_custom_start_script
+
+# -------------------
+# Create runtime environment file
+# -------------------
+
+create_runtime_env_file () {
+    cd $INSTALL_DIR
+    # Check if env file exists
+    if [ ! -f runtime.env ]; then
+        # If not, create a new one based on the template
+        if [ -f $SCRIPT_DIR/runtime.env ]; then
+            cp $SCRIPT_DIR/runtime.env runtime.env
+            echo "New runtime.env file created from the template, exiting"
+            exit 0
+        else
+            echo "runtime.env not found, please clone the entire repo, exiting"
+            exit 1
+        fi
+    fi
+}
+
+create_runtime_env_file
 
 # -------------------
 # Cleanup
