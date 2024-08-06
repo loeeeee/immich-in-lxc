@@ -5,7 +5,7 @@ set -xeuo pipefail # Make people's life easier
 # -------------------
 # Create env file if it does not exists
 # -------------------
-SCRIPT_DIR=$(dirname "$0")
+SCRIPT_DIR=$PWD
 
 create_install_env_file () {
     # Check if env file exists
