@@ -1,6 +1,6 @@
-# Immich in LXC
+# Immich in LXC with Optional CUDA support
 
-Install Immich in LXC with optional CUDA support. This guide should be appliable to any bare-metal installation.
+Install Immich in LXC with optional CUDA support. This guide should be applicable to any bare-metal installation, even the ones with Intel or AMD GPUs.
 
 ## Introduction
 
@@ -36,11 +36,11 @@ But, not providing a bare-metal installation guide for immich can be justified a
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware-acceleration does not work.
 
-For the simplicity of the guide, all the components are installed in a single LXC container. However, it is always possible to run different components in different LXC containers. It is always a design choice.
+For the simplicity of the guide, all the components are installed in a single LXC container. However, it is always possible to run different components in different LXC containers. As it is always a design choice.
 
 ## Host setup
 
-I am using `Proxmox VE 8` as the LXC host. It is based on `Debian`, and I have a NVIDIA GPU, including NVIDIA proprietary driver (550) installed. 
+I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. 
 
 ## Prepare the LXC container
 
