@@ -304,6 +304,12 @@ systemctl enable immich-ml
 systemctl enable immich-web
 ```
 
+#### Immich config
+
+Because we are install immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, because the default hostname would not work, and the web cannot connect to the ML backend.
+
+Additionally, for LXC with CUDA support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select NVENC to explicitly use the GPU to do the transcoding.
+
 ## Update immich instance
 
 The immich instance is designed to be stateless, meaning that deleting the instance (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current immich instance, all one needs to do is to run `install.sh` again with the latest commit of the current repo, after copy pasting the `REPO_TAG` from the `install.env` to `.env` file.
