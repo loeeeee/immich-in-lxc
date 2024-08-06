@@ -289,7 +289,7 @@ setup_upload_folder
 # Download GeoNames
 # -------------------
 
-download_deonames () {
+download_geonames () {
     cd $INSTALL_DIR_geo
     if [ ! -f "cities500.zip" ] || [ ! -f "admin1CodesASCII.txt" ] || [ ! -f "admin2Codes.txt" ] || [ ! -f "ne_10m_admin_0_countries.geojson" ]; then
         echo "incomplete geodata, start downloading"
@@ -308,6 +308,8 @@ download_deonames () {
     # Link the folder
     ln -s $INSTALL_DIR_geo $INSTALL_DIR_app/
 }
+
+download_geonames
 
 # -------------------
 # Create custom start.sh script
