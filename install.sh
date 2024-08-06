@@ -292,8 +292,12 @@ setup_upload_folder
 # -------------------
 
 create_custom_start_script () {
+    # Immich web and microservices
     cat <<EOF > $INSTALL_DIR_app/start.sh
 #!/bin/bash
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 set -a
 . $INSTALL_DIR/runtime.env
@@ -303,6 +307,7 @@ cd $INSTALL_DIR_app
 exec node $INSTALL_DIR_app/dist/main "\$@"
 EOF
 
+    # Machine learning
     cat <<EOF > $INSTALL_DIR_ml/start.sh
 #!/bin/bash
 
