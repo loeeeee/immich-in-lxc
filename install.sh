@@ -106,6 +106,7 @@ review_dependency
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
+INSTALL_DIR_geo=$INSTALL_DIR/geodata
 REPO_URL="https://github.com/immich-app/immich"
 
 # -------------------
@@ -114,12 +115,6 @@ REPO_URL="https://github.com/immich-app/immich"
 
 clean_previous_build () {
     rm -rf $INSTALL_DIR_app
-    # mkdir -p $INSTALL_DIR_app
-
-    # Wipe npm, pypoetry, etc
-    # This expects immich user's home directory to be on $INSTALL_DIR/home
-    # rm -rf $INSTALL_DIR/home
-    # mkdir -p $INSTALL_DIR/home
 }
 
 clean_previous_build
@@ -137,6 +132,9 @@ create_folders () {
 
     # Upload directory
     mkdir -p $UPLOAD_DIR
+
+    # GeoNames
+    mkdir -p $INSTALL_DIR_geo
 }
 
 create_folders
@@ -250,6 +248,7 @@ replace_usr_src () {
     ln -sf $INSTALL_DIR_app/resources $INSTALL_DIR/
     mkdir -p $INSTALL_DIR/cache
     sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/app/config.py
+    grep -RlE "\"/build\"|'/build'" | xargs -n1 sed -i -e "s@\"/build\"@\"$INSTALL_DIR_app\"@g" -e "s@'/build'@'$INSTALL_DIR_app'@g"
 }
 
 replace_usr_src
@@ -287,8 +286,31 @@ setup_upload_folder () {
 
 setup_upload_folder
 
-# Use 127.0.0.1
-# sed -i -e "s@app.listen(port)@app.listen(port, '127.0.0.1')@g" $INSTALL_DIR_app/dist/main.js
+# -------------------
+# Download GeoNames
+# -------------------
+
+download_geonames () {
+    cd $INSTALL_DIR_geo
+    if [ ! -f "cities500.zip" ] || [ ! -f "admin1CodesASCII.txt" ] || [ ! -f "admin2Codes.txt" ] || [ ! -f "ne_10m_admin_0_countries.geojson" ]; then
+        echo "incomplete geodata, start downloading"
+        wget -o - https://download.geonames.org/export/dump/admin1CodesASCII.txt &
+        wget -o - https://download.geonames.org/export/dump/admin2Codes.txt &
+        wget -o - https://download.geonames.org/export/dump/cities500.zip &
+        wget -o - https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_countries.geojson &
+        wait
+        unzip cities500.zip
+        date --iso-8601=seconds | tr -d "\n" > geodata-date.txt
+    else
+        echo "geodata exists, skip downloading"
+    fi
+
+    cd $INSTALL_DIR
+    # Link the folder
+    ln -s $INSTALL_DIR_geo $INSTALL_DIR_app/
+}
+
+download_geonames
 
 # -------------------
 # Create custom start.sh script
