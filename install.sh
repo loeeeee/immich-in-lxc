@@ -109,6 +109,22 @@ INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
 REPO_URL="https://github.com/immich-app/immich"
 
 # -------------------
+# Clean previous build
+# -------------------
+
+clean_previous_build () {
+    rm -rf $INSTALL_DIR_app
+    # mkdir -p $INSTALL_DIR_app
+
+    # Wipe npm, pypoetry, etc
+    # This expects immich user's home directory to be on $INSTALL_DIR/home
+    # rm -rf $INSTALL_DIR/home
+    # mkdir -p $INSTALL_DIR/home
+}
+
+clean_previous_build
+
+# -------------------
 # Common variables
 # -------------------
 
@@ -124,22 +140,6 @@ create_folders () {
 }
 
 create_folders
-
-# -------------------
-# Clean previous build
-# -------------------
-
-clean_previous_build () {
-    rm -rf $INSTALL_DIR_app
-    mkdir -p $INSTALL_DIR_app
-
-    # Wipe npm, pypoetry, etc
-    # This expects immich user's home directory to be on $INSTALL_DIR/home
-    rm -rf $INSTALL_DIR/home
-    mkdir -p $INSTALL_DIR/home
-}
-
-# clean_previous_build
 
 # -------------------
 # Clone the repo
