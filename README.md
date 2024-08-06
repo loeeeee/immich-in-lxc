@@ -84,7 +84,7 @@ As for postgresql, visit [official guide](https://www.postgresql.org/download/li
 apt install -y postgresql-common
 /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 apt -y install postgresql
-apt install postgresql-pgvector
+apt install postgresql-16-pgvector
 ```
 
 To prepare the database, we need to make some configuration.
