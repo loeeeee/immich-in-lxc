@@ -44,8 +44,6 @@ I am using `Proxmox VE 8` as the LXC host. It is based on `Debian`, and I have a
 
 ## Prepare the LXC container
 
-For LXC container, it is recommend to use `Ubuntu 22.04 LTS` even though a newer LTS has been released. The reason is that the CuDNN shipped with the newer release is too advanced for the current Onnx GPU runtime, which machine learning component depends on (As for Immich Version 102.3). If one only plans to use CPU, it should not be a problem.
-
 First, create a LXC normally. Make sure there is reasonable amount CPU and memory. Because we are going to install and compile a lot of things, it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB. Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
 
 ## Mount host volume to LXC container (Optional)
