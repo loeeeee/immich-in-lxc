@@ -248,6 +248,7 @@ replace_usr_src () {
     ln -sf $INSTALL_DIR_app/resources $INSTALL_DIR/
     mkdir -p $INSTALL_DIR/cache
     sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/app/config.py
+    grep -RlE "\"/build\"|'/build'" | xargs -n1 sed -i -e "s@\"/build\"@\"$INSTALL_DIR_app\"@g" -e "s@'/build'@'$INSTALL_DIR_app'@g"
 }
 
 replace_usr_src
