@@ -15,7 +15,7 @@ ExecStart=/home/immich/app/machine-learning/start.sh
 
 SyslogIdentifier=immich-machine-learning
 StandardOutput=append:/var/log/immich/ml.log
-StandardError=append:/var/log/immich/ml-error.log
+StandardError=append:/var/log/immich/ml.log
 
 [Install]
 WantedBy=multi-user.target

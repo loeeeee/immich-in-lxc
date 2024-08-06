@@ -1,5 +1,5 @@
 [Unit]
-Description=immich server
+Description=immich web server
 Documentation=https://github.com/immich-app/immich
 Requires=redis-server.service
 Requires=postgresql.service
@@ -13,13 +13,11 @@ Type=simple
 Restart=on-failure
 UMask=0077
 
-WorkingDirectory=/home/immich/app
-EnvironmentFile=/home/immich/runtime.env
-ExecStart=node /home/immich/app/dist/main immich
+ExecStart=/bin/bash /home/immich/app/start.sh immich
 
 SyslogIdentifier=immich-web
 StandardOutput=append:/var/log/immich/web.log
-StandardError=append:/var/log/immich/web-error.log
+StandardError=append:/var/log/immich/web.log
 
 [Install]
 WantedBy=multi-user.target

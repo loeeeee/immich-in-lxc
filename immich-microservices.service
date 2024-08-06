@@ -11,13 +11,11 @@ Type=simple
 Restart=on-failure
 UMask=0077
 
-WorkingDirectory=/home/immich/app
-EnvironmentFile=/home/immich/runtime.env
-ExecStart=node /home/immich/app/dist/main microservices
+ExecStart=/bin/bash /home/immich/app/start.sh microservices
 
 SyslogIdentifier=immich-microservices
 StandardOutput=append:/var/log/immich/microservices.log
-StandardError=append:/var/log/immich/microservices-error.log
+StandardError=append:/var/log/immich/microservices.log
 
 [Install]
 WantedBy=multi-user.target

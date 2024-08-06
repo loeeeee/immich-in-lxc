@@ -285,3 +285,18 @@ Then, modify the service file to make sure every path name is spelled correctly.
 
 After that, we are now ready to start our immich instance!
 
+```bash
+systemctl daemon-reload
+systemctl start immich-microservices
+systemctl start immich-ml
+systemctl start immich-web
+```
+
+To make the service persistent and start after reboot,
+
+```bash
+systemctl enable immich-microservices
+systemctl enable immich-ml
+systemctl enable immich-web
+```
+
