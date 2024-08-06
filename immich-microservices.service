@@ -16,8 +16,8 @@ EnvironmentFile=/home/immich/runtime.env
 ExecStart=node /home/immich/app/dist/main microservices
 
 SyslogIdentifier=immich-microservices
-StandardOutput=append:/var/log/immich/immich-microservices.log
-StandardError=append:/var/log/immich/immich-microservices.log
+StandardOutput=append:/var/log/immich/microservices.log
+StandardError=append:/var/log/immich/microservices-error.log
 
 [Install]
 WantedBy=multi-user.target

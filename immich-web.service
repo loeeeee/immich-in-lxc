@@ -17,9 +17,9 @@ WorkingDirectory=/home/immich/app
 EnvironmentFile=/home/immich/runtime.env
 ExecStart=node /home/immich/app/dist/main immich
 
-SyslogIdentifier=immich web
-StandardOutput=append:/var/log/immich/immich-web.log
-StandardError=append:/var/log/immich/immich-web.log
+SyslogIdentifier=immich-web
+StandardOutput=append:/var/log/immich/web.log
+StandardError=append:/var/log/immich/web-error.log
 
 [Install]
 WantedBy=multi-user.target
