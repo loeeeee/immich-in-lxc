@@ -1,0 +1,23 @@
+[Unit]
+Description=immich microservices
+Documentation=https://github.com/immich-app/immich
+Requires=redis-server.service
+Requires=postgresql.service
+
+[Service]
+User=immich
+Group=immich
+Type=simple
+Restart=on-failure
+UMask=0077
+
+WorkingDirectory=/home/immich/app
+EnvironmentFile=/home/immich/env
+ExecStart=node /home/immich/app/dist/main microservices
+
+SyslogIdentifier=immich-microservices
+StandardOutput=append:/var/log/immich/immich-microservices.log
+StandardError=append:/var/log/immich/immich-microservices.log
+
+[Install]
+WantedBy=multi-user.target

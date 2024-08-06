@@ -1,0 +1,21 @@
+[Unit]
+Description=immich machine-learning
+Documentation=https://github.com/immich-app/immich
+
+[Service]
+User=immich
+Group=immich
+Type=simple
+Restart=on-failure
+UMask=0077
+
+WorkingDirectory=/home/immich/app
+EnvironmentFile=/home/immich/env
+ExecStart=/home/immich/app/machine-learning/start.sh
+
+SyslogIdentifier=immich-machine-learning
+StandardOutput=append:/var/log/immich/immich-machine-learning.log
+StandardError=append:/var/log/immich/immich-machine-learning.log
+
+[Install]
+WantedBy=multi-user.target
