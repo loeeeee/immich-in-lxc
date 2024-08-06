@@ -271,4 +271,17 @@ After several minutes, ideally, it would say,
 Done. Please install the systemd services to start using Immich.
 ```
 
-Now, we are ready to boot up our immich instance.
+Lastly, we need to review and modify the runtime.env that is inside `INSTALL_DIR` (not the one inside this repo). The default value should do the job, though.
+
+#### Post install script
+
+The post install script will copy the systemd service files to proper location (and overwrite the original ones), assuming one is using Ubuntu, or something similar. Additionally, it creates a folder for log at `/var/log/`. Both operation requires `sudo/root` privilege, so make sure to review the script before proceeding.
+
+```bash
+./post-install.sh
+```
+
+Then, modify the service file to make sure every path name is spelled correctly.
+
+After that, we are now ready to start our immich instance!
+
