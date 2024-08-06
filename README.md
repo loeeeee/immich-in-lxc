@@ -292,6 +292,8 @@ systemctl start immich-ml
 systemctl start immich-web
 ```
 
+The default setting expose the immich web server on port 3001 on all available address. For security reason, one should put a reverse proxy, e.g. Nginx, HAProxy, in front of the immich instance and add SSL to it.
+
 To make the service persistent and start after reboot,
 
 ```bash
