@@ -300,3 +300,6 @@ systemctl enable immich-ml
 systemctl enable immich-web
 ```
 
+## Update immich instance
+
+The immich instance is designed to be stateless, meaning that deleting the instance (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current immich instance, all one needs to do is to run `install.sh` again with the latest commit of the current repo, after copy pasting the `REPO_TAG` from the `install.env` to `.env` file.
