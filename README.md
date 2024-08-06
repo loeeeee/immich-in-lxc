@@ -108,6 +108,8 @@ ALTER USER immich WITH SUPERUSER;
 
 Note: change password.
 
+Note: To change back to the pre-su user, `exit` should do the trick.
+
 ### FFmpeg
 
 To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) that supports hardware acceleration is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
