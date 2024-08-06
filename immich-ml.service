@@ -10,7 +10,7 @@ Restart=on-failure
 UMask=0077
 
 WorkingDirectory=/home/immich/app
-EnvironmentFile=/home/immich/env
+EnvironmentFile=/home/immich/runtime.env
 ExecStart=/home/immich/app/machine-learning/start.sh
 
 SyslogIdentifier=immich-machine-learning

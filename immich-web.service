@@ -14,7 +14,7 @@ Restart=on-failure
 UMask=0077
 
 WorkingDirectory=/home/immich/app
-EnvironmentFile=/home/immich/env
+EnvironmentFile=/home/immich/runtime.env
 ExecStart=node /home/immich/app/dist/main immich
 
 SyslogIdentifier=immich web
