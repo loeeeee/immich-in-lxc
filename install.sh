@@ -226,6 +226,9 @@ install_immich_machine_learning () {
     else
         poetry install --no-root --with dev --with cpu
     fi
+
+    # Work around for bad poetry config
+    pip install "numpy<2"
     )
     
     # Copy results
