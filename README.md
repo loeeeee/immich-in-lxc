@@ -12,7 +12,7 @@ I really like Immich and its coherent experience in both mobile and web. However
 
 But, not providing a bare-metal installation guide for immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
 
-**This guide is heavily inspired by another guide, [Immich Native](https://github.com/arter97/immich-native). KUDO to its author, arter97!** 
+**This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in the repo. KUDO to its author, arter97!** 
 
 ## Immich Components
 
@@ -253,7 +253,7 @@ Then, we should have a `.env` file in current directory.
 - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
 - `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
-Note: The `immich` user should have read and write access to both INSTALL_DIR and UPLOAD_DIR.
+Note: The `immich` user should have read and write access to both `INSTALL_DIR` and `UPLOAD_DIR`.
 
 #### Run the script
 
