@@ -12,7 +12,7 @@ I really like Immich and its coherent experience in both mobile and web. However
 
 But, not providing a bare-metal installation guide for immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
 
-**This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in the repo. KUDO to its author, arter97!** 
+**This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in that repo. KUDO to its author, arter97!** 
 
 ## Immich Components
 
