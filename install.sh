@@ -292,6 +292,7 @@ setup_upload_folder
 download_deonames () {
     cd $INSTALL_DIR_geo
     if [ ! -f "cities500.zip" ] || [ ! -f "admin1CodesASCII.txt" ] || [ ! -f "admin2Codes.txt" ] || [ ! -f "ne_10m_admin_0_countries.geojson" ]; then
+        echo "incomplete geodata, start downloading"
         wget -o - https://download.geonames.org/export/dump/admin1CodesASCII.txt &
         wget -o - https://download.geonames.org/export/dump/admin2Codes.txt &
         wget -o - https://download.geonames.org/export/dump/cities500.zip &
