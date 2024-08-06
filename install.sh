@@ -352,23 +352,6 @@ create_runtime_env_file () {
 
 create_runtime_env_file
 
-# -------------------
-# Cleanup
-# -------------------
-
-cleanup () {
-    # Remove source
-    rm -rf $INSTALL_DIR_src
-
-    # Remove npm build cache
-    cd $INSTALL_DIR_app
-    npm cache clean --force
-
-}
-
-# No need to clean up
-# cleanup
-
 echo "----------------------------------------------------------------"
 echo "Done. Please install the systemd services to start using Immich."
 echo "----------------------------------------------------------------"
