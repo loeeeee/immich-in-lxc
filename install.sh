@@ -296,7 +296,7 @@ create_custom_start_script () {
 #!/bin/bash
 
 set -a
-. $INSTALL_DIR/env
+. $INSTALL_DIR/runtime.env
 set +a
 
 cd $INSTALL_DIR_app
@@ -307,7 +307,7 @@ EOF
 #!/bin/bash
 
 set -a
-. $INSTALL_DIR/env
+. $INSTALL_DIR/runtime.env
 set +a
 
 cd $INSTALL_DIR_ml
