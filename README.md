@@ -306,7 +306,7 @@ systemctl enable immich-web
 
 #### Immich config
 
-Because we are install immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, because the default hostname would not work, and the web cannot connect to the ML backend.
+Because we are install immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
 Additionally, for LXC with CUDA support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select NVENC to explicitly use the GPU to do the transcoding.
 
