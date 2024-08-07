@@ -382,7 +382,6 @@ create_runtime_env_file () {
         if [ -f $SCRIPT_DIR/runtime.env ]; then
             cp $SCRIPT_DIR/runtime.env runtime.env
             echo "New runtime.env file created from the template, exiting"
-            exit 0
         else
             echo "runtime.env not found, please clone the entire repo, exiting"
             exit 1
