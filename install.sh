@@ -207,9 +207,9 @@ install_immich_machine_learning () {
     (
     # Initiate subshell to setup venv
     . $INSTALL_DIR_ml/venv/bin/activate
-    
+
     # Use pypi if proxy does not present
-    if [ ! -z "${PROXY_POETRY}" ]; then
+    if [ -z "${PROXY_POETRY}" ]; then
         $PROXY_POETRY=https://pypi.org/simple/
     fi
     export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
