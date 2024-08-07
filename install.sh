@@ -285,8 +285,8 @@ install_sharp
 # -------------------
 
 setup_upload_folder () {
-    ln -s $UPLOAD_DIR $INSTALL_DIR_app/
-    ln -s $UPLOAD_DIR $INSTALL_DIR_ml/
+    ln -s $UPLOAD_DIR $INSTALL_DIR_app/upload
+    ln -s $UPLOAD_DIR $INSTALL_DIR_ml/upload
 }
 
 setup_upload_folder
