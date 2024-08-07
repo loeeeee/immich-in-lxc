@@ -2,8 +2,6 @@
 
 Install Immich in LXC with optional CUDA support. This guide should be applicable to any bare-metal installation, even the ones with Intel or AMD GPUs.
 
-**Something is BROKEN right now that may wipe the thumbnail directory during upgrade in certain configuration, please do not put it into production!!!**
-
 ## Introduction
 
 [Immich](https://github.com/immich-app/immich) is a
