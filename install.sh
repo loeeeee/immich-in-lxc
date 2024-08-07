@@ -210,7 +210,7 @@ install_immich_machine_learning () {
 
     # Use pypi if proxy does not present
     if [ -z "${PROXY_POETRY}" ]; then
-        $PROXY_POETRY=https://pypi.org/simple/
+        PROXY_POETRY=https://pypi.org/simple/
     fi
     export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
     pip3 install poetry -i $PROXY_POETRY
