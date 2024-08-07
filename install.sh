@@ -131,7 +131,12 @@ create_folders () {
     mkdir -p $INSTALL_DIR_ml
 
     # Upload directory
-    mkdir -p $UPLOAD_DIR
+    if [ ! -d "$UPLOAD_DIR" ]; then
+        echo "$UPLOAD_DIR does not exists, creating one"
+        mkdir -p $UPLOAD_DIR
+    else
+        echo "$UPLOAD_DIR already exists, skip creation"
+    fi
 
     # GeoNames
     mkdir -p $INSTALL_DIR_geo
