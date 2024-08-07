@@ -44,7 +44,11 @@ I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I hav
 
 ## Prepare the LXC container
 
-First, create a LXC normally. Make sure there is reasonable amount CPU and memory. Because we are going to install and compile a lot of things, it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB. Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
+First, create a LXC normally. Make sure there is reasonable amount CPU and memory, because we are going to install and compile a lot of things, and it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB to have it installed. However, once one starts using Immich, it will create a lot of caching, so don't forget to resize the LXC volumes accordingly. 
+
+Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
+
+This tutorial uses `Ubuntu 24.04 LTS` LXC image as a base. Things will differ in different distro, though.
 
 ## Mount host volume to LXC container (Optional)
 
