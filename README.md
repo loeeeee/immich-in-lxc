@@ -80,7 +80,7 @@ apt install curl git python3-venv python3-dev build-essential unzip
 
 ### Postgresql
 
-As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) and install postgresql 16, as immich depends on a vector extension on version 16.
+As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 16 and adding extension repo, as immich depends on a vector extension.
 
 ```bash
 apt install -y postgresql-common
