@@ -46,7 +46,7 @@ I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I hav
 
 First, create a LXC normally. Make sure there is reasonable amount CPU and memory, because we are going to install and compile a lot of things, and it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB to have it installed. However, once one starts using Immich, it will create a lot of caching, so don't forget to resize the LXC volumes accordingly. 
 
-Also, there is no need for a privileged container, if one does not plan to mount file system directly inside the LXC container.
+Also, there is no need for a privileged container, if one does not plan to mount a file system directly inside the LXC container.
 
 This tutorial uses `Ubuntu 24.04 LTS` LXC image as a base. Things will differ in different distro, though.
 
@@ -114,9 +114,11 @@ Note: To change back to the pre-su user, `exit` should do the trick.
 
 ### FFmpeg
 
-To install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because hardware acceleration is not enabled at the compile time of that version of FFmpeg, which should not matter for CPU-only user. Instead, a version from [Jellyfin](https://jellyfin.org) that supports hardware acceleration is recommended, because that version is well-maintained and receive active updates. Here is how this could be done. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual).
+For a CUDA user, to install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because its hardware acceleration is not enabled at the compile time. Instead, a version from [Jellyfin](https://jellyfin.org) that supports all kinds of hardware acceleration is recommended, because that version is well-maintained and receive active updates. And here is how this could be done.
 
-First, we need to add the repository of Jellyfin to the system package manager.
+First, we need to add the repository of Jellyfin to the system package manager. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivative only. 
+
+A `Debian` user should go to its official install documentation and follow the instruction there. Though, the difference is subtle. One should follow the instruction until just before installing the entire Jellyfin ---- we don't need that here, only its FFmpeg component.
 
 ```bash
 apt install curl gnupg software-properties-common
@@ -154,7 +156,7 @@ Now, calling `ffmpeg` should output a long gibberish.
 
 #### Alternative way of installing FFmpeg (Static build)
 
-Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/).
+Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/). This may be the preferred way for a CPU-only user -- less things, less headache.
 
 ```bash
 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
