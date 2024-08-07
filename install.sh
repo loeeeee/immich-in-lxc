@@ -207,8 +207,13 @@ install_immich_machine_learning () {
     (
     # Initiate subshell to setup venv
     . $INSTALL_DIR_ml/venv/bin/activate
-    pip3 install poetry -i $PROXY_POETRY
+    
+    # Use pypi if proxy does not present
+    if [ ! -z "${PROXY_POETRY}" ]; then
+        $PROXY_POETRY=https://pypi.org/simple/
+    fi
     export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
+    pip3 install poetry -i $PROXY_POETRY
 
     # Deal with python 3.12
     python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
@@ -226,7 +231,7 @@ install_immich_machine_learning () {
     fi
 
     # Work around for bad poetry config
-    pip install "numpy<2"
+    pip install "numpy<2" -i $PROXY_POETRY
     )
     
     # Copy results
