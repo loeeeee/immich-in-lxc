@@ -131,7 +131,12 @@ create_folders () {
     mkdir -p $INSTALL_DIR_ml
 
     # Upload directory
-    mkdir -p $UPLOAD_DIR
+    if [ ! -d "$UPLOAD_DIR" ]; then
+        echo "$UPLOAD_DIR does not exists, creating one"
+        mkdir -p $UPLOAD_DIR
+    else
+        echo "$UPLOAD_DIR already exists, skip creation"
+    fi
 
     # GeoNames
     mkdir -p $INSTALL_DIR_geo
@@ -285,8 +290,8 @@ install_sharp
 # -------------------
 
 setup_upload_folder () {
-    ln -s $UPLOAD_DIR $INSTALL_DIR_app/
-    ln -s $UPLOAD_DIR $INSTALL_DIR_ml/
+    ln -s $UPLOAD_DIR $INSTALL_DIR_app/upload
+    ln -s $UPLOAD_DIR $INSTALL_DIR_ml/upload
 }
 
 setup_upload_folder
@@ -377,7 +382,6 @@ create_runtime_env_file () {
         if [ -f $SCRIPT_DIR/runtime.env ]; then
             cp $SCRIPT_DIR/runtime.env runtime.env
             echo "New runtime.env file created from the template, exiting"
-            exit 0
         else
             echo "runtime.env not found, please clone the entire repo, exiting"
             exit 1

@@ -69,7 +69,7 @@ After finishing all of the steps in that guide, the guest OS should execute comm
 For immich machine learning support, we also need to install CuDNN,
 
 ```bash
-apt install nvidia-cudnn
+apt install nvidia-cudnn libcublaslt12 libcublas12
 ```
 
 Zu easy, innit?
