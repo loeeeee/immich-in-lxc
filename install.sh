@@ -264,10 +264,10 @@ replace_usr_src () {
 replace_usr_src
 
 # -------------------
-# Install sharp
+# Install sharp and CLI
 # -------------------
 
-install_sharp () {
+install_sharp_and_cli () {
     cd $INSTALL_DIR_app
 
     # Set mirror for npm
@@ -277,13 +277,15 @@ install_sharp () {
 
     npm install sharp
 
+    npm i -g @immich/cli
+
     # Unset mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
         npm config delete registry
     fi
 }
 
-install_sharp
+install_sharp_and_cli
 
 # -------------------
 # Setup upload directory
