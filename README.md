@@ -292,9 +292,9 @@ Then, modify the service file to make sure every path name is spelled correctly.
 After that, we are now ready to start our immich instance!
 
 ```bash
-systemctl daemon-reload
-systemctl start immich-microservices
-systemctl start immich-ml
+systemctl daemon-reload && \
+systemctl start immich-microservices && \
+systemctl start immich-ml && \
 systemctl start immich-web
 ```
 
@@ -303,8 +303,8 @@ The default setting exposes the immich web server on port `3001` on all availabl
 To make the service persistent and start after reboot,
 
 ```bash
-systemctl enable immich-microservices
-systemctl enable immich-ml
+systemctl enable immich-microservices && \
+systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
 
@@ -316,6 +316,22 @@ Additionally, for LXC with CUDA support enabled, one needs to go to `Administrat
 
 ## Update immich instance
 
-The immich instance is designed to be stateless, meaning that deleting the instance (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current immich instance, all one needs to do is to run `install.sh` again with the latest commit of the current repo, after copy pasting the `REPO_TAG` from the `install.env` to `.env` file.
+The immich server instance is designed to be stateless, meaning that deleting the instance, i.e. the `INSTALL_DIR/app` folder, (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current immich instance, all one needs to do is essentially install the latest immich.
 
-Also, don't forget to restart the service to load the latest immich instance.
+Before the update, one should **backup or at least snapshot the current container**.
+
+First thing to do is to stop the old instance.
+
+```bash
+systemctl stop immich-microservices && \
+systemctl stop immich-ml && \
+systemctl stop immich-web
+```
+
+After that update this repo, i.e. do a `git pull` in folder `immich-in-lxc`. 
+
+Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.env`. 
+
+Finally, run the `install.sh`, and it will update immich, hopefully without problems.
+
+Also, don't forget to start the service to load the latest immich instance.
