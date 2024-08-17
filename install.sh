@@ -154,6 +154,7 @@ clone_the_repo () {
     fi
 
     cd $INSTALL_DIR_src
+    git reset --hard main
     git pull
     git reset --hard $REPO_TAG
 }
