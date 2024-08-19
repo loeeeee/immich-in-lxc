@@ -10,7 +10,7 @@ Install Immich in LXC with optional CUDA support. This guide should be applicabl
 
 I really like Immich and its coherent experience in both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user.
 
-But, not providing a bare-metal installation guide for immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
+But, not providing a bare-metal installation guide for Immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
 
 **This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in that repo. KUDO to its author, arter97!** 
 
@@ -64,7 +64,7 @@ Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook
 
 After finishing all of the steps in that guide, the guest OS should execute command `nvidia-smi` without any error.
 
-For immich machine learning support, we also need to install CuDNN,
+For Immich machine learning support, we also need to install CuDNN,
 
 ```bash
 apt install nvidia-cudnn libcublaslt12 libcublas12
@@ -176,20 +176,20 @@ Now, we are mostly ready to install the Immich server.
 
 ## Install Immich Server
 
-Create a immich user, if you already done so in the above optional section, you may safely skip the following code block.
+Create a Immich user, if you already done so in the above optional section, you may safely skip the following code block.
 
 ```bash
 useradd -m immich
 chsh immich # Optional: Change the default shell the immich user is using. Typically to /bin/bash
 ```
 
-After creating the user, we should first install node.js for the user, immich.
+After creating the user, we should first install node.js for the user, Immich.
 
 ### Node.js
 
 Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for a modern version.
 
-Because npm/nvm by default use user installation, i.e, install the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs immich. Other installations in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
+Because npm/nvm by default use user installation, i.e, install the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs Immich. Other installations in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
 
 Assume one is currently login as user root, to change to the user we just created,
 
@@ -199,7 +199,7 @@ su immich
 
 To change back to the pre-su user, `exit` should do the trick.
 
-After change to the immich user, 
+After change to the Immich user, 
 
 (The following script is copy-pasted from the node.js's download website.)
 
@@ -222,7 +222,7 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 
 ### The install script
 
-The install script is the `install.sh` in this repo. It installs or update the current immich instance. The immich instance itself is stateless, thanks to its containerized nature. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. **DO NOT DELETE UPLOAD FOLDER IN THE `INSTALL_DIR`**. It stores all the uploaded content. Also, one should always a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
+The install script is the `install.sh` in this repo. It installs or update the current Immich instance. The Immich instance itself is stateless, thanks to its containerized nature. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. **DO NOT DELETE UPLOAD FOLDER IN THE `INSTALL_DIR`**. It stores all the uploaded content. Also, one should always a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
 
 #### Clone this repo
 
@@ -252,10 +252,10 @@ Let us go ahead and execute the script. No worry, when `.env` file is not found,
 
 Then, we should have a `.env` file in current directory. 
 
-- `REPO_TAG` is the version of the immich that we are going to install,
+- `REPO_TAG` is the version of the Immich that we are going to install,
 - `INSTALL_DIR` is where the `app`, `source` folder will resides in,
 - `UPLOAD_DIR` is where the user uploads goes to, 
-- `isCUDA` when set to true, will install immich with CUDA supprt, otherwise, only CPU will be used by Immich,
+- `isCUDA` when set to true, will install Immich with CUDA supprt, otherwise, only CPU will be used by Immich,
 - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
 - `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
@@ -289,33 +289,49 @@ The post install script will copy the systemd service files to proper location (
 
 Then, modify the service file to make sure every path name is spelled correctly.
 
-After that, we are now ready to start our immich instance!
+After that, we are now ready to start our Immich instance!
 
 ```bash
-systemctl daemon-reload
-systemctl start immich-microservices
-systemctl start immich-ml
+systemctl daemon-reload && \
+systemctl start immich-microservices && \
+systemctl start immich-ml && \
 systemctl start immich-web
 ```
 
-The default setting exposes the immich web server on port `3001` on all available address. For security reason, one should put a reverse proxy, e.g. Nginx, HAProxy, in front of the immich instance and add SSL to it.
+The default setting exposes the Immich web server on port `3001` on all available address. For security reason, one should put a reverse proxy, e.g. Nginx, HAProxy, in front of the immich instance and add SSL to it.
 
 To make the service persistent and start after reboot,
 
 ```bash
-systemctl enable immich-microservices
-systemctl enable immich-ml
+systemctl enable immich-microservices && \
+systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
 
 #### Immich config
 
-Because we are install immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
+Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
 Additionally, for LXC with CUDA support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select NVENC to explicitly use the GPU to do the transcoding.
 
-## Update immich instance
+## Update the Immich instance
 
-The immich instance is designed to be stateless, meaning that deleting the instance (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current immich instance, all one needs to do is to run `install.sh` again with the latest commit of the current repo, after copy pasting the `REPO_TAG` from the `install.env` to `.env` file.
+The Immich server instance is designed to be stateless, meaning that deleting the instance, i.e. the `INSTALL_DIR/app` folder, (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current Immich instance, all one needs to do is essentially install the latest Immich.
 
-Also, don't forget to restart the service to load the latest immich instance.
+Before the update, one should **backup or at least snapshot the current container**.
+
+First thing to do is to stop the old instance.
+
+```bash
+systemctl stop immich-microservices && \
+systemctl stop immich-ml && \
+systemctl stop immich-web
+```
+
+After that update this repo, i.e. do a `git pull` in folder `immich-in-lxc`. 
+
+Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.env`. 
+
+Finally, run the `install.sh`, and it will update Immich, hopefully without problems.
+
+Also, don't forget to start the service to load the latest Immich instance.

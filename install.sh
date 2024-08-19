@@ -154,7 +154,14 @@ clone_the_repo () {
     fi
 
     cd $INSTALL_DIR_src
-    git reset --hard $REPO_TAG
+    # REMOVE all the change one made to source repo, which is sth not supposed to happen
+    git reset --hard main
+    # In case one is not on the branch
+    git checkout main
+    # Get updates
+    git pull
+    # Set the install version
+    git checkout $REPO_TAG
 }
 
 clone_the_repo
@@ -264,10 +271,10 @@ replace_usr_src () {
 replace_usr_src
 
 # -------------------
-# Install sharp
+# Install sharp and CLI
 # -------------------
 
-install_sharp () {
+install_sharp_and_cli () {
     cd $INSTALL_DIR_app
 
     # Set mirror for npm
@@ -277,13 +284,15 @@ install_sharp () {
 
     npm install sharp
 
+    npm i -g @immich/cli
+
     # Unset mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
         npm config delete registry
     fi
 }
 
-install_sharp
+install_sharp_and_cli
 
 # -------------------
 # Setup upload directory
