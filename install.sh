@@ -154,9 +154,13 @@ clone_the_repo () {
     fi
 
     cd $INSTALL_DIR_src
+    # REMOVE all the change one made to source repo, which is sth not supposed to happen
     git reset --hard main
-    git pull
+    # In case one is not on the branch
     git checkout main
+    # Get updates
+    git pull
+    # Set the install version
     git checkout $REPO_TAG
 }
 
