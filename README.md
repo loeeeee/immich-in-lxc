@@ -64,10 +64,36 @@ Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook
 
 After finishing all of the steps in that guide, the guest OS should execute command `nvidia-smi` without any error.
 
-For Immich machine learning support, we also need to install CuDNN,
+The major component that Immch requires is [ONNX runtime](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirementsto), and here we are installing its dependency.
+
+### Ubuntu
+
+For Immich machine learning support, we also need to install CuDNN and two additional libraries,
 
 ```bash
 apt install nvidia-cudnn libcublaslt12 libcublas12
+```
+
+### Debian
+
+For Immich machine learning support in `Debian`, we need to install CuDNN and CUDA Toolkit.
+
+We install the entire CUDA Toolkit because install `libcublas` depends on CUDA Toolkit, and when install the toolkit, this right version of this component will be included.
+
+The CuDNN install commands are from [official website of NVIDIA](https://developer.nvidia.com/cudnn-downloads), and should all be run as root. Also, one should check the NVIDIA website for updates.
+
+```bash
+# CuDNN part
+wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb
+dpkg -i cuda-keyring_1.1-1_all.deb
+add-apt-repository contrib
+apt-get update
+apt-get -y install cudnn
+## Specified by NVIDIA, but does not seem to install anything
+apt-get -y install cudnn-cuda-12
+
+# CUDA Toolkit part
+apt install -y cuda-toolkit
 ```
 
 Zu easy, innit?
