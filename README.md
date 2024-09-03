@@ -204,18 +204,14 @@ After change to the Immich user,
 (The following script is copy-pasted from the node.js's download website.)
 
 ```bash
-# installs NVM (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-
-# Logout and login to reload the terminal so that nvm is available
-# download and install Node.js
+# installs nvm (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+# download and install Node.js (you may need to restart the terminal)
 nvm install 20
-
 # verifies the right Node.js version is in the environment
-node -v # should print `v20.13.1`
-
-# verifies the right NPM version is in the environment
-npm -v # should print `10.5.2`
+node -v # should print `v20.17.0`
+# verifies the right npm version is in the environment
+npm -v # should print `10.8.2`
 ```
 
 Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
