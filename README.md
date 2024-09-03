@@ -32,7 +32,7 @@ But, not providing a bare-metal installation guide for Immich can be justified a
     - Nginx
 - (Optional) NVIDIA
     - Driver
-    - CuDNN (Version 8)
+    - CuDNN (Version 9)
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware-acceleration does not work.
 
@@ -48,7 +48,7 @@ First, create a LXC normally. Make sure there is reasonable amount CPU and memor
 
 Also, there is no need for a privileged container, if one does not plan to mount a file system directly inside the LXC container.
 
-This tutorial uses `Ubuntu 24.04 LTS` LXC image as a base. Things will differ in different distro, though.
+This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ in different distros, though.
 
 ## Mount host volume to LXC container (Optional)
 
@@ -58,9 +58,9 @@ Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook
 
 And, that is it, EZ, right?
 
-## NVIDIA go-brrrrrrrrrrr (NVIDIA GPU LXC pass-through) (Optional)
+## Hardware-accelerated machine learning: NVIDIA (Optional)
 
-Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook-of-gpu-in-lxc/blob/main/src/gpu-passthrough.md) of mine.
+Firstly, prepare a LXC with GPU available by following the guide at [another repository](https://github.com/loeeeee/loe-handbook-of-gpu-in-lxc/blob/main/src/gpu-passthrough.md) of mine. This process is referred to as NVIDIA GPU pass-through in LXC.
 
 After finishing all of the steps in that guide, the guest OS should execute command `nvidia-smi` without any error.
 
