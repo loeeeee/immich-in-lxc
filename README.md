@@ -48,7 +48,7 @@ First, create a LXC normally. Make sure there is reasonable amount CPU and memor
 
 Also, there is no need for a privileged container, if one does not plan to mount a file system directly inside the LXC container.
 
-This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ in different distros, though.
+This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ in different distros, though. Additionally, if one wants to have HW-accelerated ML, it is not recommend to use older release of `Ubuntu`, as it has older version of dependency in its repository, introducing additional complexity.
 
 ## Mount host volume to LXC container (Optional)
 
