@@ -1,6 +1,6 @@
 # Immich in LXC with Optional CUDA support
 
-Install Immich in LXC with optional CUDA support. This guide should be applicable to any bare-metal installation, even the ones with Intel or AMD GPUs.
+Install Immich in LXC without using Docker, but with optional CUDA support. This guide should also be applicable to any bare-metal installation, even the ones with Intel or AMD GPUs.
 
 ## Introduction
 
@@ -10,7 +10,7 @@ Install Immich in LXC with optional CUDA support. This guide should be applicabl
 
 I really like Immich and its coherent experience in both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user.
 
-But, not providing a bare-metal installation guide for Immich can be justified as Immich is more than a simple binary and does requires some efforts to set up in current state.
+But, not providing a bare-metal installation guide for Immich can be justified as Immich is more than a simple binary and does require some efforts to set up in current state.
 
 **This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in that repo. KUDO to its author, arter97!** 
 
