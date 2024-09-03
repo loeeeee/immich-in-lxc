@@ -98,6 +98,10 @@ apt install -y cuda-toolkit
 
 Zu easy, innit?
 
+## Hardware-accelerated machine learning: Others (Optional)
+
+Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). Good luck and have fun!
+
 ## Install utilities and databases
 
 ```bash
