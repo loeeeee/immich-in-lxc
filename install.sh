@@ -51,12 +51,14 @@ review_install_information () {
     echo $INSTALL_DIR
     # Upload Location
     echo $UPLOAD_DIR
-    # Cuda or CPU
+    # CUDA or CPU
     echo $isCUDA
     # npm proxy
     echo $PROXY_NPM
     # poetry proxy
     echo $PROXY_POETRY
+    # Apply Loe's fix to installation issues. This is for the purpose of testing. It should be left as true.
+    echo $isFIX
 }
 
 review_install_information
