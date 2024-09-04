@@ -101,7 +101,6 @@ review_dependency
 # Common variables
 # -------------------
 
-BASE_IMG_REPO_DIR=$SCRIPT_DIR/base-images
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
@@ -142,43 +141,6 @@ create_folders () {
 }
 
 create_folders
-
-# -------------------
-# Clone the base images repo
-# -------------------
-
-clone_the_base_images_repo () {
-    if [ ! -d "$BASE_IMG_REPO_DIR" ]; then
-        git clone "$REPO_URL" "$BASE_IMG_REPO_DIR"
-    fi
-
-    cd $BASE_IMG_REPO_DIR
-    # REMOVE all the change one made to source repo, which is sth not supposed to happen
-    git reset --hard main
-    # In case one is not on the branch
-    git checkout main
-    # Get updates
-    git pull
-}
-
-clone_the_base_images_repo
-
-# -------------------
-# Build base images
-# -------------------
-
-build_base_images () {
-    cd $SCRIPT_DIR
-
-    # ImageMagick
-
-    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' base-images/server/bin/build-imagemagick.sh 
-    sed -i '/cd .. && rm -rf ImageMagick/d' base-images/server/bin/build-imagemagick.sh
-
-    bash $SCRIPT_DIR/base-images/server/bin/build-imagemagick.sh
-}
-
-build_base_images
 
 # -------------------
 # Clone the main repo
