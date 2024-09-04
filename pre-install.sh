@@ -52,10 +52,10 @@ build_base_images () {
 
     # ImageMagick
 
-    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' c/server/bin/build-imagemagick.sh 
+    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' ${BASE_IMG_REPO_DIR}/server/bin/build-imagemagick.sh 
     sed -i '/cd .. && rm -rf ImageMagick/d' ${BASE_IMG_REPO_DIR}/server/bin/build-imagemagick.sh
 
-    bash $BASE_IMG_REPO_DIR/server/bin/build-imagemagick.sh
+    exec $BASE_IMG_REPO_DIR/server/bin/build-imagemagick.sh
 }
 
 build_base_images
