@@ -170,7 +170,12 @@ clone_the_base_images_repo
 build_base_images () {
     cd $SCRIPT_DIR
 
-    ./build-base-images.sh
+    # ImageMagick
+
+    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' base-images/server/bin/build-imagemagick.sh 
+    sed -i '/cd .. && rm -rf ImageMagick/d' base-images/server/bin/build-imagemagick.sh
+
+    bash $SCRIPT_DIR/base-images/server/bin/build-imagemagick.sh
 }
 
 build_base_images
