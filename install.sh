@@ -101,6 +101,7 @@ review_dependency
 # Common variables
 # -------------------
 
+BASE_IMG_REPO_DIR=$SCRIPT_DIR/base-images
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
@@ -143,10 +144,32 @@ create_folders () {
 create_folders
 
 # -------------------
-# Clone the repo
+# Clone the base images repo
 # -------------------
 
-clone_the_repo () {
+clone_the_base_images_repo () {
+    if [ ! -d "$BASE_IMG_REPO_DIR" ]; then
+        git clone "$REPO_URL" "$BASE_IMG_REPO_DIR"
+    fi
+
+    cd $BASE_IMG_REPO_DIR
+    # REMOVE all the change one made to source repo, which is sth not supposed to happen
+    git reset --hard main
+    # In case one is not on the branch
+    git checkout main
+    # Get updates
+    git pull
+}
+
+clone_the_base_images_repo
+
+exit 0
+
+# -------------------
+# Clone the main repo
+# -------------------
+
+clone_the_main_repo () {
     if [ ! -d "$INSTALL_DIR_src" ]; then
         git clone "$REPO_URL" "$INSTALL_DIR_src"
     fi
@@ -162,7 +185,7 @@ clone_the_repo () {
     git checkout $REPO_TAG
 }
 
-clone_the_repo
+clone_the_main_repo
 
 # -------------------
 # Install immich-web-server
