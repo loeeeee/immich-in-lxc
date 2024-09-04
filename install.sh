@@ -170,7 +170,7 @@ clone_the_base_images_repo
 build_base_images () {
     cd $SCRIPT_DIR
 
-    ./build_base_images.sh
+    ./build-base-images.sh
 }
 
 build_base_images
