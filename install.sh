@@ -163,7 +163,17 @@ clone_the_base_images_repo () {
 
 clone_the_base_images_repo
 
-exit 0
+# -------------------
+# Build base images
+# -------------------
+
+build_base_images () {
+    cd $BASE_IMG_REPO_DIR/server/bin
+
+
+}
+
+build_base_images
 
 # -------------------
 # Clone the main repo
@@ -229,6 +239,17 @@ install_immich_web_server () {
 }
 
 install_immich_web_server
+
+# -------------------
+# Copy build-lock
+# -------------------
+
+copy_build_lock () {
+    # So that immich would not complain
+    cp $BASE_IMG_REPO_DIR/server/bin/build-lock.json $INSTALL_DIR_app/
+}
+
+copy_build_lock
 
 # -------------------
 # Install Immich-machine-learning
