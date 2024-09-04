@@ -37,6 +37,7 @@ clone_the_base_images_repo
 # -------------------
 
 change_permission () {
+    # Change file permission so that install script could copy the content
     chmod 666 $BASE_IMG_REPO_DIR/server/bin/build-lock.json
 }
 
@@ -51,10 +52,10 @@ build_base_images () {
 
     # ImageMagick
 
-    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' base-images/server/bin/build-imagemagick.sh 
-    sed -i '/cd .. && rm -rf ImageMagick/d' base-images/server/bin/build-imagemagick.sh
+    sed -i 's/build-lock.json/base-images\/server\/bin\/build-lock.json/g' c/server/bin/build-imagemagick.sh 
+    sed -i '/cd .. && rm -rf ImageMagick/d' ${BASE_IMG_REPO_DIR}/server/bin/build-imagemagick.sh
 
-    bash $SCRIPT_DIR/base-images/server/bin/build-imagemagick.sh
+    bash $BASE_IMG_REPO_DIR/server/bin/build-imagemagick.sh
 }
 
 build_base_images
