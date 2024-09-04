@@ -108,6 +108,53 @@ Since Immich depends on ONNX runtime, it is **possible** that other hardware tha
 apt install curl git python3-venv python3-dev build-essential unzip
 ```
 
+## To build base-images of Immich
+
+```bash
+# ImageMagick
+apt install --no-install-recommends \
+        autoconf \
+        build-essential \
+        cmake \
+        jq \
+        perl \
+        libnet-ssleay-perl \
+        libio-socket-ssl-perl \
+        libcapture-tiny-perl \
+        libfile-which-perl \
+        libfile-chdir-perl \
+        libpkgconfig-perl \
+        libffi-checklib-perl \
+        libtest-warnings-perl \
+        libtest-fatal-perl \
+        libtest-needs-perl \
+        libtest2-suite-perl \
+        libsort-versions-perl \
+        libpath-tiny-perl \
+        libtry-tiny-perl \
+        libterm-table-perl \
+        libany-uri-escape-perl \
+        libmojolicious-perl \
+        libfile-slurper-perl \
+        libde265-dev \
+        libexif-dev \
+        libexpat1-dev \
+        libglib2.0-dev \
+        libgsf-1-dev \
+        libjxl-dev \
+        liblcms2-2 \
+        liborc-0.4-dev \
+        librsvg2-dev \
+        libspng-dev \
+        meson \
+        ninja-build \
+        pkg-config \
+        wget \
+        zlib1g \
+        cpanminus
+        # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble
+```
+
 ### Postgresql
 
 As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 16 and adding extension repo, as immich depends on a vector extension.
