@@ -97,7 +97,8 @@ review_dependency () {
 }
 
 review_dependency
-set -x
+
+set -xeuo pipefail 
 
 # -------------------
 # Common variables
