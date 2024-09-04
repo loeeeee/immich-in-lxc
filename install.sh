@@ -168,9 +168,9 @@ clone_the_base_images_repo
 # -------------------
 
 build_base_images () {
-    cd $BASE_IMG_REPO_DIR/server/bin
+    cd $SCRIPT_DIR
 
-
+    ./build_base_images.sh
 }
 
 build_base_images
