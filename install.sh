@@ -42,6 +42,7 @@ load_environment_variables
 # Review environment variables
 # -------------------
 
+set +x
 review_install_information () {
     # Install Version
     echo $REPO_TAG
@@ -96,6 +97,7 @@ review_dependency () {
 }
 
 review_dependency
+set -x
 
 # -------------------
 # Common variables
