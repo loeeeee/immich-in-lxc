@@ -74,7 +74,7 @@ build_image_magick () {
     SOURCE=$SOURCE_DIR/image-magick
 
     set -e
-    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.sources[] | select(.name == "imagemagick").revision' build-lock.json)}"
+    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.sources[] | select(.name == "imagemagick").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
     set +e
 
     git_clone https://github.com/ImageMagick/ImageMagick.git $SOURCE $IMAGEMAGICK_REVISION
