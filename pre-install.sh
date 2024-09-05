@@ -101,45 +101,8 @@ build_libheif () {
 
 build_libheif
 
-
 # -------------------
-# Build libheif
-# -------------------
-
-build_libheif () {
-    cd $SCRIPT_DIR
-
-    SOURCE=$SOURCE_DIR/libheif
-
-    set -e
-    : "${LIBHEIF_REVISION:=$(jq -cr '.sources[] | select(.name == "libheif").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
-    set +e
-
-    git_clone https://github.com/strukturag/libheif.git $SOURCE $LIBHEIF_REVISION
-
-    cd $SOURCE
-
-    mkdir build
-    cd build
-    cmake --preset=release-noplugins \
-        -DWITH_DAV1D=ON \
-        -DENABLE_PARALLEL_TILE_DECODING=ON \
-        -DENABLE_LIBSHARPYUV=ON \
-        -DENABLE_LIBDE265=ON \
-        -DWITH_AOM_DECODER=OFF \
-        -DWITH_AOM_ENCODER=OFF \
-        -DWITH_X265=OFF \
-        -DWITH_EXAMPLES=OFF \
-        ..
-    make install
-    ldconfig /usr/local/lib
-}
-
-build_libheif
-
-
-# -------------------
-# Build libheif
+# Build libraw
 # -------------------
 
 build_libraw () {
@@ -190,7 +153,7 @@ build_image_magick () {
 build_image_magick
 
 # -------------------
-# Build libheif
+# Build libvips
 # -------------------
 
 build_libvips () {
@@ -212,4 +175,4 @@ build_libvips () {
     ldconfig /usr/local/lib
 }
 
-build_libheif
+build_libvips
