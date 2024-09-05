@@ -90,3 +90,127 @@ build_image_magick () {
 }
 
 build_image_magick
+
+# -------------------
+# Build libheif
+# -------------------
+
+build_libheif () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/libheif
+
+    set -e
+    : "${LIBHEIF_REVISION:=$(jq -cr '.sources[] | select(.name == "libheif").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/strukturag/libheif.git $SOURCE $LIBHEIF_REVISION
+
+    cd $SOURCE
+
+    mkdir build
+    cd build
+    cmake --preset=release-noplugins \
+        -DWITH_DAV1D=ON \
+        -DENABLE_PARALLEL_TILE_DECODING=ON \
+        -DENABLE_LIBSHARPYUV=ON \
+        -DENABLE_LIBDE265=ON \
+        -DWITH_AOM_DECODER=OFF \
+        -DWITH_AOM_ENCODER=OFF \
+        -DWITH_X265=OFF \
+        -DWITH_EXAMPLES=OFF \
+        ..
+    make install
+    ldconfig /usr/local/lib
+}
+
+build_libheif
+
+
+# -------------------
+# Build libheif
+# -------------------
+
+build_libheif () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/libheif
+
+    set -e
+    : "${LIBHEIF_REVISION:=$(jq -cr '.sources[] | select(.name == "libheif").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/strukturag/libheif.git $SOURCE $LIBHEIF_REVISION
+
+    cd $SOURCE
+
+    mkdir build
+    cd build
+    cmake --preset=release-noplugins \
+        -DWITH_DAV1D=ON \
+        -DENABLE_PARALLEL_TILE_DECODING=ON \
+        -DENABLE_LIBSHARPYUV=ON \
+        -DENABLE_LIBDE265=ON \
+        -DWITH_AOM_DECODER=OFF \
+        -DWITH_AOM_ENCODER=OFF \
+        -DWITH_X265=OFF \
+        -DWITH_EXAMPLES=OFF \
+        ..
+    make install
+    ldconfig /usr/local/lib
+}
+
+build_libheif
+
+
+# -------------------
+# Build libheif
+# -------------------
+
+build_libraw () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/libraw
+
+    set -e
+    : "${LIBRAW_REVISION:=$(jq -cr '.sources[] | select(.name == "libraw").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/libraw/libraw.git $SOURCE $LIBRAW_REVISION
+
+    cd $SOURCE
+
+   autoreconf --install
+    ./configure
+    make -j$(nproc)
+    make install
+    ldconfig /usr/local/lib
+}
+
+build_libraw
+
+
+# -------------------
+# Build libheif
+# -------------------
+
+build_libvips () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/libheif
+
+    set -e
+    : "${LIBVIPS_REVISION:=$(jq -cr '.sources[] | select(.name == "libvips").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/libvips/libvips.git $SOURCE $LIBVIPS_REVISION
+
+    cd $SOURCE
+
+    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
+    cd build
+    ninja install
+    ldconfig /usr/local/lib
+}
+
+build_libheif
