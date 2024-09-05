@@ -12,8 +12,8 @@ SCRIPT_DIR=$PWD
 REPO_URL="https://github.com/immich-app/base-images"
 BASE_IMG_REPO_DIR=$SCRIPT_DIR/base-images
 SOURCE_DIR=$SCRIPT_DIR/image-source
-LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-LD_RUN_PATH=/usr/local/lib:$LD_RUN_PATH
+LD_LIBRARY_PATH=/usr/local/lib # :$LD_LIBRARY_PATH
+LD_RUN_PATH=/usr/local/lib # :$LD_RUN_PATH
 
 # -------------------
 # Git clone function
