@@ -152,7 +152,8 @@ apt install --no-install-recommends \
         wget \
         zlib1g \
         cpanminus \
-        libltdl-dev
+        libltdl-dev \ 
+        libdav1d-dev
         # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble
 ```
 
