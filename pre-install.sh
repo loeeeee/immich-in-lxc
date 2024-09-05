@@ -159,7 +159,7 @@ build_image_magick
 build_libvips () {
     cd $SCRIPT_DIR
 
-    SOURCE=$SOURCE_DIR/libheif
+    SOURCE=$SOURCE_DIR/libvips
 
     set -e
     : "${LIBVIPS_REVISION:=$(jq -cr '.sources[] | select(.name == "libvips").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
