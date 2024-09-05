@@ -67,31 +67,6 @@ setup_folders () {
 setup_folders
 
 # -------------------
-# Build image magick
-# -------------------
-
-build_image_magick () {
-    cd $SCRIPT_DIR
-
-    SOURCE=$SOURCE_DIR/image-magick
-
-    set -e
-    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.sources[] | select(.name == "imagemagick").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
-    set +e
-
-    git_clone https://github.com/ImageMagick/ImageMagick.git $SOURCE $IMAGEMAGICK_REVISION
-
-    cd $SOURCE
-
-    ./configure --with-modules
-    make -j$(nproc)
-    make install
-    ldconfig /usr/local/lib
-}
-
-build_image_magick
-
-# -------------------
 # Build libheif
 # -------------------
 
@@ -189,6 +164,30 @@ build_libraw () {
 
 build_libraw
 
+# -------------------
+# Build image magick
+# -------------------
+
+build_image_magick () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/image-magick
+
+    set -e
+    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.sources[] | select(.name == "imagemagick").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/ImageMagick/ImageMagick.git $SOURCE $IMAGEMAGICK_REVISION
+
+    cd $SOURCE
+
+    ./configure --with-modules
+    make -j$(nproc)
+    make install
+    ldconfig /usr/local/lib
+}
+
+build_image_magick
 
 # -------------------
 # Build libheif
