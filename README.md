@@ -153,8 +153,43 @@ apt install --no-install-recommends \
         zlib1g \
         cpanminus \
         libltdl-dev \ 
-        libdav1d-dev
+        libdav1d-dev \
+        libwebp-dev \
+        libio-compress-brotli-perl
         # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble
+```
+
+After finishing `pre-install.sh`,
+
+```bash
+apt install --no-install-recommends -y \
+        ca-certificates \
+        libde265-0 \
+        libexif12 \
+        libexpat1 \
+        libgcc-s1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libgsf-1-114 \
+        libjpeg62-turbo \
+        libjxl0.7 \
+        liblcms2-2 \
+        liblqr-1-0 \
+        libltdl7 \
+        libmimalloc2.0 \
+        libopenexr-3-1-30 \
+        libopenjp2-7 \
+        liborc-0.4-0 \
+        librsvg2-2 \
+        libspng0 \
+        mesa-utils \
+        mesa-va-drivers \
+        mesa-vulkan-drivers \
+        tini \
+        zlib1g \
+        libwebp7 \
+        libwebpdemux2 \
+        libwebpmux3 \
 ```
 
 ### Postgresql
