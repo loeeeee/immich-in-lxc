@@ -29,7 +29,7 @@ create_install_env_file
 # -------------------
 
 load_environment_variables () {
-    # Read the .env file into variables TODO: change how it is done
+    # Read the .env file into variables
     cd $SCRIPT_DIR
     set -a
     . ./.env
