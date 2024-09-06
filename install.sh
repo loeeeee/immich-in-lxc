@@ -243,7 +243,10 @@ install_immich_machine_learning () {
     fi
 
     # Work around for bad poetry config
-    pip install "numpy<2" -i $PROXY_POETRY
+    if [ $isFIX = true ]; then
+        # A goofy fix
+        pip install "numpy<2" -i $PROXY_POETRY
+    fi
     )
     
     # Copy results
