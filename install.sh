@@ -168,6 +168,28 @@ clone_the_repo () {
 clone_the_repo
 
 # -------------------
+# Install immich-microservice
+# -------------------
+
+install_immich_microservice () {
+    cd $INSTALL_DIR_app
+
+    cp $INSTALL_DIR_src/server/package.json $INSTALL_DIR_src/server/package-lock.json ./
+    
+    npm ci
+    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
+    # they're marked as optional dependencies, so we need to copy them manually after pruning
+    rm -rf node_modules/@img/sharp-libvips*
+    rm -rf node_modules/@img/sharp-linuxmusl-x64
+
+    cp $INSTALL_DIR_src/server ./
+
+    npm run build
+    npm prune --omit=dev --omit=optional
+}
+
+
+# -------------------
 # Install immich-web-server
 # -------------------
 
