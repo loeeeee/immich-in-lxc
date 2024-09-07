@@ -30,12 +30,10 @@ create_install_env_file
 
 load_environment_variables () {
     # Read the .env file into variables
-    while IFS= read -r line
-    do
-    if [[ $line =~ ^([A-Za-z0-9_]+)=(.*)$ ]]; then
-        declare -g ${BASH_REMATCH[1]}="${BASH_REMATCH[2]}"
-    fi
-    done < .env
+    cd $SCRIPT_DIR
+    set -a
+    . ./.env
+    set +a
 }
 
 load_environment_variables
