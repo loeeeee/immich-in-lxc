@@ -97,9 +97,6 @@ build_libheif () {
         ..
     make install
     ldconfig /usr/local/lib
-
-    # Clean up builds
-    make clean
 }
 
 build_libheif
@@ -126,9 +123,6 @@ build_libraw () {
     make -j$(nproc)
     make install
     ldconfig /usr/local/lib
-
-    # Clean up builds
-    make clean
 }
 
 build_libraw
@@ -154,9 +148,6 @@ build_image_magick () {
     make -j$(nproc)
     make install
     ldconfig /usr/local/lib
-
-    # Clean up builds
-    make clean
 }
 
 build_image_magick
