@@ -124,124 +124,13 @@ locale-gen
 
 ### Build essentials
 
-#### Prepare build dependency
+Execute `dep-{distro}.sh` to install required packages.
 
-Install the following packages,
-
-<details>
-<summary>Ubuntu 24.04 LTS</summary>
-<br>
-
-```bash
-apt install --no-install-recommends \
-        autoconf \
-        build-essential \
-        cmake \
-        jq \
-        perl \
-        libnet-ssleay-perl \
-        libio-socket-ssl-perl \
-        libcapture-tiny-perl \
-        libfile-which-perl \
-        libfile-chdir-perl \
-        libpkgconfig-perl \
-        libffi-checklib-perl \
-        libtest-warnings-perl \
-        libtest-fatal-perl \
-        libtest-needs-perl \
-        libtest2-suite-perl \
-        libsort-versions-perl \
-        libpath-tiny-perl \
-        libtry-tiny-perl \
-        libterm-table-perl \
-        libany-uri-escape-perl \
-        libmojolicious-perl \
-        libfile-slurper-perl \
-        libde265-dev \
-        libexif-dev \
-        libexpat1-dev \
-        libglib2.0-dev \
-        libgsf-1-dev \
-        libjxl-dev \
-        liblcms2-2 \
-        liborc-0.4-dev \
-        librsvg2-dev \
-        libspng-dev \
-        meson \
-        ninja-build \
-        pkg-config \
-        wget \
-        zlib1g \
-        cpanminus \
-        libltdl-dev
-apt install libgdk-pixbuf-2.0-dev librsvg2-dev libtool
-apt install libio-compress-brotli-perl libwebp-dev libdav1d-dev
-        # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble # Does not matter whatsoever
-```
-</details>
-
-<details>
-<summary>Debian</summary>
-<br>
-
-TBD
-
-</details>
-
-#### Build Immich dependency
+After the installation, run
 
 ```bash
 pre-install.sh
 ```
-
-#### Install additional pre-built binaries
-
-After finishing `pre-install.sh`,
-
-<details>
-<summary>Ubuntu 24.04 LTS</summary>
-<br>
-
-```bash
-apt install --no-install-recommends -y \
-        ca-certificates \
-        libde265-0 \
-        libexif12 \
-        libexpat1 \
-        libgcc-s1 \
-        libglib2.0-0 \
-        libgomp1 \
-        libgsf-1-114 \
-        libjxl0.7 \
-        liblcms2-2 \
-        liblqr-1-0 \
-        libltdl7 \
-        libmimalloc2.0 \
-        libopenexr-3-1-30 \
-        libopenjp2-7 \
-        liborc-0.4-0 \
-        librsvg2-2 \
-        libspng0 \
-        mesa-utils \
-        mesa-va-drivers \
-        mesa-vulkan-drivers \
-        tini \
-        zlib1g \
-        libwebp7 \
-        libwebpdemux2 \
-        libwebpmux3
-        # libjpeg62-turbo \
-```
-</details>
-
-
-<details>
-<summary>Debian</summary>
-<br>
-
-TBD
-
-</details>
 
 ### Postgresql
 
