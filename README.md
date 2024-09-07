@@ -146,6 +146,8 @@ Note: To change back to the pre-su user, `exit` should do the trick.
 
 For a CUDA user, to install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because its hardware acceleration is not enabled at the compile time. Instead, a version from [Jellyfin](https://jellyfin.org) that supports all kinds of hardware acceleration is recommended, because that version is well-maintained and receive active updates. And here is how this could be done.
 
+Side note, after some digging around, I found out that the official `immich` image uses FFmpeg from Jellyfin as well. What a coincidence.
+
 First, we need to add the repository of Jellyfin to the system package manager. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivative only. 
 
 A `Debian` user should go to its official install documentation and follow the instruction there. Though, the difference is subtle. One should follow the instruction until just before installing the entire Jellyfin ---- we don't need that here, only its FFmpeg component.
