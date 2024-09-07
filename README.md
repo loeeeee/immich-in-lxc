@@ -110,6 +110,8 @@ apt install curl git python3-venv python3-dev build-essential unzip
 
 ## To build base-images of Immich
 
+Do locale-gen
+
 ```bash
 # ImageMagick
 apt install --no-install-recommends \
@@ -152,10 +154,9 @@ apt install --no-install-recommends \
         wget \
         zlib1g \
         cpanminus \
-        libltdl-dev \ 
-        libdav1d-dev \
-        libwebp-dev \
-        libio-compress-brotli-perl
+        libltdl-dev
+apt install libgdk-pixbuf-2.0-dev librsvg2-dev
+apt install libio-compress-brotli-perl libwebp-dev libdav1d-dev
         # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble
 ```
 
@@ -171,7 +172,6 @@ apt install --no-install-recommends -y \
         libglib2.0-0 \
         libgomp1 \
         libgsf-1-114 \
-        libjpeg62-turbo \
         libjxl0.7 \
         liblcms2-2 \
         liblqr-1-0 \
@@ -189,7 +189,8 @@ apt install --no-install-recommends -y \
         zlib1g \
         libwebp7 \
         libwebpdemux2 \
-        libwebpmux3 \
+        libwebpmux3
+        # libjpeg62-turbo \
 ```
 
 ### Postgresql
