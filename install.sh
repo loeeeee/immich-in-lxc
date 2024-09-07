@@ -149,7 +149,7 @@ create_folders
 # Clone the main repo
 # -------------------
 
-clone_the_main_repo () {
+clone_the_repo () {
     if [ ! -d "$INSTALL_DIR_src" ]; then
         git clone "$REPO_URL" "$INSTALL_DIR_src"
     fi
@@ -165,7 +165,7 @@ clone_the_main_repo () {
     git checkout $REPO_TAG
 }
 
-clone_the_main_repo
+clone_the_repo
 
 # -------------------
 # Install immich-web-server
