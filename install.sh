@@ -106,6 +106,7 @@ set -xeuo pipefail
 
 INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
+INSTALL_DIR_temp=$INSTALL_DIR/temp
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
 INSTALL_DIR_geo=$INSTALL_DIR/geodata
 REPO_URL="https://github.com/immich-app/immich"
@@ -116,6 +117,7 @@ REPO_URL="https://github.com/immich-app/immich"
 
 clean_previous_build () {
     rm -rf $INSTALL_DIR_app
+    rm -rf $INSTALL_DIR_temp
 }
 
 clean_previous_build
@@ -125,6 +127,9 @@ clean_previous_build
 # -------------------
 
 create_folders () {
+    # Build temporary folder
+    mkdir -p $INSTALL_DIR_temp
+
     # No need to create source folder
     mkdir -p $INSTALL_DIR_app
 
@@ -168,26 +173,90 @@ clone_the_repo () {
 clone_the_repo
 
 # -------------------
-# Install immich-microservice
+# Install immich-server
 # -------------------
 
-install_immich_microservice () {
-    cd $INSTALL_DIR_app
+install_immich_server () {
+    # Set mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config set registry=$PROXY_NPM
+    fi
+
+    cd $INSTALL_DIR_temp
+
+    TEMP_dev=$INSTALL_DIR_temp/dev
+    TEMP_prod=$INSTALL_DIR_temp/prod
+    TEMP_web=$INSTALL_DIR_temp/web
+    TEMP_app=$INSTALL_DIR_temp/app
+
+    mkdir $TEMP_dev
+    mkdir $TEMP_prod
+    mkdir $TEMP_web
+
+    # dev build
+    cd $TEMP_dev
 
     cp $INSTALL_DIR_src/server/package.json $INSTALL_DIR_src/server/package-lock.json ./
     
     npm ci
-    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-    # they're marked as optional dependencies, so we need to copy them manually after pruning
     rm -rf node_modules/@img/sharp-libvips*
     rm -rf node_modules/@img/sharp-linuxmusl-x64
 
     cp $INSTALL_DIR_src/server ./
 
+    # prod build
+
+    cd $TEMP_prod
+
+    cp $TEMP_dev/* $TEMP_prod
+
     npm run build
     npm prune --omit=dev --omit=optional
+
+    cp $TEMP_dev/node_modules/@img ./node_modules/@img
+    cp $TEMP_dev/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
+
+    # web build
+
+    cd $TEMP_web
+
+    cp $INSTALL_DIR_src/open-api/typescript-sdk/package*.json $INSTALL_DIR_src/open-api/typescript-sdk/tsconfig*.json ./
+    npm ci
+    cp $INSTALL_DIR_src/open-api/typescript-sdk/ ./
+    npm run build
+
+    cd $TEMP_app
+
+    cp $INSTALL_DIR_src/web/package*.json $INSTALL_DIR_src/web/svelte.config.js ./
+    npm ci
+    cp $INSTALL_DIR_src/web ./
+    npm run build
+
+    # prod build
+    cd $INSTALL_DIR_app
+
+    cp $TEMP_prod/node_modules ./node_modules
+    cp $TEMP_prod/dist ./dist
+    cp $TEMP_prod/bin ./bin
+    # cp $TEMP_web/build /build/www
+    cp $INSTALL_DIR_src/server/resources resources
+    cp $INSTALL_DIR_src/server/package.json $INSTALL_DIR_src/server/package-lock.json ./
+    # cp $INSTALL_DIR_src/server/start*.sh ./
+    cp $INSTALL_DIR_src/docker/scripts/get-cpus.sh ./
+
+    npm link && npm install -g @immich/cli && npm cache clean --force
+    # Skip LICENSE because I am not only redistributing the build result
+
+    # Remove build artifects
+    rm -r $INSTALL_DIR_temp
+
+    # Unset mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config delete registry
+    fi
 }
 
+install_immich_server
 
 # -------------------
 # Install immich-web-server
