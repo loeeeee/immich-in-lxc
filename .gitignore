@@ -2,3 +2,4 @@ playground*
 .env
 /immich
 /base-images
+/image-source
