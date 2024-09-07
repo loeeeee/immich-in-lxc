@@ -118,7 +118,7 @@ build_libraw () {
 
     cd $SOURCE
 
-   autoreconf --install
+    autoreconf --install
     ./configure
     make -j$(nproc)
     make install
