@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xeuo pipefail # Make my life easier
+
 # Install Dependency for Ubuntu 24.04 LTS
 
 ## From immich/base-image
