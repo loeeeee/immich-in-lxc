@@ -110,10 +110,29 @@ apt install curl git python3-venv python3-dev build-essential unzip
 
 ## To build base-images of Immich
 
-Do locale-gen
+### Locale
+
+Open `/etc/locale.gen`, find line,
+
+> \# en_US.UTF-8 UTF-8
+
+Uncomment the line, save the file, and
 
 ```bash
-# ImageMagick
+locale-gen
+```
+
+### Build essentials
+
+#### Prepare build dependency
+
+Install the following packages,
+
+<details>
+<summary>Ubuntu 24.04 LTS</summary>
+<br>
+
+```bash
 apt install --no-install-recommends \
         autoconf \
         build-essential \
@@ -157,10 +176,31 @@ apt install --no-install-recommends \
         libltdl-dev
 apt install libgdk-pixbuf-2.0-dev librsvg2-dev
 apt install libio-compress-brotli-perl libwebp-dev libdav1d-dev
-        # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble
+        # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble # Does not matter whatsoever
+```
+</details>
+
+<details>
+<summary>Debian</summary>
+<br>
+
+TBD
+
+</details>
+
+#### Build Immich dependency
+
+```bash
+pre-install.sh
 ```
 
+#### Install additional pre-built binaries
+
 After finishing `pre-install.sh`,
+
+<details>
+<summary>Ubuntu 24.04 LTS</summary>
+<br>
 
 ```bash
 apt install --no-install-recommends -y \
@@ -192,6 +232,16 @@ apt install --no-install-recommends -y \
         libwebpmux3
         # libjpeg62-turbo \
 ```
+</details>
+
+
+<details>
+<summary>Debian</summary>
+<br>
+
+TBD
+
+</details>
 
 ### Postgresql
 
