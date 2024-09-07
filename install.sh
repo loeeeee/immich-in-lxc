@@ -297,6 +297,10 @@ install_sharp_and_cli () {
 
     npm install --build-from-source sharp
 
+    # Remove sharp dependency so that it use system library
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
+
     npm i -g @immich/cli
 
     # Unset mirror for npm
