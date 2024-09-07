@@ -295,7 +295,7 @@ install_sharp_and_cli () {
         npm config set registry=$PROXY_NPM
     fi
 
-    npm install sharp
+    npm install --build-from-source sharp
 
     npm i -g @immich/cli
 
