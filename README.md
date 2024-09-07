@@ -174,7 +174,7 @@ apt install --no-install-recommends \
         zlib1g \
         cpanminus \
         libltdl-dev
-apt install libgdk-pixbuf-2.0-dev librsvg2-dev
+apt install libgdk-pixbuf-2.0-dev librsvg2-dev libtool
 apt install libio-compress-brotli-perl libwebp-dev libdav1d-dev
         # libjpeg62-turbo-dev \ # Cannot find this in Ubuntu noble # Does not matter whatsoever
 ```
