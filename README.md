@@ -108,7 +108,11 @@ Since Immich depends on ONNX runtime, it is **possible** that other hardware tha
 apt install curl git python3-venv python3-dev build-essential unzip
 ```
 
-## To build base-images of Immich
+## Install custom photo-processing library
+
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
+
+Firstly, change the locale, not sure why, only because Perl requires so.
 
 ### Locale
 
@@ -122,15 +126,69 @@ Uncomment the line, save the file, and
 locale-gen
 ```
 
-### Build essentials
+### Build essential bundles
 
-Execute `dep-{distro}.sh` to install required packages.
+<details>
+<summary>Debian 12</summary>
 
-After the installation, run
+Unlucky you! Debian 12's package manager does not include all the essentials we need. Thus, we need to use packages from the future, i.e. packages that are marked as testing.
+
+To do so, head to `/etc/apt/source.list`.
+
+At the end of the file, add,
+
+```bash
+deb http://deb.debian.org/debian testing main contrib
+```
+
+Now, Debian will have the knowledge of packages under testing.
+
+Next, to make sure the testing packages do not overwrite the good stable packages, we need to specify our install preference.
+
+```bash
+cat > /etc/apt/preferences.d/preferences << EOL
+Package: *
+Pin: release a=testing
+Pin-Priority: 450
+EOL
+```
+
+Finally, in the repo folder, execute
+
+```bash
+./dep-debian.sh
+```
+
+It will install all the dependency for coming steps.
+
+<br>
+</details>
+
+<details>
+<summary>Ubuntu 24.04</summary>
+
+Lucky boiiiii! Ubuntu package manager has everything we need. 
+
+All we need to do is run,
+
+```bash
+./dep-ubuntu.sh
+```
+
+It will install all the dependency for coming steps.
+
+<br>
+</details>
+
+### Compile 始める
+
+After installing essential bundle, run
 
 ```bash
 pre-install.sh
 ```
+
+Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
 
 ### Postgresql
 
