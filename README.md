@@ -14,6 +14,8 @@ But, not providing a bare-metal installation guide for Immich can be justified a
 
 **This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in that repo. KUDO to its author, arter97!** 
 
+Compared to Immich Native, this repo additionally offers the support for CUDA-accelerated machine learning and support for processing HEIF, i.e. common smart phone image format, and RAW, i.e. common fancy big camera image format, images.
+
 ## Immich Components
 
 - Immich
