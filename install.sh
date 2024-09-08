@@ -42,6 +42,7 @@ load_environment_variables
 # Review environment variables
 # -------------------
 
+set +x
 review_install_information () {
     # Install Version
     echo $REPO_TAG
@@ -97,6 +98,8 @@ review_dependency () {
 
 review_dependency
 
+set -xeuo pipefail 
+
 # -------------------
 # Common variables
 # -------------------
@@ -143,7 +146,7 @@ create_folders () {
 create_folders
 
 # -------------------
-# Clone the repo
+# Clone the main repo
 # -------------------
 
 clone_the_repo () {
@@ -206,6 +209,18 @@ install_immich_web_server () {
 }
 
 install_immich_web_server
+
+# -------------------
+# Copy build-lock
+# -------------------
+
+copy_build_lock () {
+    # So that immich would not complain
+    cd $SCRIPT_DIR
+    cp base-images/server/bin/build-lock.json $INSTALL_DIR_app/
+}
+
+copy_build_lock
 
 # -------------------
 # Install Immich-machine-learning
@@ -280,7 +295,11 @@ install_sharp_and_cli () {
         npm config set registry=$PROXY_NPM
     fi
 
-    npm install sharp
+    npm install --build-from-source sharp
+
+    # Remove sharp dependency so that it use system library
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
 
     npm i -g @immich/cli
 

@@ -40,7 +40,7 @@ For the simplicity of the guide, all the components are installed in a single LX
 
 ## Host setup
 
-I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. 
+I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. And all of these do not matter.
 
 ## Prepare the LXC container
 
@@ -66,7 +66,8 @@ After finishing all of the steps in that guide, the guest OS should execute comm
 
 The major component that Immch requires is [ONNX runtime](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirementsto), and here we are installing its dependency.
 
-### Ubuntu
+<details>
+<summary>Ubuntu 24.04</summary>
 
 For Immich machine learning support, we also need to install CuDNN and two additional libraries,
 
@@ -74,7 +75,11 @@ For Immich machine learning support, we also need to install CuDNN and two addit
 apt install nvidia-cudnn libcublaslt12 libcublas12
 ```
 
-### Debian
+<br>
+</details>
+
+<details>
+<summary>Debian 12</summary>
 
 For Immich machine learning support in `Debian`, we need to install CuDNN and CUDA Toolkit.
 
@@ -96,6 +101,9 @@ apt-get -y install cudnn-cuda-12
 apt install -y cuda-toolkit
 ```
 
+<br>
+</details>
+
 Zu easy, innit?
 
 ## Hardware-accelerated machine learning: Others (Optional)
@@ -103,10 +111,6 @@ Zu easy, innit?
 Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). Good luck and have fun!
 
 ## Install utilities and databases
-
-```bash
-apt install curl git python3-venv python3-dev build-essential unzip
-```
 
 ### Postgresql
 
@@ -186,7 +190,8 @@ ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /bin/ffprobe
 
 Now, calling `ffmpeg` should output a long gibberish.
 
-#### Alternative way of installing FFmpeg (Static build)
+<details>
+<summary><h4>Alternative way of installing FFmpeg (Static build)</h4></summary>
 
 Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/). This may be the preferred way for a CPU-only user -- less things, less headache.
 
@@ -196,9 +201,12 @@ tar -xf ffmpeg-git-amd64-static.tar.xz
 cp ffmpeg-git-amd64-static/ffmpeg /bin/ffmpeg
 ```
 
+<br>
+</details>
+
 ### Redis
 
-Immich works fine with the Redis in Ubuntu 22.04 APT repo. No additional config is needed.
+Immich works fine with the Redis in Ubuntu 24.04 repo. No additional config is needed.
 
 ```bash
 apt install redis
@@ -206,9 +214,9 @@ apt install redis
 
 Now, we are mostly ready to install the Immich server.
 
-## Install Immich Server
+### Node.js
 
-Create a Immich user, if you already done so in the above optional section, you may safely skip the following code block.
+First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
 
 ```bash
 useradd -m immich
@@ -217,11 +225,9 @@ chsh immich # Optional: Change the default shell the immich user is using. Typic
 
 After creating the user, we should first install node.js for the user, Immich.
 
-### Node.js
+Immich works on a recent Node.js 20 LTS, and Ubuntu ships an ancient node.js. Thus. we need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for the modern version.
 
-Immich works on Node.js 20 LTS, and Ubuntu ships an ancient node.js. We need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for a modern version.
-
-Because npm/nvm by default use user installation, i.e, install the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs Immich. Other installations in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
+Because npm/nvm by default uses user installation, i.e, installing the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs Immich. Other installations, besides the coming installation script (`install.sh`), in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
 
 Assume one is currently login as user root, to change to the user we just created,
 
@@ -248,27 +254,115 @@ npm -v # should print `10.8.2`
 
 Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
 
-### The install script
+## Install custom photo-processing library
 
-The install script is the `install.sh` in this repo. It installs or update the current Immich instance. The Immich instance itself is stateless, thanks to its containerized nature. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. **DO NOT DELETE UPLOAD FOLDER IN THE `INSTALL_DIR`**. It stores all the uploaded content. Also, one should always a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
 
-#### Clone this repo
+Firstly, change the locale, not sure why, only because Perl requires so.
 
-Just in case one does not know, 
+### Locale
+
+Open `/etc/locale.gen`, find line,
+
+> \# en_US.UTF-8 UTF-8
+
+Uncomment the line, save the file, and
 
 ```bash
+locale-gen
+```
+
+### Install compile tools
+
+I have make some helper script in this repo, so all one needs to do is clone the repo. We change to the user immich so that the files we cloned will have proper permission. And, just in case one does not know, the commands are as follow.
+
+```bash
+su immich
+cd ~
 git clone https://github.com/loeeeee/immich-in-lxc.git
 ```
 
-#### Change directory
-
-It is recommend to have our working directory set to the repo's directory.
+Additionally, it is recommend to have our working directory set to the repo's directory.
 
 ```bash
 cd immich-in-lxc
 ```
 
-#### The environment variables
+Note, the commands in the rest of this section should be run as `sudo/root` user.
+
+<details>
+<summary>Debian 12</summary>
+
+Unlucky you! Debian 12's package manager does not include all the essentials we need. Thus, we need to use packages from the future, i.e. packages that are marked as testing.
+
+To do so, head to `/etc/apt/source.list`.
+
+At the end of the file, add,
+
+```bash
+deb http://deb.debian.org/debian testing main contrib
+```
+
+Now, Debian will have the knowledge of packages under testing.
+
+Next, to make sure the testing packages do not overwrite the good stable packages, we need to specify our install preference.
+
+```bash
+cat > /etc/apt/preferences.d/preferences << EOL
+Package: *
+Pin: release a=testing
+Pin-Priority: 450
+EOL
+```
+
+Finally, in the repo folder, execute
+
+```bash
+./dep-debian.sh
+```
+
+It will install all the dependency for coming steps.
+
+<br>
+</details>
+
+<details>
+<summary>Ubuntu 24.04</summary>
+
+Lucky boiiiii! Ubuntu package manager has everything we need. 
+
+All we need to do is run,
+
+```bash
+./dep-ubuntu.sh
+```
+
+It will install all the dependency for coming steps.
+
+<br>
+</details>
+
+### Compile 始める
+
+After installing essential bundle, run
+
+```bash
+./pre-install.sh
+```
+
+Note, the commands in this section should be run as `sudo/root` user.
+
+Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
+
+## Install Immich Server
+
+The star of the show is the install script, i.e. `install.sh` in this repo. It installs or updates the current Immich instance. The Immich instance itself is stateless, thanks to its design. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. 
+
+Note: **DO NOT DELETE UPLOAD FOLDER SPECIFIED BY `INSTALL_DIR` IN `.env`**. It stores all the user-uploaded content. 
+
+Also note: One should always do a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
+
+### The environment variables
 
 An example .env file that will be generated when no `.env` file is found inside current working directory when executing the script.
 
@@ -277,6 +371,8 @@ Let us go ahead and execute the script. No worry, when `.env` file is not found,
 ```bash
 ./install.sh
 ```
+
+Note, `install.sh` should be executed as user `immich`, or the user who is going to run immich.
 
 Then, we should have a `.env` file in current directory. 
 
@@ -289,13 +385,15 @@ Then, we should have a `.env` file in current directory.
 
 Note: The `immich` user should have read and write access to both `INSTALL_DIR` and `UPLOAD_DIR`.
 
-#### Run the script
+### Run the script
 
 After the `.env` is properly configured, we are now ready to do the actual installation.
 
 ```bash
 ./install.sh
 ```
+
+Note, `install.sh` should be executed as user `immich`, or the user who is going to run immich.
 
 It should go without errors, just like ever dev says.
 
@@ -307,7 +405,7 @@ Done. Please install the systemd services to start using Immich.
 
 Lastly, we need to review and modify the runtime.env that is inside `INSTALL_DIR` (not the one inside this repo). The default value should do the job, though.
 
-#### Post install script
+### Post install script
 
 The post install script will copy the systemd service files to proper location (and overwrite the original ones), assuming one is using Ubuntu, or something similar. Additionally, it creates a folder for log at `/var/log/`. Both operation requires `sudo/root` privilege, so make sure to review the script before proceeding.
 
@@ -336,7 +434,7 @@ systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
 
-#### Immich config
+### Immich config
 
 Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
