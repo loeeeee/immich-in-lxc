@@ -66,7 +66,8 @@ After finishing all of the steps in that guide, the guest OS should execute comm
 
 The major component that Immch requires is [ONNX runtime](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html#requirementsto), and here we are installing its dependency.
 
-### Ubuntu
+<details>
+<summary>Ubuntu 24.04</summary>
 
 For Immich machine learning support, we also need to install CuDNN and two additional libraries,
 
@@ -74,7 +75,11 @@ For Immich machine learning support, we also need to install CuDNN and two addit
 apt install nvidia-cudnn libcublaslt12 libcublas12
 ```
 
-### Debian
+<br>
+</details>
+
+<details>
+<summary>Debian 12</summary>
 
 For Immich machine learning support in `Debian`, we need to install CuDNN and CUDA Toolkit.
 
@@ -96,17 +101,14 @@ apt-get -y install cudnn-cuda-12
 apt install -y cuda-toolkit
 ```
 
+<br>
+</details>
+
 Zu easy, innit?
 
 ## Hardware-accelerated machine learning: Others (Optional)
 
 Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). Good luck and have fun!
-
-## Install utilities and databases
-
-```bash
-apt install curl git python3-venv python3-dev build-essential unzip
-```
 
 ## Install custom photo-processing library
 
@@ -190,6 +192,8 @@ pre-install.sh
 
 Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
 
+## Install utilities and databases
+
 ### Postgresql
 
 As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 16 and adding extension repo, as immich depends on a vector extension.
@@ -266,7 +270,8 @@ ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /bin/ffprobe
 
 Now, calling `ffmpeg` should output a long gibberish.
 
-#### Alternative way of installing FFmpeg (Static build)
+<details>
+<summary><h4>Alternative way of installing FFmpeg (Static build)</h4></summary>
 
 Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/). This may be the preferred way for a CPU-only user -- less things, less headache.
 
@@ -275,6 +280,9 @@ wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
 tar -xf ffmpeg-git-amd64-static.tar.xz
 cp ffmpeg-git-amd64-static/ffmpeg /bin/ffmpeg
 ```
+
+<br>
+</details>
 
 ### Redis
 
