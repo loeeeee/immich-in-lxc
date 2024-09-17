@@ -35,8 +35,6 @@ Compared to Immich Native, this repo additionally offers the support for CUDA-ac
 - (Optional) NVIDIA
     - Driver
     - CuDNN (Version 9)
-- (Optional) Intel Quick Sync
-    - Configuration
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware-acceleration does not work.
 
@@ -45,6 +43,8 @@ For the simplicity of the guide, all the components are installed in a single LX
 ## Host setup
 
 I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. Some others are using a N100 mini PC box with Intel Quick Sync. And all of these do not matter.
+
+However, if possible, use an LXC with `Ubuntu 24.04 LTS` as it offers an easier set-up.
 
 ## Prepare the LXC container
 
@@ -110,24 +110,13 @@ apt install -y cuda-toolkit
 
 Zu easy, innit?
 
-## Hardware-accelerated machine learning: Intel Quick Sync (Optional)
-
-Firstly, allow the LXC to use the GPU by editing the configuration of the LXC (e.g., `101.conf`). This process is referred to as GPU pass-through in LXC. You will need to add the following at the end of the config file:
-
-```bash
-lxc.cgroup2.devices.allow: c 226:0 rwm
-lxc.cgroup2.devices.allow: c 226:128 rwm
-lxc.cgroup2.devices.allow: c 29:0 rwm
-lxc.mount.entry: /dev/dri/renderD128 dev/dri/renderD128 none bind,optional,create=file
-```
-
-After finishing the installation process, you will be able to use the GPU in the Immich web GUI by going to needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `Quick Sync` to explicitly use the GPU to do the transcoding.
-
-You can also check the status of the GPU by installing the Intel GPU tools `sudo apt install intel-gpu-tools` and checking `sudo intel_gpu_top` to see the status.
-
 ## Hardware-accelerated machine learning: Others (Optional)
 
-Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). Good luck and have fun!
+Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). 
+
+Some users have also reported successful results using GPU Transcoding in Immich by following the Proxmox configurations from this video: [iGPU Transcoding In Proxmox with Jellyfin Media Center](https://www.youtube.com/watch?v=XAa_qpNmzZs) - Just avoid all the Jellyfin stuff and do the configurations on the Immich container instead. At the end, you should be able to use your iGPU Transcoding in Immich by going to needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `Quick Sync` to explicitly use the GPU to do the transcoding.
+
+Good luck and have fun!
 
 ## Install utilities and databases
 
@@ -408,7 +397,7 @@ Then, we should have a `.env` file in current directory.
 - `REPO_TAG` is the version of the Immich that we are going to install,
 - `INSTALL_DIR` is where the `app` and `source` folders will resides in (e.g., it can be a `mnt` point),
 - `UPLOAD_DIR` is where the user uploads goes to  (it can be a `mnt` point), 
-- `isCUDA` when set to true, will install Immich with CUDA supprt, otherwise, only CPU or Intel Quick Sync (if configured afterwards) will be used by Immich,
+- `isCUDA` when set to true, will install Immich with CUDA supprt. For other GPU Transcodings, this is likely to remain false.
 - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
 - `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
@@ -477,7 +466,7 @@ systemctl enable immich-web
 
 Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
-Additionally, for LXC with CUDA or Quick Sync support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `NVENC` (for CUDA) or `Quick Sync` (for Intel Quick Sync) to explicitly use the GPU to do the transcoding.
+Additionally, for LXC with CUDA or other GPU Transcoding support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select your GPU Transcoding (e.g., `NVENC` - for CUDA) to explicitly use the GPU to do the transcoding.
 
 ## Update the Immich instance
 
