@@ -42,7 +42,9 @@ For the simplicity of the guide, all the components are installed in a single LX
 
 ## Host setup
 
-I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. And all of these do not matter.
+I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. Some others are using a N100 mini PC box with Intel Quick Sync. And all of these do not matter.
+
+However, if possible, use an LXC with `Ubuntu 24.04 LTS` as it offers an easier set-up.
 
 ## Prepare the LXC container
 
@@ -110,7 +112,11 @@ Zu easy, innit?
 
 ## Hardware-accelerated machine learning: Others (Optional)
 
-Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). Good luck and have fun!
+Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). 
+
+Some users have also reported successful results using GPU Transcoding in Immich by following the Proxmox configurations from this video: [iGPU Transcoding In Proxmox with Jellyfin Media Center](https://www.youtube.com/watch?v=XAa_qpNmzZs) - Just avoid all the Jellyfin stuff and do the configurations on the Immich container instead. At the end, you should be able to use your iGPU Transcoding in Immich by going to needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `Quick Sync` to explicitly use the GPU to do the transcoding.
+
+Good luck and have fun!
 
 ## Install utilities and databases
 
@@ -214,18 +220,28 @@ Immich works fine with the Redis in Ubuntu 24.04 repo. No additional config is n
 apt install redis
 ```
 
-Now, we are mostly ready to install the Immich server.
+### Git
 
-### Node.js
+Git will be needed later. It works fine with Ubuntu 24.04 repo, so no additional config is needed.
+
+```bash
+apt install git
+```
+
+### Immich User Creation
 
 First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
 
 ```bash
 useradd -m immich
-chsh immich # Optional: Change the default shell the immich user is using. Typically to /bin/bash
+chsh -s /bin/bash immich # This optional setting changes the default shell the immich user is using. In this case it will use /bin/bash, but feel welcome to change it.
+# If you need to change the password of the user, use the command: sudo passwd immich
+# If the user immich needs sudo permissions, use the command: usermod -aG sudo immich
 ```
 
 After creating the user, we should first install node.js for the user, Immich.
+
+### Node.js
 
 Immich works on a recent Node.js 20 LTS, and Ubuntu ships an ancient node.js. Thus. we need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for the modern version.
 
@@ -254,6 +270,8 @@ node -v # should print `v20.17.0`
 npm -v # should print `10.8.2`
 ```
 
+Now `exit` the immich user.
+
 Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
 
 ## Install custom photo-processing library
@@ -268,7 +286,7 @@ Open `/etc/locale.gen`, find line,
 
 > \# en_US.UTF-8 UTF-8
 
-Uncomment the line, save the file, and
+Uncomment the line, save the file, and run the following command as `sudo/root` user:
 
 ```bash
 locale-gen
@@ -290,7 +308,7 @@ Additionally, it is recommend to have our working directory set to the repo's di
 cd immich-in-lxc
 ```
 
-Note, the commands in the rest of this section should be run as `sudo/root` user.
+Now `exit` the immich user, as the upcoming commands should be run as `sudo/root` user.
 
 <details>
 <summary>Debian 12</summary>
@@ -333,26 +351,25 @@ It will install all the dependency for coming steps.
 
 Lucky boiiiii! Ubuntu package manager has everything we need. 
 
-All we need to do is run,
+All we need to do is to run the following command as `sudo/root` user (not immich user):
 
 ```bash
+cd /home/immich/immich-in-lxc/
 ./dep-ubuntu.sh
 ```
 
-It will install all the dependency for coming steps.
+This will install all the dependencies for the upcoming steps.
 
 <br>
 </details>
 
 ### Compile 始める
 
-After installing essential bundle, run
+After installing the essential bundle, run the following command as `sudo/root` user (not immich user):
 
 ```bash
 ./pre-install.sh
 ```
-
-Note, the commands in this section should be run as `sudo/root` user.
 
 Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
 
@@ -368,20 +385,19 @@ Also note: One should always do a snapshot of the media folder during the updati
 
 An example .env file that will be generated when no `.env` file is found inside current working directory when executing the script.
 
-Let us go ahead and execute the script. No worry, when `.env` file is not found, the script will gracefully exit and do no change to the file system.
+Let us go ahead and execute the script as `immich` user (or the user that will be running immich). No worry, when `.env` file is not found, the script will gracefully exit and will not change to the file system.
 
 ```bash
+su immich # Or the user who is going to run immich. It should be the same user as the one used for installing Node.js.
 ./install.sh
 ```
-
-Note, `install.sh` should be executed as user `immich`, or the user who is going to run immich.
 
 Then, we should have a `.env` file in current directory. 
 
 - `REPO_TAG` is the version of the Immich that we are going to install,
-- `INSTALL_DIR` is where the `app`, `source` folder will resides in,
-- `UPLOAD_DIR` is where the user uploads goes to, 
-- `isCUDA` when set to true, will install Immich with CUDA supprt, otherwise, only CPU will be used by Immich,
+- `INSTALL_DIR` is where the `app` and `source` folders will resides in (e.g., it can be a `mnt` point),
+- `UPLOAD_DIR` is where the user uploads goes to  (it can be a `mnt` point), 
+- `isCUDA` when set to true, will install Immich with CUDA supprt. For other GPU Transcodings, this is likely to remain false.
 - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
 - `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
@@ -405,7 +421,7 @@ After several minutes, ideally, it would say,
 Done. Please install the systemd services to start using Immich.
 ```
 
-Lastly, we need to review and modify the runtime.env that is inside `INSTALL_DIR` (not the one inside this repo). The default value should do the job, though.
+Lastly, we need to review and modify the `runtime.env` that is inside your specified `INSTALL_DIR` (not the runtime.env inside this repo). The default values could also work, unless you changed the `DB_PASSWORD` when installing Postgres. For Timezones `TZ`, you can consult them in the [TZ Database Wiki](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
 
 ### Post install script
 
@@ -415,9 +431,19 @@ The post install script will copy the systemd service files to proper location (
 ./post-install.sh
 ```
 
-Then, modify the service file to make sure every path name is spelled correctly.
+Then, modify the `service` files to make sure every path name is spelled correctly. You might need to modify the variables `WorkingDirectory`, `EnvironmentFile`, `ExecStart` with the `INSTALL_DIR` specified in the `.env` file (in case you didn't leave the default INSTALL_DIR).
 
-After that, we are now ready to start our Immich instance!
+```bash
+nano /etc/systemd/system/immich-ml.service # Modify WorkingDirectory, EnvironmentFile, and ExecStart with your INSTALL_DIR, in case you changed it.
+```
+```bash
+nano /etc/systemd/system/immich-microservices.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
+```
+```bash
+nano /etc/systemd/system/immich-web.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
+```
+
+After that, we are ready to start our Immich instance!
 
 ```bash
 systemctl daemon-reload && \
@@ -440,7 +466,7 @@ systemctl enable immich-web
 
 Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
-Additionally, for LXC with CUDA support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select NVENC to explicitly use the GPU to do the transcoding.
+Additionally, for LXC with CUDA or other GPU Transcoding support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select your GPU Transcoding (e.g., `NVENC` - for CUDA) to explicitly use the GPU to do the transcoding.
 
 ## Update the Immich instance
 
@@ -456,10 +482,10 @@ systemctl stop immich-ml && \
 systemctl stop immich-web
 ```
 
-After that update this repo, i.e. do a `git pull` in folder `immich-in-lxc`. 
+After stopping the old instance, update this repo by doing a `git pull` in the folder `immich-in-lxc` (using the `immich` user). 
 
 Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.env`. 
 
-Finally, run the `install.sh`, and it will update Immich, hopefully without problems.
+Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
-Also, don't forget to start the service to load the latest Immich instance.
+Also, don't forget to start the service again, to load the latest Immich instance.
