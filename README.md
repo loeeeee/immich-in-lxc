@@ -1,6 +1,6 @@
-# Immich in LXC with Optional CUDA support
+# Immich with CUDA Support without Docker
 
-Install Immich in LXC without using Docker, but with optional CUDA support. This guide should also be applicable to any bare-metal installation, even the ones with Intel or AMD GPUs.
+Install Immich in LXC or bare-metal without Docker, but with optional CUDA support for machine-learning, (almost) universal hardware acceleration for transcoding and HEIF, RAW support.
 
 ## Introduction
 
