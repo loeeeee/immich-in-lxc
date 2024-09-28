@@ -154,7 +154,7 @@ Note: change password.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
-### Hardware-accelerated FFmpeg
+### FFmpeg with Hardware-acceleration
 
 Not all FFmpeg are built equal. In most cases, the ffmpeg shipped from distribution package manager does not support any kind of hardware acceleration. However, there is an easy fix, thanks to the great contributions made by Jellyfin team, as they maintain a version of FFmpeg that receives timely update and support most common hardware for more efficient transcoding. The list of supported hardware can be found at [*Supported Acceleration Methods*](https://jellyfin.org/docs/general/administration/hardware-acceleration#supported-acceleration-methods), and the list includes common hardware features, like NVENC, and QSV, or universal interface, like VAAPI. Here, we will be using this FFmpeg build to enable hw-acceleration in our Immich server.
 
@@ -267,9 +267,9 @@ First of all, create a Immich user, if you already done so in the above optional
 
 ```bash
 useradd -m immich
-chsh -s /bin/bash immich # This optional setting changes the default shell the immich user is using. In this case it will use /bin/bash, but feel welcome to change it.
-# If you need to change the password of the user, use the command: sudo passwd immich
-# If the user immich needs sudo permissions, use the command: usermod -aG sudo immich
+chsh -s /bin/bash immich # This optional setting changes the default shell the immich user is using. In this case it will use /bin/bash, instead of the default /bin/sh, which lacks many eye-candy
+# If you need to change the password of the user, use the command: passwd immich
+# If the user immich needs sudo permissions, which is very very unlikely, use the command as root user: usermod -aG sudo immich
 ```
 
 After creating the user, we should first install node.js for the user, Immich.
@@ -298,9 +298,9 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 # download and install Node.js (you may need to restart the terminal)
 nvm install 20
 # verifies the right Node.js version is in the environment
-node -v # should print `v20.17.0`
+node -v # should print `v20.*.*`
 # verifies the right npm version is in the environment
-npm -v # should print `10.8.2`
+npm -v # should print `10.*.*`
 ```
 
 Now `exit` the immich user.
