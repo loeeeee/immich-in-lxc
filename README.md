@@ -156,11 +156,11 @@ Note: To change back to the pre-su user, `exit` should do the trick.
 
 ### Hardware-accelerated FFmpeg
 
-Not all FFmpeg are built equal. In most cases, the ffmpeg shipped from distribution package manager does not support any kind of hardware acceleration. However, there is a easy fix, thanks to the great contributions made by Jellyfin team, as they maintain a version of FFmpeg that receives timely update and has most common hardware acceleration built-in. The list of supported hardware can be found at [*Supported Acceleration Methods*](https://jellyfin.org/docs/general/administration/hardware-acceleration#supported-acceleration-methods), and the list includes common hardware features, like NVENC, and QSV, or universal interface, like VAAPI. Here, we will be using this FFmpeg build to enable hw-acceleration in our Immich server.
+Not all FFmpeg are built equal. In most cases, the ffmpeg shipped from distribution package manager does not support any kind of hardware acceleration. However, there is an easy fix, thanks to the great contributions made by Jellyfin team, as they maintain a version of FFmpeg that receives timely update and support most common hardware for more efficient transcoding. The list of supported hardware can be found at [*Supported Acceleration Methods*](https://jellyfin.org/docs/general/administration/hardware-acceleration#supported-acceleration-methods), and the list includes common hardware features, like NVENC, and QSV, or universal interface, like VAAPI. Here, we will be using this FFmpeg build to enable hw-acceleration in our Immich server.
 
-Side note, after some digging around, I found out that the official `immich` image uses FFmpeg from Jellyfin as well. What a coincidence.
+Side note, after some digging around, I found out that the official Immich docker image uses FFmpeg from Jellyfin as well. What a coincidence.
 
-To install the FFmpeg made by Jellyfin team, first, we need to add the repository of Jellyfin to the system package manager. Jellyfin documentation suggests a slightly different approach for `Ubuntu` and `Debian` for adding the repository.
+To install the FFmpeg made by Jellyfin team, first, we need to add the repository of Jellyfin to the system package manager. Jellyfin documentation suggests slightly different approaches for `Ubuntu` and `Debian` for adding the repository.
 
 <details>
 <summary>Ubuntu 24.04</summary>
@@ -189,7 +189,7 @@ EOF
 </details>
 
 <details>
-<summary>Debian</summary>
+<summary>Debian 12</summary>
 
 Jellyfin documentation suggests a super simple way of adding Jellyfin repository, and only for `Debian`, and NO, `Ubuntu` is not supported. `Debian` for the win!
 
