@@ -154,15 +154,18 @@ Note: change password.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
-### FFmpeg
+### Hardware-accelerated FFmpeg
 
-For a CUDA user, to install ffmpeg, it is recommend not to use the ffmpeg in the Ubuntu APT repo, because its hardware acceleration is not enabled at the compile time. Instead, a version from [Jellyfin](https://jellyfin.org) that supports all kinds of hardware acceleration is recommended, because that version is well-maintained and receive active updates. And here is how this could be done.
+Not all FFmpeg are built equal. In most cases, the ffmpeg shipped from distribution package manager does not support any kind of hardware acceleration. However, there is a easy fix, thanks to the great contributions made by Jellyfin team, as they maintain a version of FFmpeg that receives timely update and has most common hardware acceleration built-in. The list of supported hardware can be found at [*Supported Acceleration Methods*](https://jellyfin.org/docs/general/administration/hardware-acceleration#supported-acceleration-methods), and the list includes common hardware features, like NVENC, and QSV, or universal interface, like VAAPI. Here, we will be using this FFmpeg build to enable hw-acceleration in our Immich server.
 
 Side note, after some digging around, I found out that the official `immich` image uses FFmpeg from Jellyfin as well. What a coincidence.
 
-First, we need to add the repository of Jellyfin to the system package manager. The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivative only. 
+To install the FFmpeg made by Jellyfin team, first, we need to add the repository of Jellyfin to the system package manager. Jellyfin documentation suggests a slightly different approach for `Ubuntu` and `Debian` for adding the repository.
 
-A `Debian` user should go to its official install documentation and follow the instruction there. Though, the difference is subtle. One should follow the instruction until just before installing the entire Jellyfin ---- we don't need that here, only its FFmpeg component.
+<details>
+<summary>Ubuntu 24.04</summary>
+
+The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivatives. This terrifying chunk of commands add the Jellyfin repository to package manager.
 
 ```bash
 apt install curl gnupg software-properties-common
@@ -180,33 +183,63 @@ Components: main
 Architectures: ${DPKG_ARCHITECTURE}
 Signed-By: /etc/apt/keyrings/jellyfin.gpg
 EOF
-apt update
 ```
 
-Then, we install the ffmpeg from Jellyfin.
+<br>
+</details>
+
+<details>
+<summary>Debian</summary>
+
+Jellyfin documentation suggests a super simple way of adding Jellyfin repository, and only for `Debian`, and NO, `Ubuntu` is not supported. `Debian` for the win!
 
 ```bash
+apt install extrepo
+extrepo enable jellyfin
+```
+
+<br>
+</details>
+
+After one has added the Jellyfin repo into their package manager's list, we can install the FFmpeg from Jellyfin.
+
+```bash
+apt update
 apt install jellyfin-ffmpeg6
 ```
 
-Finally, we soft link the Jellyfin ffmpeg to `/bin/`
+Finally, we soft link the Jellyfin FFmpeg to `/usr/bin/`
+
+We do not want to link the binary to `/bin` because in `Debian` and its derivatives, which includes `Ubuntu`, because the entire `/bin` folder is softlinked to `/usr/bin`. but doing either way does not seem to have a practical difference, besides linking to `/usr/bin` makes my brain happier.
 
 ```bash
-ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /bin/ffmpeg
-ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /bin/ffprobe
+ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
+ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
 ```
 
-Now, calling `ffmpeg` should output a long gibberish.
+Now, calling `ffmpeg` should output a long gibberish, at least for normies.
 
 <details>
-<summary><h4>Alternative way of installing FFmpeg (Static build)</h4></summary>
+<summary><h4>Alternative way of installing the latest FFmpeg (static build)</h4></summary>
 
-Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/). This may be the preferred way for a CPU-only user -- less things, less headache.
+Download one from [FFmpeg Static Builds](https://johnvansickle.com/ffmpeg/). This may be the preferred way for a CPU-only user -- less complexity, less headache.
 
 ```bash
 wget https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz
 tar -xf ffmpeg-git-amd64-static.tar.xz
 cp ffmpeg-git-amd64-static/ffmpeg /bin/ffmpeg
+```
+
+<br>
+</details>
+
+<details>
+<summary><h4>Alternative way of installing a FFmpeg (system package manager)</h4></summary>
+
+Download one from one's system package manager. Super simple.
+
+```bash
+apt install ffmpeg
 ```
 
 <br>
