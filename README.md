@@ -6,7 +6,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 - **hardware acceleration for transcoding**,
 - **HEIF, RAW support**,
 - easy and fast upgrade, and
-- setting proxy for PyPi and NPM registry.
+- proxy settings for PyPi and NPM registry.
 
 ## Introduction
 
