@@ -1,6 +1,12 @@
 # Immich with CUDA Support without Docker
 
-Install Immich in LXC or bare-metal without Docker, but with optional CUDA support for machine-learning, (almost) universal hardware acceleration for transcoding and HEIF, RAW support.
+A complete guide for installing Immich in LXC, VM, or bare-metal without Docker, but with 
+
+- **CUDA support for machine-learning** (if one choose so), 
+- **hardware acceleration for transcoding**,
+- **HEIF, RAW support**,
+- easy and fast upgrade, and
+- setting proxy for PyPi and NPM registry.
 
 ## Introduction
 
@@ -36,23 +42,23 @@ Compared to Immich Native, this repo additionally offers the support for CUDA-ac
     - Driver
     - CuDNN (Version 9)
 
-As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware-acceleration does not work.
+As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware acceleration does not work.
 
 For the simplicity of the guide, all the components are installed in a single LXC container. However, it is always possible to run different components in different LXC containers. As it is always a design choice.
 
 ## Host setup
 
-I am using `Proxmox VE 8` as the LXC host, which is based on `Debian`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. Some others are using a N100 mini PC box with Intel Quick Sync. And all of these do not matter.
+I am using `Proxmox VE 8` as the LXC host, which is based on `Debian 12`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. Some others are using a N100 mini PC box with Intel Quick Sync. And all of these do not matter.
 
-However, if possible, use an LXC with `Ubuntu 24.04 LTS` as it offers an easier set-up.
+However, if possible, use an LXC or VM with `Ubuntu 24.04 LTS` as it offers an easier set-up.
 
-## Prepare the LXC container
+## Prepare the LXC container, or whatever
 
-First, create a LXC normally. Make sure there is reasonable amount CPU and memory, because we are going to install and compile a lot of things, and it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and a NVIDIA GPU one should have at least 16 GiB to have it installed. However, once one starts using Immich, it will create a lot of caching, so don't forget to resize the LXC volumes accordingly. 
+First, create a LXC/VM normally. Make sure there is reasonable amount CPU and memory, because we are going to install and compile a lot of things, and it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and one with nVidia GPU, at least 16 GiB storage needs to be available. However, once one starts using Immich, it will create a lot of cache (for thumbnails and low-res transcoded videos), so don't forget to resize the LXC volumes accordingly. 
 
-Also, there is no need for a privileged container, if one does not plan to mount a file system directly inside the LXC container.
+Also, there is no need for a privileged container, if one does not plan to mount a file system, e.g., NFS, SMB, etc., directly inside the LXC container.
 
-This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ in different distros, though. Additionally, if one wants to have HW-accelerated ML, it is not recommend to use older release of `Ubuntu`, as it has older version of dependency in its repository, introducing additional complexity.
+This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ slightly in different distributions, though. Additionally, if one wants to have HW-accelerated ML, it is not recommend to use older release of `Ubuntu`, as it has older version of dependency in its repository, introducing additional complexity, like package pinning.
 
 ## Mount host volume to LXC container (Optional)
 
@@ -150,7 +156,7 @@ ALTER USER immich WITH SUPERUSER;
 \q
 ```
 
-Note: change password.
+Note: change password, seriously.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
