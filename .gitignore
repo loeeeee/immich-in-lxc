@@ -3,3 +3,4 @@ playground*
 /immich
 /base-images
 /image-source
+docker-compose.yml
