@@ -34,7 +34,7 @@ EOF
 # FFmpeg
 
 apt install -y curl gnupg software-properties-common
-add-apt-repository universe
+add-apt-repository -y universe
 mkdir -p /etc/apt/keyrings
 curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg
 export VERSION_OS="$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release )"
