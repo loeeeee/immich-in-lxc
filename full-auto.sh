@@ -21,8 +21,8 @@ apt upgrade -y
 
 apt install -y postgresql-common
 /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
-apt -y install postgresql
-apt install postgresql-16-pgvector
+apt install -y postgresql-17
+apt install -y postgresql-17-pgvector
 
 sudo -u postgres -s -n -- psql << EOF
 CREATE DATABASE immich;
