@@ -20,7 +20,7 @@ apt upgrade -y
 # Postgres
 
 apt install -y postgresql-common
-/usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+/usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
 apt -y install postgresql
 apt install postgresql-16-pgvector
 
