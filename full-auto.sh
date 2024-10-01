@@ -49,6 +49,9 @@ Architectures: ${DPKG_ARCHITECTURE}
 Signed-By: /etc/apt/keyrings/jellyfin.gpg
 EOF
 
+apt update
+apt install -y jellyfin-ffmpeg6
+
 ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
 ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
 
