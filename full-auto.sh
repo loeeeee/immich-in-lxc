@@ -16,20 +16,29 @@
 set -xeuo pipefail # Make people's life easier
 
 # Reset things
-while getopts "R" opt; do
+while getopts "Rr" opt; do
     case $opt in
         R)
+        # Less soft reset
         apt purge -yqq postgresql-17 postgresql-17-pgvector
         apt purge -y jellyfin-ffmpeg6
         rm /usr/bin/ffmpeg /usr/bin/ffprobe
         rm /etc/apt/keyrings/jellyfin.gpg
         rm /etc/apt/sources.list.d/jellyfin.sources
         apt purge -y redis
-        userdel immich
+        deluser --remove-all-files immich
         apt update
         rm -rf /home/immich/immich-in-lxc
         exit 0
         ;;
+        r)
+        # Soft reset
+        deluser immich
+        rm /usr/bin/ffmpeg /usr/bin/ffprobe
+        rm /etc/apt/keyrings/jellyfin.gpg
+        rm /etc/apt/sources.list.d/jellyfin.sources
+        apt update
+        exit 0
         \?)
         echo "Invalid option: -$OPTARG" >&2
         exit 1
@@ -90,8 +99,7 @@ apt install -y git
 
 # Immich user
 
-useradd -m immich
-chsh -s /bin/bash immich
+adduser --shell /bin/bash immich
 
 # Locale
 
@@ -100,7 +108,9 @@ locale-gen
 
 # Git repos
 
-sudo -u immich -s -n -- cd /home/immich/ && git clone https://github.com/loeeeee/immich-in-lxc.git
+if [ ! -d "/home/immich/immich-in-lxc" ]; then
+    sudo -u immich -s -n -- git clone https://github.com/loeeeee/immich-in-lxc.git /home/immich/immich-in-lxc
+fi
 
 # Dependency
 
