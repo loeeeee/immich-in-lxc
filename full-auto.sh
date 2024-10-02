@@ -17,15 +17,17 @@ set -xeuo pipefail # Make people's life easier
 
 # Reset things
 
-if [ $RESET = true ]; then
-    apt purge -y postgresql-17 postgresql-17-pgvector
-    apt purge -y jellyfin-ffmpeg6
-    rm /usr/bin/ffmpeg /usr/bin/ffprobe
-    rm /etc/apt/keyrings/jellyfin.gpg
-    rm /etc/apt/source.list.d/jellyfin.source
-    apt purge -y redis
-    userdel immich
-    exit 0
+if [ -z {$RESET+false} ]; then
+    if [ $RESET = true ]; then
+        apt purge -y postgresql-17 postgresql-17-pgvector
+        apt purge -y jellyfin-ffmpeg6
+        rm /usr/bin/ffmpeg /usr/bin/ffprobe
+        rm /etc/apt/keyrings/jellyfin.gpg
+        rm /etc/apt/source.list.d/jellyfin.sources
+        apt purge -y redis
+        userdel immich
+        exit 0
+    fi
 fi
 
 # Initalial update
