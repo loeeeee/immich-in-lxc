@@ -16,7 +16,7 @@
 set -xeuo pipefail # Make people's life easier
 
 # Reset things
-while getopts ":R:" opt; do
+while getopts "R" opt; do
     case $opt in
         R)
         echo "-a was triggered, Parameter: $OPTARG" >&2
@@ -31,10 +31,6 @@ while getopts ":R:" opt; do
         ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
-        exit 1
-        ;;
-        :)
-        echo "Option -$OPTARG requires an argument." >&2
         exit 1
         ;;
     esac
