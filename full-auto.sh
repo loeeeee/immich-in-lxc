@@ -25,6 +25,7 @@ if [ $RESET = true ]; then
     rm /etc/apt/source.list.d/jellyfin.source
     apt purge -y redis
     userdel immich
+    exit 0
 fi
 
 # Initalial update
