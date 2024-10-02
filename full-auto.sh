@@ -39,6 +39,7 @@ while getopts "Rr" opt; do
         rm /etc/apt/sources.list.d/jellyfin.sources
         apt update
         exit 0
+        ;;
         \?)
         echo "Invalid option: -$OPTARG" >&2
         exit 1
