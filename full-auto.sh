@@ -27,6 +27,7 @@ while getopts "R" opt; do
         apt purge -y redis
         userdel immich
         apt update
+        rm -rf /home/immich/immich-in-lxc
         exit 0
         ;;
         \?)
