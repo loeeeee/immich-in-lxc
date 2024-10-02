@@ -16,9 +16,10 @@
 set -xeuo pipefail # Make people's life easier
 
 # Reset things
-
-if [ ! -z {$RESET+false} ]; then
-    if [ $RESET = true ]; then
+while getopts ":R:" opt; do
+    case $opt in
+        R)
+        echo "-a was triggered, Parameter: $OPTARG" >&2
         apt purge -y postgresql-17 postgresql-17-pgvector
         apt purge -y jellyfin-ffmpeg6
         rm /usr/bin/ffmpeg /usr/bin/ffprobe
@@ -27,8 +28,17 @@ if [ ! -z {$RESET+false} ]; then
         apt purge -y redis
         userdel immich
         exit 0
-    fi
-fi
+        ;;
+        \?)
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+        :)
+        echo "Option -$OPTARG requires an argument." >&2
+        exit 1
+        ;;
+    esac
+done
 
 # Initalial update
 
