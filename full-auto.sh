@@ -19,7 +19,7 @@ set -xeuo pipefail # Make people's life easier
 while getopts "R" opt; do
     case $opt in
         R)
-        apt purge -y postgresql-17 postgresql-17-pgvector
+        apt purge -yqq postgresql-17 postgresql-17-pgvector
         apt purge -y jellyfin-ffmpeg6
         rm /usr/bin/ffmpeg /usr/bin/ffprobe
         rm /etc/apt/keyrings/jellyfin.gpg
