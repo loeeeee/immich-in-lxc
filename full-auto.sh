@@ -23,9 +23,10 @@ while getopts "R" opt; do
         apt purge -y jellyfin-ffmpeg6
         rm /usr/bin/ffmpeg /usr/bin/ffprobe
         rm /etc/apt/keyrings/jellyfin.gpg
-        rm /etc/apt/source.list.d/jellyfin.sources
+        rm /etc/apt/sources.list.d/jellyfin.sources
         apt purge -y redis
         userdel immich
+        apt update
         exit 0
         ;;
         \?)
