@@ -100,7 +100,7 @@ apt install -y git
 
 # Immich user
 
-adduser --shell /bin/bash immich
+adduser --shell /bin/bash --disabled-password immich
 
 # Locale
 
