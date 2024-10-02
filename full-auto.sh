@@ -11,8 +11,23 @@
 # isCUDA
 # PROXY_NPM
 # PROXY_POETRY
+# RESET
 
 set -xeuo pipefail # Make people's life easier
+
+# Reset things
+
+if [ $RESET = true ]; then
+    apt purge -y postgresql-17 postgresql-17-pgvector
+    apt purge -y jellyfin-ffmpeg6
+    rm /usr/bin/ffmpeg /usr/bin/ffprobe
+    rm /etc/apt/keyrings/jellyfin.gpg
+    rm /etc/apt/source.list.d/jellyfin.source
+    apt purge -y redis
+    userdel immich
+fi
+
+# Initalial update
 
 apt update
 apt upgrade -y 
