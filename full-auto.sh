@@ -123,14 +123,14 @@ fi
 
 # NPM
 
-sudo -u immich -s -n -E -- cd /home/immich && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash && nvm install 20
+sudo -u immich -s -n -E -- "cd /home/immich ; curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash ; nvm install 20"
 
 # Immich
 
 ## Generate config
-sudo -u immich -s -n -E -- cd /home/immich/immich-in-lxc && ./install.sh
+sudo -u immich -s -n -E -- "cd /home/immich/immich-in-lxc ; ./install.sh"
 ## Install
-sudo -u immich -s -n -E -- cd /home/immich/immich-in-lxc && ./install.sh
+sudo -u immich -s -n -E -- "cd /home/immich/immich-in-lxc ; ./install.sh"
 
 # Post-install
 
