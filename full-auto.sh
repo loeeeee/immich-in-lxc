@@ -17,7 +17,7 @@ set -xeuo pipefail # Make people's life easier
 
 # Reset things
 
-if [! -z {$RESET+false} ]; then
+if [ ! -z {$RESET+false} ]; then
     if [ $RESET = true ]; then
         apt purge -y postgresql-17 postgresql-17-pgvector
         apt purge -y jellyfin-ffmpeg6
