@@ -123,7 +123,7 @@ fi
 # NPM
 
 su immich -c sh -c "cd /home/immich && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash"
-sudo -u immich -s -n -E -- "nvm install 20"
+sudo -u immich -s -n -E -- ". /home/immich/.nvm/nvm.sh && nvm install 20"
 
 # Immich
 
