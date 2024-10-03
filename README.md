@@ -1,4 +1,4 @@
-# Immich with CUDA Support without Docker
+# Immich with CUDA Support in LXC (w/o Docker)
 
 A complete guide for installing Immich in LXC, VM, or bare-metal without Docker, but with 
 
