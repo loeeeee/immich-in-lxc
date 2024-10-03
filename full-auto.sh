@@ -129,6 +129,25 @@ sudo -u immich -s -n -E -- ". /home/immich/.nvm/nvm.sh && nvm install 20"
 
 ## Generate config
 sudo -u immich -s -n -E -- "cd /home/immich/immich-in-lxc && ./install.sh"
+## Load environment variables
+assign_to_file() {
+    env_var=$2
+    file_path=/home/immich/immich-in-lxc/.env
+
+    # Check if environment variable exists and has a value
+    if [[ -n "${!env_var}" ]]; then
+    # Check if the environment variable already exists in the file
+        if grep -q "^${env_var}=" "$file_path"; then
+            echo "Environment variable $env_var already exists in $file_path"
+        else
+            # Write the value to the file
+            echo "${env_var}=${!env_var}" >> "$file_path"
+            echo "Assigned value to $file_path"
+        fi
+    else
+        echo "Environment variable $env_var not found or empty"
+    fi
+}
 ## Install
 sudo -u immich -s -n -E -- "cd /home/immich/immich-in-lxc && ./install.sh"
 
