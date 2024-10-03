@@ -28,7 +28,6 @@ while getopts "Rr" opt; do
         apt purge -y redis
         deluser --remove-all-files immich
         apt update
-        rm -rf /home/immich/immich-in-lxc
         exit 0
         ;;
         r)
