@@ -6,7 +6,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 - **hardware acceleration for transcoding**,
 - **HEIF, RAW support**,
 - easy and fast upgrade, and
-- proxy settings for PyPi and NPM registry.
+- accessible proxy settings for PyPi and NPM registry.
 
 ## Introduction
 
@@ -14,9 +14,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 > High performance self-hosted photo and video management solution
 
-I really like Immich and its coherent experience in both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user.
-
-But, not providing a bare-metal installation guide for Immich can be justified as Immich is more than a simple binary and does require some efforts to set up in current state.
+I really like Immich and its coherent experience across both mobile and web. However, the official Documents only provides Docker installation guide, which is less than ideal for a LXC user. But, in fairness to Immich, not providing a bare-metal installation guide can be justified, as it is more than a simple binary and does require some efforts to set up in current state.
 
 **This guide is heavily inspired by another guide [Immich Native](https://github.com/arter97/immich-native), and the install script & service files are modified from the ones in that repo. KUDO to its author, arter97!** 
 
@@ -43,13 +41,13 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
     - Postgresql
         - PG-vector
 - System
-    - ffmpeg
+    - FFmpeg
     - Node.js
     - git
 - (Optional) Reverse Proxy
     - Nginx
 - (Optional) NVIDIA
-    - Driver
+    - Driver (i.e. CUDA Runtime)
     - CuDNN (Version 9)
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware acceleration does not work.
