@@ -19,7 +19,6 @@ apt install --no-install-recommends -y\
         libexpat1-dev \
         libglib2.0-dev \
         libgsf-1-dev \
-        libjpeg62-turbo-dev \
         liblcms2-2 \
         librsvg2-dev \
         libspng-dev \
