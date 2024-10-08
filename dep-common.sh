@@ -4,7 +4,8 @@ set -xeuo pipefail # Make my life easier
 
 # Install build dependency
 ## Tools
-apt install curl git python3-venv python3-dev unzip
+apt install --no-install-recommends -y\
+        curl git python3-venv python3-dev unzip
 
 ## From immich/base-image
 apt install --no-install-recommends -y\
