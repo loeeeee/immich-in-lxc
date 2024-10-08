@@ -279,9 +279,10 @@ apt install git
 First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
 
 ```bash
-useradd -m immich
-chsh -s /bin/bash immich # This optional setting changes the default shell the immich user is using. In this case it will use /bin/bash, instead of the default /bin/sh, which lacks many eye-candy
-# If you need to change the password of the user, use the command: passwd immich
+adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
+# --shell changes the default shell the immich user is using. In this case it will use /bin/bash, instead of the default /bin/sh, which lacks many eye-candy
+# --disabled-password skips creating password, and (sort of) only allows using su to access the user. If you need to change the password of the user, use the command: passwd immich
+# --comment adds user contact info, not super useful but mandatory, probably thanks to Unix legacy.
 # If the user immich needs sudo permissions, which is very very unlikely, use the command as root user: usermod -aG sudo immich
 ```
 
