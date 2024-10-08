@@ -6,6 +6,11 @@ set -xeuo pipefail # Make my life easier
 
 ./dep-common.sh
 
+# libjpeg62-turbo-dev
+apt install --no-install-recommends -y \
+        libjpeg62-turbo-dev
+## libjpeg-turbo is faster than libjpeg
+
 # Dockerfile 35
 apt install -t testing --no-install-recommends -y \
         libdav1d-dev \
