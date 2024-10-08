@@ -6,6 +6,11 @@ set -xeuo pipefail # Make my life easier
 
 ./dep-common.sh
 
+# libjpeg62-turbo-dev
+apt install --no-install-recommends -y \
+        libjpeg-turbo8-dev
+## libjpeg-turbo is faster than libjpeg
+
 # Dockerfile 35
 apt install --no-install-recommends -y \
         libdav1d-dev \
@@ -24,5 +29,3 @@ apt install --no-install-recommends -y \
 # Dockerfile 104
 apt install --no-install-recommends -y \
         intel-media-va-driver-non-free
-
-
