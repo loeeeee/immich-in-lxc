@@ -4,7 +4,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
-- **HEIF, RAW support**,
+- **HEIF, RAW, JPEG XL support**,
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
 
@@ -514,3 +514,7 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
+
+### Notice
+
+When upgrading to Immich version v1.118.0, all user should redo the procedure at [pre-install step][#Install custom photo-processing library], because JPEG XL support was added in Immich.
