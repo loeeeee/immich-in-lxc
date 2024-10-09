@@ -96,6 +96,9 @@ build_libjxl () {
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
 
+    if [ -d "build" ]; then
+        rm -r build
+    fi
     
     mkdir build
     cd build
