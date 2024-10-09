@@ -6,7 +6,7 @@
 
 # This script is indended to be run as root
 
-# Supported env variable:
+# Planned supported env variable:
 # NVM_NODEJS_ORG_MIRROR
 # isCUDA
 # PROXY_NPM
