@@ -249,5 +249,14 @@ build_libvips () {
 
 build_libvips
 
-# Dockerfile 109
-dpkg -r --force-depends libjpeg62-turbo
+# -------------------
+# Remove unused packages
+# -------------------
+
+remove_unused_packages () {
+    # Dockerfile 109
+    ## Debian
+    dpkg -r --force-depends libjpeg62-turbo
+    ## Ubuntu
+    dpkg -r --force-depends libjpeg-turbo8
+}
