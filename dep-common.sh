@@ -2,6 +2,9 @@
 
 set -xeuo pipefail # Make my life easier
 
+# Because I removed one package
+apt --fix-broken -y install
+
 # Install build dependency
 ## Tools
 apt install --no-install-recommends -y\
