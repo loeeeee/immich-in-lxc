@@ -4,7 +4,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
-- **HEIF, RAW support**,
+- **HEIF, RAW, JPEG XL support**,
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
 
@@ -266,14 +266,6 @@ Immich works fine with the Redis in Ubuntu 24.04 repo. No additional config is n
 apt install redis
 ```
 
-### Git
-
-Git will be needed later. It works fine with Ubuntu 24.04 repo, so no additional config is needed.
-
-```bash
-apt install git
-```
-
 ### Immich User Creation
 
 First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
@@ -324,20 +316,6 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 ## Install custom photo-processing library
 
 Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
-
-Firstly, change the locale, not sure why, only because Perl requires so.
-
-### Locale
-
-Open `/etc/locale.gen`, find line,
-
-> \# en_US.UTF-8 UTF-8
-
-Uncomment the line, save the file, and run the following command as `sudo/root` user:
-
-```bash
-locale-gen
-```
 
 ### Install compile tools
 
@@ -536,3 +514,7 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
+
+### Notice
+
+When upgrading to Immich version v1.118.0, all user should redo the procedure at *Install custom photo-processing library*, because JPEG XL support was added in Immich.
