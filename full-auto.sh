@@ -93,18 +93,9 @@ ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
 
 apt install -y redis
 
-# Git
-
-apt install -y git
-
 # Immich user
 
 adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
-
-# Locale
-
-sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-locale-gen
 
 # Git repos
 
