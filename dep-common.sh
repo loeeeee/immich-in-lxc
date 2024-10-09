@@ -4,6 +4,7 @@ set -xeuo pipefail # Make my life easier
 
 # Because I removed one package
 apt --fix-broken -y install
+rm -r /tmp/immich-preinstall
 
 # Install build dependency
 ## Tools
