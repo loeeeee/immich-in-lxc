@@ -260,3 +260,5 @@ remove_unused_packages () {
     ## Ubuntu
     dpkg -r --force-depends libjpeg-turbo8
 }
+
+remove_unused_packages
