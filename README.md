@@ -517,4 +517,4 @@ Also, don't forget to start the service again, to load the latest Immich instanc
 
 ### Notice
 
-When upgrading to Immich version v1.118.0, all user should redo the procedure at [pre-install step][#Install custom photo-processing library], because JPEG XL support was added in Immich.
+When upgrading to Immich version v1.118.0, all user should redo the procedure at *Install custom photo-processing library*, because JPEG XL support was added in Immich.
