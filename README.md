@@ -362,7 +362,7 @@ Now `exit` the immich user, as the upcoming commands should be run as `sudo/root
 
 Unlucky you! Debian 12's package manager does not include all the essentials we need. Thus, we need to use packages from the future, i.e. packages that are marked as testing.
 
-To do so, head to `/etc/apt/source.list`.
+To do so, head to `/etc/apt/sources.list`.
 
 At the end of the file, add,
 
