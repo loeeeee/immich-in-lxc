@@ -315,7 +315,7 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 
 ## Install custom photo-processing library
 
-Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, JPEG XL, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
 
 ### Install compile tools
 
@@ -338,31 +338,12 @@ Now `exit` the immich user, as the upcoming commands should be run as `sudo/root
 <details>
 <summary>Debian 12</summary>
 
-Unlucky you! Debian 12's package manager does not include all the essentials we need. Thus, we need to use packages from the future, i.e. packages that are marked as testing.
+There used to have some complication for `Debian` in its very conservative package version, but now I have sorted it out. So, enjoy the script!
 
-To do so, head to `/etc/apt/sources.list`.
-
-At the end of the file, add,
+All we need to do is to run the following command as `sudo/root` user (not immich user):
 
 ```bash
-deb http://deb.debian.org/debian testing main contrib
-```
-
-Now, Debian will have the knowledge of packages under testing.
-
-Next, to make sure the testing packages do not overwrite the good stable packages, we need to specify our install preference.
-
-```bash
-cat > /etc/apt/preferences.d/preferences << EOL
-Package: *
-Pin: release a=testing
-Pin-Priority: 450
-EOL
-```
-
-Finally, in the repo folder, execute
-
-```bash
+cd /home/immich/immich-in-lxc/
 ./dep-debian.sh
 ```
 
