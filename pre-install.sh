@@ -127,6 +127,7 @@ build_libjxl () {
 
     # Clean up builds
     make clean
+    rm -rf build
 }
 
 build_libjxl
@@ -165,6 +166,7 @@ build_libheif () {
 
     # Clean up builds
     make clean
+    rm -rf build
 }
 
 build_libheif
@@ -249,6 +251,9 @@ build_libvips () {
     cd build
     ninja install
     ldconfig /usr/local/lib
+
+    # Clean up builds
+    rm -rf build
 }
 
 build_libvips
