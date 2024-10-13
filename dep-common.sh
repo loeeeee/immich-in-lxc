@@ -4,7 +4,9 @@ set -xeuo pipefail # Make my life easier
 
 # Because I removed one package
 apt --fix-broken -y install
-rm -r /tmp/immich-preinstall
+if [ -d "/tmp/immich-preinstall" ]; then
+    rm -r /tmp/immich-preinstall
+fi
 
 # Install build dependency
 ## Tools
