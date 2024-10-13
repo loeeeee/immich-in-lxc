@@ -22,6 +22,9 @@ Pin-Priority: 450
 EOL
 fi
 
+# Update before install from new sources
+apt update
+
 # libjpeg62-turbo-dev
 apt install --no-install-recommends -y \
         libjpeg62-turbo-dev
