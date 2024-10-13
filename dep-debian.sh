@@ -7,16 +7,20 @@ set -xeuo pipefail # Make my life easier
 ./dep-common.sh
 
 # Add source
-cat > /etc/apt/sources.list.d/immich << EOL
+if [ -d ! "/etc/apt/sources.list.d/immich.list" ]; then
+    cat > /etc/apt/sources.list.d/immich.list << EOL
 deb http://deb.debian.org/debian testing main contrib
 EOL
+fi
 
 # Add package priority to preference
-cat > /etc/apt/preferences.d/immich << EOL
+if [ -d ! "/etc/apt/preferences.d/immich" ]; then
+    cat > /etc/apt/preferences.d/immich << EOL
 Package: *
 Pin: release a=testing
 Pin-Priority: 450
 EOL
+fi
 
 # libjpeg62-turbo-dev
 apt install --no-install-recommends -y \
