@@ -66,11 +66,14 @@ apt install --no-install-recommends -y\
         ocl-icd-libopencl1
 
 # Install Intel things
-mkdir /tmp/immich-preinstall
-cd /tmp/immich-preinstall
-wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-core_1.0.17193.4_amd64.deb
-wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-opencl_1.0.17193.4_amd64.deb
-wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/intel-opencl-icd_24.26.30049.6_amd64.deb
-wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/libigdgmm12_22.3.20_amd64.deb
-dpkg -i *.deb
-rm -r /tmp/immich-preinstall
+if [ -d ".intel-things-success-0" ]; then
+    mkdir /tmp/immich-preinstall
+    cd /tmp/immich-preinstall
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-core_1.0.17193.4_amd64.deb
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-opencl_1.0.17193.4_amd64.deb
+    wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/intel-opencl-icd_24.26.30049.6_amd64.deb
+    wget https://github.com/intel/compute-runtime/releases/download/24.26.30049.6/libigdgmm12_22.3.20_amd64.deb
+    dpkg -i *.deb
+    touch .intel-things-success-0
+    rm -r /tmp/immich-preinstall
+fi
