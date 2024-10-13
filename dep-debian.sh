@@ -31,7 +31,7 @@ apt install --no-install-recommends -y \
 ## libjpeg-turbo is faster than libjpeg
 
 # Dockerfile 35
-apt install -t testing --no-install-recommends -y \
+apt install -t testing --no-install-recommends -yq \
         libdav1d-dev \
         libhwy-dev \
         libwebp-dev \
@@ -46,5 +46,5 @@ apt install -t testing --no-install-recommends -y \
         libhwy1t64
 
 ## Dockerfile 104
-apt install -t testing --no-install-recommends -y \
-        intel-media-va-driver-non-free
+# apt install -t stable --no-install-recommends -y \
+#         intel-media-va-driver
