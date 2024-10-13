@@ -115,10 +115,11 @@ build_libjxl () {
     -DJPEGXL_ENABLE_JPEGLI=ON \
     -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=ON \
     -DJPEGXL_INSTALL_JPEGLI_LIBJPEG=ON \
-    -DJPEGXL_ENABLE_AVX512=ON \
-    -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
     -DJPEGXL_ENABLE_PLUGINS=ON \
     ..
+    # Move the following flag to above if one's system support AVX512
+    # -DJPEGXL_ENABLE_AVX512=ON \
+    # -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
     cmake --build . -- -j$(nproc)
     cmake --install .
 
