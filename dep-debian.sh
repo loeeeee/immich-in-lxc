@@ -18,7 +18,7 @@ if [ -d ! "/etc/apt/preferences.d/immich" ]; then
     cat > /etc/apt/preferences.d/immich << EOL
 Package: *
 Pin: release a=testing
-Pin-Priority: 450
+Pin-Priority: -10
 EOL
 fi
 
