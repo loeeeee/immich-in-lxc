@@ -66,7 +66,7 @@ apt install --no-install-recommends -y\
         ocl-icd-libopencl1
 
 # Install Intel things
-if [ -d ! ".intel-things-success-0" ]; then
+if [ ! -d ".intel-things-success-0" ]; then
     mkdir /tmp/immich-preinstall
     cd /tmp/immich-preinstall
     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17193.4/intel-igc-core_1.0.17193.4_amd64.deb
