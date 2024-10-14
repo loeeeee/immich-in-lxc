@@ -31,7 +31,7 @@ apt install --no-install-recommends -y \
 ## libjpeg-turbo is faster than libjpeg
 
 # Dockerfile 35
-apt install -t testing --no-install-recommends -yq \
+apt install -t testing --no-install-recommends -yqq \
         libdav1d-dev \
         libhwy-dev \
         libwebp-dev \
