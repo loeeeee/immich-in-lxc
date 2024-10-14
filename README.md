@@ -207,9 +207,11 @@ EOF
 Jellyfin documentation suggests a super simple way of adding Jellyfin repository, and only for `Debian`, and NO, `Ubuntu` is not supported. `Debian` for the win!
 
 ```bash
-apt install extrepo
+apt install extrepo -t testing
 extrepo enable jellyfin
 ```
+
+We need install from testing source here because some other package we installed previously use a newer version of the dependency of this package. So, thanks `Debian` packaging.
 
 <br>
 </details>
