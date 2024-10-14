@@ -270,4 +270,7 @@ remove_unused_packages () {
     dpkg -r --force-depends libjpeg-turbo8
 }
 
-remove_unused_packages
+# Skip this because this causes much headache down the road
+# To fix it, apt --fix-broken install
+
+# remove_unused_packages
