@@ -38,6 +38,16 @@ function git_clone () {
 }
 
 # -------------------
+# Remove build folder function
+# -------------------
+
+function remove_build_folder () {
+    if [ -d "build" ]; then
+        rm -r build
+    fi
+}
+
+# -------------------
 # Clone the base images repo
 # -------------------
 
@@ -96,9 +106,7 @@ build_libjxl () {
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
 
-    if [ -d "build" ]; then
-        rm -r build
-    fi
+    remove_build_folder
     
     mkdir build
     cd build
@@ -127,7 +135,7 @@ build_libjxl () {
 
     # Clean up builds
     make clean
-    rm -rf build
+    remove_build_folder
 }
 
 build_libjxl
@@ -149,6 +157,8 @@ build_libheif () {
 
     cd $SOURCE
 
+    remove_build_folder
+
     mkdir build
     cd build
     cmake --preset=release-noplugins \
@@ -166,7 +176,7 @@ build_libheif () {
 
     # Clean up builds
     make clean
-    rm -rf build
+    remove_build_folder
 }
 
 build_libheif
@@ -246,14 +256,16 @@ build_libvips () {
     git_clone https://github.com/libvips/libvips.git $SOURCE $LIBVIPS_REVISION
 
     cd $SOURCE
-
+    
+    remove_build_folder
+    
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
     ninja install
     ldconfig /usr/local/lib
 
     # Clean up builds
-    rm -rf build
+    remove_build_folder
 }
 
 build_libvips
