@@ -228,7 +228,7 @@ After one has added the Jellyfin repo into their package manager's list, we can 
 
 ```bash
 apt update
-apt install jellyfin-ffmpeg6
+apt install jellyfin-ffmpeg7
 ```
 
 Finally, we soft link the Jellyfin FFmpeg to `/usr/bin/`
