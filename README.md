@@ -26,7 +26,7 @@ Compared to Immich Native, this repo additionally offers the support for CUDA-ac
 >
 > -- Abraham Lincoln
 
-Jokes aside, hardware acceleration really helps during importing library containing many videos, or live photos (essentially a photo and video bundle), or when one would like to switch to or test out a bigger and better machine learning model to improve smart search or face search functionality, which requires a redo of the entire indexing process. However, during current stage and foreseeable future, the heavy work of generating thumbnails is still done by CPU, and cannot be hardware-accelerated.
+Jokes aside, hardware acceleration really helps during importing library containing many videos, or live photos (essentially a photo and video bundle), or when one would like to switch to or test out a bigger and better machine learning model to improve smart search or face search functionality, which requires a redo of the entire indexing process. However, during current stage and foreseeable future, the heavy work of generating thumbnails will remain on using SIMD commands on CPU, and cannot be accelerated by GPU.
 
 Lastly, by using this repo, one could reliably set up a hardware-accelerated Immich instance without much hassle. So why not.
 
