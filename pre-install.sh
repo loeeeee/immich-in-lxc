@@ -87,6 +87,8 @@ change_locale () {
     locale-gen
 }
 
+change_locale
+
 # -------------------
 # Build libjxl
 # -------------------
