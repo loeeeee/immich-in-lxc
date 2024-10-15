@@ -27,12 +27,24 @@ function git_clone () {
         git clone "$1" "$2"
     fi
     cd $2
+    # Get updates
+    git fetch
     # REMOVE all the change one made to source repo, which is sth not supposed to happen
-    git reset --hard $3
+    git reset --hard HEAD
     # In case one is not on the branch
     git checkout $3
     # Get updates
     git pull
+}
+
+# -------------------
+# Remove build folder function
+# -------------------
+
+function remove_build_folder () {
+    if [ -d "build" ]; then
+        rm -r build
+    fi
 }
 
 # -------------------
@@ -67,6 +79,70 @@ setup_folders () {
 setup_folders
 
 # -------------------
+# Build libjxl
+# -------------------
+
+change_locale () {
+    sed -i 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+    locale-gen
+}
+
+change_locale
+
+# -------------------
+# Build libjxl
+# -------------------
+
+build_libjxl () {
+    cd $SCRIPT_DIR
+
+    SOURCE=$SOURCE_DIR/libjxl
+
+    set -e
+    : "${LIBJXL_REVISION:=$(jq -cr '.sources[] | select(.name == "libjxl").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    set +e
+
+    git_clone https://github.com/libjxl/libjxl.git $SOURCE $LIBJXL_REVISION
+
+    cd $SOURCE
+
+    git submodule update --init --recursive --depth 1 --recommend-shallow
+
+    remove_build_folder
+    
+    mkdir build
+    cd build
+    cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    -DJPEGXL_ENABLE_DOXYGEN=OFF \
+    -DJPEGXL_ENABLE_MANPAGES=OFF \
+    -DJPEGXL_ENABLE_PLUGIN_GIMP210=OFF \
+    -DJPEGXL_ENABLE_BENCHMARK=OFF \
+    -DJPEGXL_ENABLE_EXAMPLES=OFF \
+    -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
+    -DJPEGXL_FORCE_SYSTEM_HWY=ON \
+    -DJPEGXL_ENABLE_JPEGLI=ON \
+    -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=ON \
+    -DJPEGXL_INSTALL_JPEGLI_LIBJPEG=ON \
+    -DJPEGXL_ENABLE_PLUGINS=ON \
+    ..
+    # Move the following flag to above if one's system support AVX512
+    # -DJPEGXL_ENABLE_AVX512=ON \
+    # -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
+    cmake --build . -- -j$(nproc)
+    cmake --install .
+
+    ldconfig /usr/local/lib
+
+    # Clean up builds
+    make clean
+    remove_build_folder
+}
+
+build_libjxl
+
+# -------------------
 # Build libheif
 # -------------------
 
@@ -82,6 +158,8 @@ build_libheif () {
     git_clone https://github.com/strukturag/libheif.git $SOURCE $LIBHEIF_REVISION
 
     cd $SOURCE
+
+    remove_build_folder
 
     mkdir build
     cd build
@@ -100,6 +178,7 @@ build_libheif () {
 
     # Clean up builds
     make clean
+    remove_build_folder
 }
 
 build_libheif
@@ -179,11 +258,33 @@ build_libvips () {
     git_clone https://github.com/libvips/libvips.git $SOURCE $LIBVIPS_REVISION
 
     cd $SOURCE
-
+    
+    remove_build_folder
+    
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
     ninja install
     ldconfig /usr/local/lib
+
+    # Clean up builds
+    remove_build_folder
 }
 
 build_libvips
+
+# -------------------
+# Remove unused packages
+# -------------------
+
+remove_unused_packages () {
+    # Dockerfile 109
+    ## Debian
+    dpkg -r --force-depends libjpeg62-turbo
+    ## Ubuntu
+    dpkg -r --force-depends libjpeg-turbo8
+}
+
+# Skip this because this causes much headache down the road
+# To fix it, apt --fix-broken install
+
+# remove_unused_packages

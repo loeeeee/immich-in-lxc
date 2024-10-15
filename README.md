@@ -4,7 +4,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
-- **HEIF, RAW support**,
+- **HEIF, RAW, JPEG XL support**,
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
 
@@ -178,7 +178,7 @@ To install the FFmpeg made by Jellyfin team, first, we need to add the repositor
 <details>
 <summary>Ubuntu 24.04</summary>
 
-The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivatives. This terrifying chunk of commands add the Jellyfin repository to package manager.
+The following commands is mostly copy-and-pastes from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivatives. This terrifying chunk of commands add the Jellyfin repository to package manager.
 
 ```bash
 apt install curl gnupg software-properties-common
@@ -204,11 +204,21 @@ EOF
 <details>
 <summary>Debian 12</summary>
 
-Jellyfin documentation suggests a super simple way of adding Jellyfin repository, and only for `Debian`, and NO, `Ubuntu` is not supported. `Debian` for the win!
+The following commands is mostly copy-and-pasted from the Ubuntu counterpart, some subtle changes are made because otherwise it won't work. Despite official guide of Jellyfin recommends using `extrepo`, it will not work here because previous script some how changed content in `/etc/os-release`, and thus, broke the `extrepo` method. Man, I hate package pinning and ancient packages in `Debian` repo.
 
 ```bash
-apt install extrepo
-extrepo enable jellyfin
+apt install curl gnupg
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg
+export DPKG_ARCHITECTURE="$( dpkg --print-architecture )"
+cat <<EOF | tee /etc/apt/sources.list.d/jellyfin.sources
+Types: deb
+URIs: https://repo.jellyfin.org/debian
+Suites: bookworm
+Components: main
+Architectures: ${DPKG_ARCHITECTURE}
+Signed-By: /etc/apt/keyrings/jellyfin.gpg
+EOF
 ```
 
 <br>
@@ -266,14 +276,6 @@ Immich works fine with the Redis in Ubuntu 24.04 repo. No additional config is n
 apt install redis
 ```
 
-### Git
-
-Git will be needed later. It works fine with Ubuntu 24.04 repo, so no additional config is needed.
-
-```bash
-apt install git
-```
-
 ### Immich User Creation
 
 First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
@@ -323,21 +325,7 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 
 ## Install custom photo-processing library
 
-Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
-
-Firstly, change the locale, not sure why, only because Perl requires so.
-
-### Locale
-
-Open `/etc/locale.gen`, find line,
-
-> \# en_US.UTF-8 UTF-8
-
-Uncomment the line, save the file, and run the following command as `sudo/root` user:
-
-```bash
-locale-gen
-```
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, JPEG XL, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
 
 ### Install compile tools
 
@@ -360,33 +348,16 @@ Now `exit` the immich user, as the upcoming commands should be run as `sudo/root
 <details>
 <summary>Debian 12</summary>
 
-Unlucky you! Debian 12's package manager does not include all the essentials we need. Thus, we need to use packages from the future, i.e. packages that are marked as testing.
+There used to have some complication for `Debian` in its very conservative package version, but now I have sorted it out. So, enjoy the script!
 
-To do so, head to `/etc/apt/sources.list`.
-
-At the end of the file, add,
+All we need to do is to run the following command as `sudo/root` user (not immich user):
 
 ```bash
-deb http://deb.debian.org/debian testing main contrib
-```
-
-Now, Debian will have the knowledge of packages under testing.
-
-Next, to make sure the testing packages do not overwrite the good stable packages, we need to specify our install preference.
-
-```bash
-cat > /etc/apt/preferences.d/preferences << EOL
-Package: *
-Pin: release a=testing
-Pin-Priority: 450
-EOL
-```
-
-Finally, in the repo folder, execute
-
-```bash
+cd /home/immich/immich-in-lxc/
 ./dep-debian.sh
 ```
+
+Note, during the execution of the script there will be TUI pop-up.
 
 It will install all the dependency for coming steps.
 
@@ -536,3 +507,7 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
+
+### Notice
+
+When upgrading to Immich version v1.118.0, all user should redo the procedure at *Install custom photo-processing library*, because JPEG XL support was added in Immich.
