@@ -389,7 +389,7 @@ After installing the essential bundle, run the following command as `sudo/root` 
 ./pre-install.sh
 ```
 
-Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
+It is just so satisfying to see the compiling log rolling down the terminal, ain't it? Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
 
 ## Install Immich Server
 
