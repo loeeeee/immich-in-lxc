@@ -204,7 +204,7 @@ EOF
 <details>
 <summary>Debian 12</summary>
 
-The following commands is mostly copy-and-pasted from the Ubuntu counterpart, some subtle changes are made because otherwise it won't work. Despite official guide of Jellyfin recommends using `extrepo`, it will not work here because previous script some how changed content in `/etc/os-release`, and thus, broke the `extrepo` method. Man, I hate package pinning and ancient packages in `Debian` repo.
+The following commands is mostly copy-and-pasted from the above Ubuntu counterpart, some subtle changes are made because otherwise it won't work. Despite official guide of Jellyfin recommends using `extrepo`, it will not work here because previous script some how changed content in `/etc/os-release`, and thus, broke the `extrepo` method. Man, I hate package pinning and ancient packages in Debian repo.
 
 ```bash
 apt install curl gnupg
