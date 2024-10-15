@@ -178,7 +178,7 @@ To install the FFmpeg made by Jellyfin team, first, we need to add the repositor
 <details>
 <summary>Ubuntu 24.04</summary>
 
-The following commands is mostly copy-and-paste from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivatives. This terrifying chunk of commands add the Jellyfin repository to package manager.
+The following commands is mostly copy-and-pastes from [the official installation documentation](https://jellyfin.org/docs/general/installation/linux#repository-manual), and is for `Ubuntu` and its derivatives. This terrifying chunk of commands add the Jellyfin repository to package manager.
 
 ```bash
 apt install curl gnupg software-properties-common
@@ -204,14 +204,22 @@ EOF
 <details>
 <summary>Debian 12</summary>
 
-Jellyfin documentation suggests a super simple way of adding Jellyfin repository, and only for `Debian`, and NO, `Ubuntu` is not supported. `Debian` for the win!
+The following commands is mostly copy-and-pasted from the Ubuntu counterpart, some subtle changes are made because otherwise it won't work. Despite official guide of Jellyfin recommends using `extrepo`, it will not work here because previous script some how changed content in `/etc/os-release`, and thus, broke the `extrepo` method. Man, I hate package pinning and ancient packages in `Debian` repo.
 
 ```bash
-apt install extrepo -t testing
-extrepo enable jellyfin
+apt install curl gnupg
+mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg
+export DPKG_ARCHITECTURE="$( dpkg --print-architecture )"
+cat <<EOF | tee /etc/apt/sources.list.d/jellyfin.sources
+Types: deb
+URIs: https://repo.jellyfin.org/debian
+Suites: bookworm
+Components: main
+Architectures: ${DPKG_ARCHITECTURE}
+Signed-By: /etc/apt/keyrings/jellyfin.gpg
+EOF
 ```
-
-We need install from testing source here because some other package we installed previously use a newer version of the dependency of this package. So, thanks `Debian` packaging.
 
 <br>
 </details>
@@ -348,6 +356,8 @@ All we need to do is to run the following command as `sudo/root` user (not immic
 cd /home/immich/immich-in-lxc/
 ./dep-debian.sh
 ```
+
+Note, during the execution of the script there will be TUI pop-up.
 
 It will install all the dependency for coming steps.
 
