@@ -34,7 +34,6 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
 
 - Immich
     - Web Server
-    - Microservices
     - Machine Learning Server
 - Database
     - Redis
