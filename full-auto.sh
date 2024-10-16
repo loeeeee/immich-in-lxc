@@ -89,10 +89,6 @@ apt install -y jellyfin-ffmpeg7
 ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
 ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
 
-# Redis
-
-apt install -y redis
-
 # Immich user
 
 adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
@@ -149,6 +145,5 @@ sudo -u immich -s -n -E -- "cd /home/immich/immich-in-lxc && ./install.sh"
 # Start Immich
 
 systemctl daemon-reload
-systemctl start immich-microservices
 systemctl start immich-ml
 systemctl start immich-web
