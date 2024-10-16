@@ -8,7 +8,6 @@ set -xeuo pipefail # Make my life easier
 SCRIPT_DIR=$PWD
 
 copy_service_files () {
-    cp immich-microservices.service /etc/systemd/system/
     cp immich-ml.service /etc/systemd/system/
     cp immich-web.service /etc/systemd/system/
 }

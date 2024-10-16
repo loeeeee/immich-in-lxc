@@ -34,7 +34,6 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
 
 - Immich
     - Web Server
-    - Microservices
     - Machine Learning Server
 - Database
     - Redis
@@ -451,9 +450,6 @@ Then, modify the `service` files to make sure every path name is spelled correct
 nano /etc/systemd/system/immich-ml.service # Modify WorkingDirectory, EnvironmentFile, and ExecStart with your INSTALL_DIR, in case you changed it.
 ```
 ```bash
-nano /etc/systemd/system/immich-microservices.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
-```
-```bash
 nano /etc/systemd/system/immich-web.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
 ```
 
@@ -461,24 +457,22 @@ After that, we are ready to start our Immich instance!
 
 ```bash
 systemctl daemon-reload && \
-systemctl start immich-microservices && \
 systemctl start immich-ml && \
 systemctl start immich-web
 ```
 
-The default setting exposes the Immich web server on port `3001` on all available address. For security reason, one should put a reverse proxy, e.g. Nginx, HAProxy, in front of the immich instance and add SSL to it.
+The default setting exposes the Immich web server on port `2283` on all available address. For security reason, one should put a reverse proxy, e.g. Nginx, HAProxy, in front of the immich instance and add SSL to it.
 
 To make the service persistent and start after reboot,
 
 ```bash
-systemctl enable immich-microservices && \
 systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
 
 ### Immich config
 
-Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
+Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:2283`, otherwise the web server cannot communicate with the ML backend.
 
 Additionally, for LXC with CUDA or other GPU Transcoding support enabled, one needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select your GPU Transcoding (e.g., `NVENC` - for CUDA) to explicitly use the GPU to do the transcoding.
 
@@ -491,7 +485,6 @@ Before the update, one should **backup or at least snapshot the current containe
 First thing to do is to stop the old instance.
 
 ```bash
-systemctl stop immich-microservices && \
 systemctl stop immich-ml && \
 systemctl stop immich-web
 ```
@@ -504,6 +497,6 @@ Finally, run the `install.sh` and it will update Immich, hopefully without probl
 
 Also, don't forget to start the service again, to load the latest Immich instance.
 
-### Notice
+### ❗UPGRADE NOTICE VERY IMPORTANT❗
 
-When upgrading to Immich version v1.118.0, all user should redo the procedure at *Install custom photo-processing library*, because JPEG XL support was added in Immich.
+See [issue](https://github.com/loeeeee/immich-in-lxc/issues/44)
