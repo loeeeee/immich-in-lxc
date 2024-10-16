@@ -3,10 +3,15 @@
 set -xeuo pipefail # Make my life easier
 
 # Because I removed one package
-apt --fix-broken -y install
-if [ -d "/tmp/immich-preinstall" ]; then
-    rm -r /tmp/immich-preinstall
-fi
+# apt --fix-broken -y install
+# if [ -d "/tmp/immich-preinstall" ]; then
+#     rm -r /tmp/immich-preinstall
+# fi
+
+# Install runtime component
+## Redis
+apt install --no-install-recommends -y\
+        redis
 
 # Install build dependency
 ## Tools

@@ -270,11 +270,7 @@ apt install ffmpeg
 
 ### Redis
 
-Immich works fine with the Redis in Ubuntu 24.04 repo. No additional config is needed.
-
-```bash
-apt install redis
-```
+Because no additional config is needed for Redis, we have installed it in the previous dependency script. Also, the Redis shipped with Ubuntu 24.04 and Debian 12 works fine out of box with Immich.
 
 ### Immich User Creation
 
