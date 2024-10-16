@@ -498,6 +498,6 @@ Finally, run the `install.sh` and it will update Immich, hopefully without probl
 
 Also, don't forget to start the service again, to load the latest Immich instance.
 
-### UPGRADE NOTICE VERY IMPORTANT
+### ❗UPGRADE NOTICE VERY IMPORTANT❗
 
 See [issue](https://github.com/loeeeee/immich-in-lxc/issues/44)
