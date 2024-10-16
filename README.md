@@ -451,9 +451,6 @@ Then, modify the `service` files to make sure every path name is spelled correct
 nano /etc/systemd/system/immich-ml.service # Modify WorkingDirectory, EnvironmentFile, and ExecStart with your INSTALL_DIR, in case you changed it.
 ```
 ```bash
-nano /etc/systemd/system/immich-microservices.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
-```
-```bash
 nano /etc/systemd/system/immich-web.service # Modify ExecStart with your INSTALL_DIR, in case you changed it.
 ```
 
@@ -461,7 +458,6 @@ After that, we are ready to start our Immich instance!
 
 ```bash
 systemctl daemon-reload && \
-systemctl start immich-microservices && \
 systemctl start immich-ml && \
 systemctl start immich-web
 ```
@@ -471,7 +467,6 @@ The default setting exposes the Immich web server on port `3001` on all availabl
 To make the service persistent and start after reboot,
 
 ```bash
-systemctl enable immich-microservices && \
 systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
@@ -491,7 +486,6 @@ Before the update, one should **backup or at least snapshot the current containe
 First thing to do is to stop the old instance.
 
 ```bash
-systemctl stop immich-microservices && \
 systemctl stop immich-ml && \
 systemctl stop immich-web
 ```
@@ -504,6 +498,6 @@ Finally, run the `install.sh` and it will update Immich, hopefully without probl
 
 Also, don't forget to start the service again, to load the latest Immich instance.
 
-### Notice
+### UPGRADE NOTICE VERY IMPORTANT
 
-When upgrading to Immich version v1.118.0, all user should redo the procedure at *Install custom photo-processing library*, because JPEG XL support was added in Immich.
+See [issue](https://github.com/loeeeee/immich-in-lxc/issues/44)
