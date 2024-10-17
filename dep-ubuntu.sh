@@ -7,8 +7,11 @@ set -xeuo pipefail # Make my life easier
 ./dep-common.sh
 
 # libjpeg62-turbo-dev
-apt install --no-install-recommends -y \
+## Fix my previous mistake
+apt purge -y \
         libjpeg-turbo8-dev
+apt install --no-install-recommends -y \
+        libjpeg62-dev
 ## libjpeg-turbo is faster than libjpeg
 
 # Dockerfile 35
