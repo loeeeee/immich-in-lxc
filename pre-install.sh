@@ -24,17 +24,19 @@ function git_clone () {
     # $2 is clone target folder
     # $3 is branch name
     if [ ! -d "$2" ]; then
-        git clone "$1" "$2"
+        git clone "$1" "$2" --depth 1 --branch $3
+        cd $2
+    else
+        cd $2
+        # Get updates
+        git fetch
+        # REMOVE all the change one made to source repo, which is sth not supposed to happen
+        git reset --hard HEAD
+        # In case one is not on the branch
+        git checkout $3
+        # Get updates
+        git pull
     fi
-    cd $2
-    # Get updates
-    git fetch
-    # REMOVE all the change one made to source repo, which is sth not supposed to happen
-    git reset --hard HEAD
-    # In case one is not on the branch
-    git checkout $3
-    # Get updates
-    git pull
 }
 
 # -------------------
