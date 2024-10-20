@@ -110,6 +110,8 @@ build_libjxl () {
     cd $SOURCE
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
+    git submodule update --recursive --remote
+
     git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-empty-dht-marker.patch
 
     remove_build_folder
