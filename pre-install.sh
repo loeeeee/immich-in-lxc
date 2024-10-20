@@ -99,6 +99,19 @@ build_libjxl () {
     SOURCE=$SOURCE_DIR/libjxl
 
     set -e
+
+    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
+    JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
+
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --JPEGLI_LIBJPEG_LIBRARY_SOVERSION) JPEGLI_LIBJPEG_LIBRARY_SOVERSION="$2"; shift ;;
+            --JPEGLI_LIBJPEG_LIBRARY_VERSION) JPEGLI_LIBJPEG_LIBRARY_VERSION="$2"; shift ;;
+            *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        esac
+        shift
+    done
+
     : "${LIBJXL_REVISION:=$(jq -cr '.sources[] | select(.name == "libjxl").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
     set +e
 
@@ -107,6 +120,7 @@ build_libjxl () {
     cd $SOURCE
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
+    git apply ../jpegli-empty-dht-marker.patch
 
     remove_build_folder
     
@@ -126,6 +140,8 @@ build_libjxl () {
     -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=ON \
     -DJPEGXL_INSTALL_JPEGLI_LIBJPEG=ON \
     -DJPEGXL_ENABLE_PLUGINS=ON \
+    -DJPEGLI_LIBJPEG_LIBRARY_SOVERSION="${JPEGLI_LIBJPEG_LIBRARY_SOVERSION}" \
+    -DJPEGLI_LIBJPEG_LIBRARY_VERSION="${JPEGLI_LIBJPEG_LIBRARY_VERSION}" \
     ..
     # Move the following flag to above if one's system support AVX512
     # -DJPEGXL_ENABLE_AVX512=ON \
