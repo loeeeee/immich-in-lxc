@@ -98,17 +98,9 @@ build_libjxl () {
 
     set -e
 
+    # Monitor these often
     JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
     JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
-
-    while [[ "$#" -gt 0 ]]; do
-        case $1 in
-            --JPEGLI_LIBJPEG_LIBRARY_SOVERSION) JPEGLI_LIBJPEG_LIBRARY_SOVERSION="$2"; shift ;;
-            --JPEGLI_LIBJPEG_LIBRARY_VERSION) JPEGLI_LIBJPEG_LIBRARY_VERSION="$2"; shift ;;
-            *) echo "Unknown parameter passed: $1"; exit 1 ;;
-        esac
-        shift
-    done
 
     : "${LIBJXL_REVISION:=$(jq -cr '.sources[] | select(.name == "libjxl").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
     set +e
