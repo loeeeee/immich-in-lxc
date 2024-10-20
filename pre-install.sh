@@ -25,18 +25,16 @@ function git_clone () {
     # $3 is branch name
     if [ ! -d "$2" ]; then
         git clone "$1" "$2"
-        cd $2
-    else
-        cd $2
-        # Get updates
-        git fetch
-        # REMOVE all the change one made to source repo, which is sth not supposed to happen
-        git reset --hard HEAD
-        # In case one is not on the branch
-        git checkout $3
-        # Get updates
-        git pull
     fi
+    cd $2
+    # Get updates
+    git fetch
+    # REMOVE all the change one made to source repo, which is sth not supposed to happen
+    git reset FETCH_HEAD --hard
+    # In case one is not on the branch
+    git checkout $3
+    # Get updates
+    git pull
 }
 
 # -------------------
