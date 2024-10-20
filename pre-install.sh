@@ -24,13 +24,7 @@ function git_clone () {
     # $2 is clone target folder
     # $3 is branch name
     if [ ! -d "$2" ]; then
-        # Shamelessly copied from immich-native
-        if [[ $3 =~ ^[0-9A-Fa-f]+$ ]]; then
-            # $3 is a full commit hash, full clone is required
-            git clone "$1" "$2"
-        else
-            git clone "$1" "$2" --depth 1 --branch $3
-        fi
+        git clone "$1" "$2"
         cd $2
     else
         cd $2
