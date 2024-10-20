@@ -32,7 +32,7 @@ function git_clone () {
     # REMOVE all the change one made to source repo, which is sth not supposed to happen
     git reset FETCH_HEAD --hard
     # In case one is not on the branch
-    git checkout $3
+    git reset --hard "$3"
 }
 
 # -------------------
@@ -144,7 +144,7 @@ build_libjxl () {
     # Move the following flag to above if one's system support AVX512
     # -DJPEGXL_ENABLE_AVX512=ON \
     # -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
-    cmake --build . -- -j$(nproc)
+    cmake --build . -- -j"$(nproc)"
     cmake --install .
 
     ldconfig /usr/local/lib
@@ -216,7 +216,7 @@ build_libraw () {
 
     autoreconf --install
     ./configure
-    make -j$(nproc)
+    make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
 
@@ -246,7 +246,7 @@ build_image_magick () {
     cd $SOURCE
 
     ./configure --with-modules
-    make -j$(nproc)
+    make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
 
