@@ -33,8 +33,6 @@ function git_clone () {
     git reset FETCH_HEAD --hard
     # In case one is not on the branch
     git checkout $3
-    # Get updates
-    git pull
 }
 
 # -------------------
