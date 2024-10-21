@@ -4,7 +4,6 @@ Documentation=https://github.com/immich-app/immich
 Requires=redis-server.service
 Requires=postgresql.service
 Requires=immich-ml.service
-Requires=immich-microservices.service
 
 [Service]
 User=immich
