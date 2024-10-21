@@ -41,7 +41,7 @@ apt install --no-install-recommends -y\
         cpanminus
 
 ## Learned from compile failure
-apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
+apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool libopenexr-dev
 
 # Install runtime dependency
 apt install --no-install-recommends -y\
