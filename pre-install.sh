@@ -115,7 +115,7 @@ build_libjxl () {
 
     git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-empty-dht-marker.patch
 
-    remove_build_folder
+    remove_build_folder $SOURCE
     
     mkdir build
     cd build
@@ -168,7 +168,7 @@ build_libheif () {
 
     cd $SOURCE
 
-    remove_build_folder
+    remove_build_folder $SOURCE
 
     mkdir build
     cd build
@@ -268,7 +268,7 @@ build_libvips () {
 
     cd $SOURCE
     
-    remove_build_folder
+    remove_build_folder $SOURCE
     
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
