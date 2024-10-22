@@ -41,7 +41,7 @@ apt install --no-install-recommends -y\
         cpanminus
 
 ## Learned from compile failure
-apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool libopenexr-dev
+apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
 
 ## From libjxl guide
 apt install -y --no-install-recommends libgif-dev libjpeg-dev libopenexr-dev libpng-dev libwebp-dev
