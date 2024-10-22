@@ -8,6 +8,9 @@ set -xeuo pipefail # Make my life easier
 SCRIPT_DIR=$PWD
 
 copy_service_files () {
+    # Remove deprecated service
+    rm /etc/systemd/system/immich-microservices.service
+    # Copy new services
     cp immich-ml.service /etc/systemd/system/
     cp immich-web.service /etc/systemd/system/
 }
