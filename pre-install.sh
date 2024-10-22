@@ -40,6 +40,7 @@ function git_clone () {
 # -------------------
 
 function remove_build_folder () {
+    cd $1
     if [ -d "build" ]; then
         rm -r build
     fi
@@ -145,7 +146,7 @@ build_libjxl () {
 
     # Clean up builds
     make clean
-    remove_build_folder
+    remove_build_folder $SOURCE
 }
 
 build_libjxl
@@ -186,7 +187,7 @@ build_libheif () {
 
     # Clean up builds
     make clean
-    remove_build_folder
+    remove_build_folder $SOURCE
 }
 
 build_libheif
@@ -275,7 +276,7 @@ build_libvips () {
     ldconfig /usr/local/lib
 
     # Clean up builds
-    remove_build_folder
+    remove_build_folder $SOURCE
 }
 
 build_libvips
