@@ -26,8 +26,8 @@ fi
 apt update
 
 # libjpeg62-turbo-dev
-apt install --no-install-recommends -y \
-        libjpeg62-turbo-dev
+# apt install --no-install-recommends -y \
+#         libjpeg62-turbo-dev
 ## libjpeg-turbo is faster than libjpeg
 
 # Dockerfile 35

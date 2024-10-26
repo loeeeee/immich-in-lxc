@@ -32,9 +32,7 @@ function git_clone () {
     # REMOVE all the change one made to source repo, which is sth not supposed to happen
     git reset FETCH_HEAD --hard
     # In case one is not on the branch
-    git checkout $3
-    # Get updates
-    git pull
+    git reset --hard "$3"
 }
 
 # -------------------
@@ -42,6 +40,7 @@ function git_clone () {
 # -------------------
 
 function remove_build_folder () {
+    cd $1
     if [ -d "build" ]; then
         rm -r build
     fi
@@ -99,6 +98,11 @@ build_libjxl () {
     SOURCE=$SOURCE_DIR/libjxl
 
     set -e
+
+    # Monitor these often
+    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
+    JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
+
     : "${LIBJXL_REVISION:=$(jq -cr '.sources[] | select(.name == "libjxl").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
     set +e
 
@@ -108,7 +112,9 @@ build_libjxl () {
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
 
-    remove_build_folder
+    git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-empty-dht-marker.patch
+
+    remove_build_folder $SOURCE
     
     mkdir build
     cd build
@@ -126,21 +132,35 @@ build_libjxl () {
     -DJPEGXL_ENABLE_JPEGLI_LIBJPEG=ON \
     -DJPEGXL_INSTALL_JPEGLI_LIBJPEG=ON \
     -DJPEGXL_ENABLE_PLUGINS=ON \
+    -DJPEGLI_LIBJPEG_LIBRARY_SOVERSION="${JPEGLI_LIBJPEG_LIBRARY_SOVERSION}" \
+    -DJPEGLI_LIBJPEG_LIBRARY_VERSION="${JPEGLI_LIBJPEG_LIBRARY_VERSION}" \
     ..
     # Move the following flag to above if one's system support AVX512
     # -DJPEGXL_ENABLE_AVX512=ON \
     # -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
-    cmake --build . -- -j$(nproc)
+    cmake --build . -- -j"$(nproc)"
     cmake --install .
 
     ldconfig /usr/local/lib
 
     # Clean up builds
     make clean
-    remove_build_folder
+    remove_build_folder $SOURCE
+    rm -rf $SOURCE/third_party/
 }
 
-build_libjxl
+# Experimental build, currently broken
+while getopts "e" opt; do
+    case $opt in
+        e)
+        build_libjxl
+        ;;
+        \?)
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+    esac
+done
 
 # -------------------
 # Build libheif
@@ -159,7 +179,7 @@ build_libheif () {
 
     cd $SOURCE
 
-    remove_build_folder
+    remove_build_folder $SOURCE
 
     mkdir build
     cd build
@@ -178,7 +198,7 @@ build_libheif () {
 
     # Clean up builds
     make clean
-    remove_build_folder
+    remove_build_folder $SOURCE
 }
 
 build_libheif
@@ -202,7 +222,7 @@ build_libraw () {
 
     autoreconf --install
     ./configure
-    make -j$(nproc)
+    make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
 
@@ -232,7 +252,7 @@ build_image_magick () {
     cd $SOURCE
 
     ./configure --with-modules
-    make -j$(nproc)
+    make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
 
@@ -259,7 +279,7 @@ build_libvips () {
 
     cd $SOURCE
     
-    remove_build_folder
+    remove_build_folder $SOURCE
     
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
@@ -267,7 +287,7 @@ build_libvips () {
     ldconfig /usr/local/lib
 
     # Clean up builds
-    remove_build_folder
+    remove_build_folder $SOURCE
 }
 
 build_libvips

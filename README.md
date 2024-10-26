@@ -4,7 +4,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
-- **HEIF, RAW, JPEG XL support**,
+- **HEIF, RAW support**,
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
 
@@ -320,7 +320,7 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 
 ## Install custom photo-processing library
 
-Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, JPEG XL, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
 
 ### Install compile tools
 
