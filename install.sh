@@ -181,18 +181,18 @@ install_immich_web_server () {
     fi
 
     cd server
-    npm ci --loglevel verbose 
+    npm ci
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci --loglevel verbose 
+    npm ci 
     npm run build
     cd ../..
 
     cd web
-    npm ci --loglevel verbose 
+    npm ci 
     npm run build
     cd ..
 
