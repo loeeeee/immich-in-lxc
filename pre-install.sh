@@ -281,7 +281,8 @@ build_libvips () {
     
     remove_build_folder $SOURCE
     
-    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
+    # -Djpeg-xl=disabled is added because previous broken install will break libvips
+    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled -Djpeg-xl=disabled
     cd build
     ninja install
     ldconfig /usr/local/lib
