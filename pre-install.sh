@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Build dependencies
+## This is mostly a copy-and-paste work from immich's base image
 
 set -xeuo pipefail # Make people's life easier
 
@@ -113,6 +114,7 @@ build_libjxl () {
     git submodule update --init --recursive --depth 1 --recommend-shallow
 
     git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-empty-dht-marker.patch
+    git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-icc-warning.patch
 
     remove_build_folder $SOURCE
     
