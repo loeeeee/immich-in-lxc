@@ -151,7 +151,7 @@ create_folders
 
 clone_the_repo () {
     if [ ! -d "$INSTALL_DIR_src" ]; then
-        git clone "$REPO_URL" "$INSTALL_DIR_src" --depth 1 --branch $REPO_TAG
+        git clone "$REPO_URL" "$INSTALL_DIR_src" --single-branch
     else
         cd $INSTALL_DIR_src
         # REMOVE all the change one made to source repo, which is sth not supposed to happen
