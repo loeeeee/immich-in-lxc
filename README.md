@@ -98,8 +98,10 @@ apt-get update
 apt-get -y install cudnn-cuda-12
 ```
 
+In addition to the cuDNN, we also need libcublas12 things.
+
 ```bash
-apt install nvidia-cudnn libcublaslt12 libcublas12
+apt install -y libcublaslt12 libcublas12
 ```
 
 <br>
