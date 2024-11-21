@@ -136,10 +136,12 @@ build_libjxl () {
     -DJPEGXL_ENABLE_PLUGINS=ON \
     -DJPEGLI_LIBJPEG_LIBRARY_SOVERSION="${JPEGLI_LIBJPEG_LIBRARY_SOVERSION}" \
     -DJPEGLI_LIBJPEG_LIBRARY_VERSION="${JPEGLI_LIBJPEG_LIBRARY_VERSION}" \
+    -DLIBJPEG_TURBO_VERSION_NUMBER=2001005 \
     ..
     # Move the following flag to above if one's system support AVX512
     # -DJPEGXL_ENABLE_AVX512=ON \
     # -DJPEGXL_ENABLE_AVX512_ZEN4=ON \
+    echo "Building libjxl using $(nproc) threads"
     cmake --build . -- -j"$(nproc)"
     cmake --install .
 
@@ -188,8 +190,8 @@ build_libheif () {
     cmake --preset=release-noplugins \
         -DWITH_DAV1D=ON \
         -DENABLE_PARALLEL_TILE_DECODING=ON \
-        -DENABLE_LIBSHARPYUV=ON \
-        -DENABLE_LIBDE265=ON \
+        -DWITH_LIBSHARPYUV=ON \
+        -DWITH_LIBDE265=ON \
         -DWITH_AOM_DECODER=OFF \
         -DWITH_AOM_ENCODER=OFF \
         -DWITH_X265=OFF \
@@ -224,6 +226,7 @@ build_libraw () {
 
     autoreconf --install
     ./configure
+    echo "Building libraw using $(nproc) threads"
     make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
@@ -254,6 +257,7 @@ build_image_magick () {
     cd $SOURCE
 
     ./configure --with-modules
+    echo "Building ImageMagick using $(nproc) threads"
     make -j"$(nproc)"
     make install
     ldconfig /usr/local/lib
