@@ -86,10 +86,22 @@ The major component that Immch requires is [ONNX runtime](https://onnxruntime.ai
 <details>
 <summary>Ubuntu 24.04</summary>
 
-For Immich machine learning support, we also need to install CuDNN and two additional libraries,
+For Immich machine learning support in `Ubuntu`, we need to install CuDNN and CUDA Toolkit. The default cuDNN version in apt is version 8, which is no longer supported by ONNX Runtime. Thus, we need to install the latest version 9.
+
+The CuDNN install commands are from [official website of NVIDIA](https://developer.nvidia.com/cudnn-downloads), and should all be run as root. Also, one should check the NVIDIA website for updates.
 
 ```bash
-apt install nvidia-cudnn libcublaslt12 libcublas12
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+dpkg -i cuda-keyring_1.1-1_all.deb
+apt-get update
+
+apt-get -y install cudnn-cuda-12
+```
+
+In addition to the cuDNN, we also need libcublas12 things.
+
+```bash
+apt install -y libcublaslt12 libcublas12
 ```
 
 <br>
