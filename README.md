@@ -135,6 +135,7 @@ apt install -y cuda-toolkit
 </details>
 
 Zu easy, innit?
+
 ## Hardware-accelerated machine learning: Intel/OpenVINO (Optional, Experimental)
 
 This part is intended for users who would like to utilize Intel's OpenVINO execution provider. ([System requirement](https://docs.openvino.ai/2024/about-openvino/release-notes-openvino/system-requirements.html), [List of supported devices](https://docs.openvino.ai/2024/about-openvino/compatibility-and-support/supported-devices.html)) The document listed the support for not only Intel iGPU and dGPU, but also its NPU, which seems very cool.
@@ -151,22 +152,13 @@ Then, install the dependency specified by Immich for Intel.
 ./dep-intel.sh
 ```
 
-Finally, find following part in `install.sh`,
+Finally, after first-time execution of the `install.sh`, which happens at later part of the guide (so safe to skip for now), modify the generated `.env` file.
 
-```bash
-# Install CUDA parts only when necessary
-if [ $isCUDA = true ]; then
-    poetry install --no-root --with dev --with cuda
-else
-    poetry install --no-root --with dev --with cpu
-fi
+```env
+isCUDA=openvino
 ```
 
-Change it into,
-
-```bash
-poetry install --no-root --with dev --with openvino
-```
+I know, this is ugly as hell, but whatever, it works.
 
 Now, when installing Immich, it will be using OpenVINO as its ML backend.
 

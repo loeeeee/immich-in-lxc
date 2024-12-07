@@ -252,6 +252,8 @@ install_immich_machine_learning () {
     # Install CUDA parts only when necessary
     if [ $isCUDA = true ]; then
         poetry install --no-root --with dev --with cuda
+    elif [ $isCUDA = "openvino" ]; then
+        poetry install --no-root --with dev --with openvino
     else
         poetry install --no-root --with dev --with cpu
     fi
