@@ -72,17 +72,3 @@ apt install --no-install-recommends -y\
         wget \
         zlib1g \
         ocl-icd-libopencl1
-
-# Install Intel things
-# Skip it
-# if [ ! -d ".intel-things-success-0" ]; then
-#     mkdir /tmp/immich-preinstall
-#     cd /tmp/immich-preinstall
-#     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb
-#     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb
-#     wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb
-#     wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb 
-#     dpkg -i *.deb
-#     touch .intel-things-success-0
-#     rm -r /tmp/immich-preinstall
-# fi
