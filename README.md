@@ -538,7 +538,3 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
-
-### ❗UPGRADE NOTICE VERY IMPORTANT❗
-
-See [issue](https://github.com/loeeeee/immich-in-lxc/issues/44)
