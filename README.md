@@ -5,6 +5,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
 - **HEIF, RAW support**,
+- Experimental Intel iGPU/dGPU/NPU support for machine-learning (if one choose so), 
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
 
@@ -135,9 +136,38 @@ apt install -y cuda-toolkit
 
 Zu easy, innit?
 
+## Hardware-accelerated machine learning: Intel/OpenVINO (Optional, Experimental)
+
+This part is intended for users who would like to utilize Intel's OpenVINO execution provider. ([System requirement](https://docs.openvino.ai/2024/about-openvino/release-notes-openvino/system-requirements.html), [List of supported devices](https://docs.openvino.ai/2024/about-openvino/compatibility-and-support/supported-devices.html)) The document listed the support for not only Intel iGPU and dGPU, but also its NPU, which seems very cool.
+
+Disclaimer: This part is not yet tested by the repo owner, and it is composed based on documentation. However, success have been reported ([Issue #58](https://github.com/loeeeee/immich-in-lxc/issues/58)), even though one could not see the background tasks ([Issue #62](https://github.com/loeeeee/immich-in-lxc/issues/62)). 
+
+<details>
+<summary>Moe</summary>
+Firstly, prepare a LXC with proper hardware available. For iGPU user, one could use `intel_gpu_top` to see its availability.
+
+Then, install the dependency specified by Immich for Intel.
+
+```bash
+./dep-intel.sh
+```
+
+Finally, after first-time execution of the `install.sh`, which happens at later part of the guide (so safe to skip for now), modify the generated `.env` file.
+
+```env
+isCUDA=openvino
+```
+
+I know, this is ugly as hell, but whatever, it works.
+
+Now, when installing Immich, it will be using OpenVINO as its ML backend.
+
+<br>
+</details>
+
 ## Hardware-accelerated machine learning: Others (Optional)
 
-Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/). 
+Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/#summary-of-supported-execution-providers). 
 
 Some users have also reported successful results using GPU Transcoding in Immich by following the Proxmox configurations from this video: [iGPU Transcoding In Proxmox with Jellyfin Media Center](https://www.youtube.com/watch?v=XAa_qpNmzZs) - Just avoid all the Jellyfin stuff and do the configurations on the Immich container instead. At the end, you should be able to use your iGPU Transcoding in Immich by going to needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `Quick Sync` to explicitly use the GPU to do the transcoding.
 
