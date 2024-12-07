@@ -139,7 +139,7 @@ Zu easy, innit?
 
 This part is intended for users who would like to utilize Intel's OpenVINO execution provider. ([System requirement](https://docs.openvino.ai/2024/about-openvino/release-notes-openvino/system-requirements.html), [List of supported devices](https://docs.openvino.ai/2024/about-openvino/compatibility-and-support/supported-devices.html)) The document listed the support for not only Intel iGPU and dGPU, but also its NPU, which seems very cool.
 
-Disclaimer: This part is not yet tested by the repo owner, and it is composed based on documentation. However, success have been reported (#58), even though one could not see the background tasks (#62). 
+Disclaimer: This part is not yet tested by the repo owner, and it is composed based on documentation. However, success have been reported ([Issue #58](https://github.com/loeeeee/immich-in-lxc/issues/58)), even though one could not see the background tasks ([Issue #62](https://github.com/loeeeee/immich-in-lxc/issues/62)). 
 
 <details>
 <summary>Moe</summary>
