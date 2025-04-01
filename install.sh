@@ -390,6 +390,13 @@ cd $INSTALL_DIR_app
 exec node $INSTALL_DIR_app/dist/main "\$@"
 EOF
 
+if [ $MINOR_VERSION -gt 130 ]; then
+    pkg_name=immich_ml
+else
+    pkg_name=app
+fi
+
+
     # Machine learning
     cat <<EOF > $INSTALL_DIR_ml/start.sh
 #!/bin/bash
@@ -406,14 +413,18 @@ cd $INSTALL_DIR_ml
 : "\${MACHINE_LEARNING_WORKERS:=1}"
 : "\${MACHINE_LEARNING_WORKER_TIMEOUT:=120}"
 
-exec gunicorn app.main:app \
-        -k app.config.CustomUvicornWorker \
+exec gunicorn $pkg_name.main:app \
+        -k $pkg_name.config.CustomUvicornWorker \
         -w "\$MACHINE_LEARNING_WORKERS" \
         -b "\$MACHINE_LEARNING_HOST":"\$MACHINE_LEARNING_PORT" \
         -t "\$MACHINE_LEARNING_WORKER_TIMEOUT" \
         --log-config-json log_conf.json \
         --graceful-timeout 0
 EOF
+
+if [ $MINOR_VERSION -gt 130 ]; then
+    chmod 775 $INSTALL_DIR_ml/start.sh
+fi
 }
 
 create_custom_start_script
