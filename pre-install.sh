@@ -197,7 +197,7 @@ build_libheif () {
         -DWITH_X265=OFF \
         -DWITH_EXAMPLES=OFF \
         ..
-    make install
+    make install -j "$(nproc)"
     ldconfig /usr/local/lib
 
     # Clean up builds

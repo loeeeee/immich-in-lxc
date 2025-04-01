@@ -98,7 +98,7 @@ review_dependency () {
 
 review_dependency
 
-set -xeuo pipefail 
+set -xeuo pipefail
 
 # -------------------
 # Common variables
@@ -109,6 +109,8 @@ INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
 INSTALL_DIR_geo=$INSTALL_DIR/geodata
 REPO_URL="https://github.com/immich-app/immich"
+MAJOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f1)
+MINOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f2)
 
 # -------------------
 # Clean previous build
@@ -152,6 +154,7 @@ create_folders
 clone_the_repo () {
     if [ ! -d "$INSTALL_DIR_src" ]; then
         git clone "$REPO_URL" "$INSTALL_DIR_src" --single-branch
+        cd $INSTALL_DIR_src
     else
         cd $INSTALL_DIR_src
         # REMOVE all the change one made to source repo, which is sth not supposed to happen
@@ -160,10 +163,9 @@ clone_the_repo () {
         git checkout main
         # Get updates
         git pull
-        # Set the install version
-        git checkout $REPO_TAG
     fi
-
+    # Set the install version
+    git checkout $REPO_TAG
 }
 
 clone_the_repo
@@ -187,12 +189,12 @@ install_immich_web_server () {
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci 
+    npm ci
     npm run build
     cd ../..
 
     cd web
-    npm ci 
+    npm ci
     npm run build
     cd ..
 
@@ -249,22 +251,35 @@ install_immich_machine_learning () {
         poetry update
     fi
 
+    # Check minor release version
+    # This only assumes version 1.x though
+    # For completeness, we might want to check the major version as well in case someone is using old 0.x versions
+    if [ $MINOR_VERSION -gt 129 ]; then
+        poetry_args='--no-root --extras'
+    else
+        poetry_args='--no-root --with dev --with'
+    fi
+
     # Install CUDA parts only when necessary
     if [ $isCUDA = true ]; then
-        poetry install --no-root --with dev --with cuda
+        poetry install $poetry_args cuda
     elif [ $isCUDA = "openvino" ]; then
-        poetry install --no-root --with dev --with openvino
+        poetry install $poetry_args openvino
     else
-        poetry install --no-root --with dev --with cpu
+        poetry install $poetry_args cpu
     fi
 
     # Work around for bad poetry config
     pip install "numpy<2" -i $PROXY_POETRY
     )
-    
+
     # Copy results
     cd $INSTALL_DIR_src
-    cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
+    if [ $MINOR_VERSION -gt 130 ]; then
+        cp -a machine-learning/ann machine-learning/immich_ml $INSTALL_DIR_ml/
+    else
+        cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
+    fi
 }
 
 install_immich_machine_learning
@@ -280,7 +295,11 @@ replace_usr_src () {
     grep -Rl /usr/src | xargs -n1 sed -i -e "s@/usr/src@$INSTALL_DIR@g"
     ln -sf $INSTALL_DIR_app/resources $INSTALL_DIR/
     mkdir -p $INSTALL_DIR/cache
-    sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/app/config.py
+    if [ $MINOR_VERSION -gt 130 ]; then
+        sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/immich_ml/config.py
+    else
+        sed -i -e "s@\"/cache\"@\"$INSTALL_DIR/cache\"@g" $INSTALL_DIR_ml/app/config.py
+    fi
     grep -RlE "\"/build\"|'/build'" | xargs -n1 sed -i -e "s@\"/build\"@\"$INSTALL_DIR_app\"@g" -e "s@'/build'@'$INSTALL_DIR_app'@g"
 }
 
