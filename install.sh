@@ -183,18 +183,18 @@ install_immich_web_server () {
     fi
 
     cd server
-    npm ci
+    npm ci --cpu x64 --os linux
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci
+    npm ci --cpu x64 --os linux
     npm run build
     cd ../..
 
     cd web
-    npm ci
+    npm ci --cpu x64 --os linux
     npm run build
     cd ..
 
