@@ -54,6 +54,8 @@ review_install_information () {
     echo $isCUDA
     # npm proxy
     echo $PROXY_NPM
+    # npm dist proxy (used by node-gyp)
+    echo $PROXY_NPM_DIST
     # poetry proxy
     echo $PROXY_POETRY
 }
@@ -180,6 +182,10 @@ install_immich_web_server () {
     # Set mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
         npm config set registry=$PROXY_NPM
+    fi
+    # Set mirror for npm dist
+    if [ ! -z "${PROXY_NPM_DIST}" ]; then
+        export npm_config_dist_url=$PROXY_NPM_DIST
     fi
 
     # This solves fallback-to-build issue with bcrypt and utimes
