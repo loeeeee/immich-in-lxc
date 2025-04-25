@@ -193,6 +193,7 @@ install_immich_web_server () {
     # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
     # npm config set audit false
 
+    # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
     cd server
     npm ci # --cpu x64 --os linux
     npm run build
