@@ -19,6 +19,7 @@ apt install --no-install-recommends -y\
         curl git python3-venv python3-dev unzip
 
 ## From immich/base-image
+## libspng-dev is called libpng-dev on Ubuntu 22
 apt install --no-install-recommends -y\
         autoconf \
         build-essential \
