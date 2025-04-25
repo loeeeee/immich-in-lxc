@@ -182,6 +182,9 @@ install_immich_web_server () {
         npm config set registry=$PROXY_NPM
     fi
 
+    # This solves fallback-to-build issue with bcrypt and utimes
+    npm install -g node-gyp node-pre-gyp
+
     cd server
     npm ci # --cpu x64 --os linux
     npm run build
