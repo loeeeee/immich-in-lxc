@@ -64,7 +64,7 @@ However, if possible, use an LXC or VM with `Ubuntu 24.04 LTS` as it offers an e
 
 First, create a LXC/VM normally. Make sure there is reasonable amount CPU and memory, because we are going to install and compile a lot of things, and it would not hurt to give it a bit more. For a CPU-only Immich server, there should be at least 8 GiB of storage, and one with nVidia GPU, at least 16 GiB storage needs to be available. However, once one starts using Immich, it will create a lot of cache (for thumbnails and low-res transcoded videos), so don't forget to resize the LXC volumes accordingly. 
 
-Also, there is no need for a privileged container, if one does not plan to mount a file system, e.g., NFS, SMB, etc., directly inside the LXC container.
+Also, there is no need for a privileged container (which is not recommended in almost all scenarios), if one does not plan to mount a file system, e.g., NFS, SMB, etc., directly inside the LXC container.
 
 This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ slightly in different distributions, though. Additionally, if one wants to have HW-accelerated ML, it is not recommend to use older release of `Ubuntu`, as it has older version of dependency in its repository, introducing additional complexity, like package pinning.
 
@@ -311,7 +311,7 @@ apt install ffmpeg
 
 ### Redis
 
-Because no additional config is needed for Redis, we have installed it in the previous dependency script. Also, the Redis shipped with Ubuntu 24.04 and Debian 12 works fine out of box with Immich.
+Because no additional config is needed for Redis, we will install it in the later dependency script, `dep-*.sh`. Also, the Redis shipped with Ubuntu 24.04 and Debian 12 works fine out of box with Immich.
 
 ### Immich User Creation
 
@@ -347,11 +347,11 @@ After change to the Immich user,
 
 ```bash
 # installs nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 # download and install Node.js (you may need to restart the terminal)
-nvm install 20
+nvm install 22
 # verifies the right Node.js version is in the environment
-node -v # should print `v20.*.*`
+node -v # should print `v22.*.*`
 # verifies the right npm version is in the environment
 npm -v # should print `10.*.*`
 ```
@@ -453,10 +453,14 @@ Then, we should have a `.env` file in current directory.
 - `INSTALL_DIR` is where the `app` and `source` folders will resides in (e.g., it can be a `mnt` point),
 - `UPLOAD_DIR` is where the user uploads goes to  (it can be a `mnt` point), 
 - `isCUDA` when set to true, will install Immich with CUDA supprt. For other GPU Transcodings, this is likely to remain false.
-- `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one, and
-- `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
+- For user with compromised network accessibility:
+    - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one,
+    - :new:`PROXY_NPM_DIST` sets the dist URL that node-gyp will use, if empty, it will use the official one, and
+    - `PROXY_POETRY` sets the mirror URL that poetry will use, if empty, it will use the official one.
 
 Note: The `immich` user should have read and write access to both `INSTALL_DIR` and `UPLOAD_DIR`.
+
+Note: :new: means user might need to create the empty entry to make script run.
 
 ### Run the script
 
