@@ -251,8 +251,11 @@ install_immich_machine_learning () {
     # Use pypi if proxy does not present
     if [ -z "${PROXY_POETRY}" ]; then
         PROXY_POETRY=https://pypi.org/simple/
+    else
+        # Set PROXY_POETRY as the primary source to download package from
+        # https://python-poetry.org/docs/repositories/#primary-package-sources
+        poetry source add --priority=primary langsam $PROXY_POETRY
     fi
-    export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
     pip3 install poetry -i $PROXY_POETRY
 
     # Deal with python 3.12
@@ -291,6 +294,13 @@ install_immich_machine_learning () {
         cp -a machine-learning/ann machine-learning/immich_ml $INSTALL_DIR_ml/
     else
         cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
+    fi
+
+    # Reset the settings
+    if [ ! -z "${PROXY_POETRY}" ]; then
+        # Remove the source
+        # https://python-poetry.org/docs/cli/#source-remove
+        poetry source remove langsam
     fi
 }
 
