@@ -250,13 +250,15 @@ install_immich_machine_learning () {
 
     # Use pypi if proxy does not present
     if [ -z "${PROXY_POETRY}" ]; then
-        PROXY_POETRY=https://pypi.org/simple/
-    else
-        # Set PROXY_POETRY as the primary source to download package from
-        # https://python-poetry.org/docs/repositories/#primary-package-sources
-        poetry source add --priority=primary langsam $PROXY_POETRY
+        PROXY_POETRY=https://pypi.org/simple/  
     fi
     pip3 install poetry -i $PROXY_POETRY
+
+    # Set PROXY_POETRY as the primary source to download package from
+    # https://python-poetry.org/docs/repositories/#primary-package-sources
+    if [! -z "${PROXY_POETRY}" ]; then
+        poetry source add --priority=primary langsam $PROXY_POETRY
+    fi
 
     # Deal with python 3.12
     python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
