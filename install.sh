@@ -189,7 +189,7 @@ install_immich_web_server () {
     fi
 
     # This solves fallback-to-build issue with bcrypt and utimes
-    npm install -g node-gyp node-pre-gyp
+    npm install -g node-gyp @mapbox/node-pre-gyp
     # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
     # npm config set audit false
 
