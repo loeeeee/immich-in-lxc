@@ -256,7 +256,7 @@ install_immich_machine_learning () {
 
     # Set PROXY_POETRY as the primary source to download package from
     # https://python-poetry.org/docs/repositories/#primary-package-sources
-    if [! -z "${PROXY_POETRY}" ]; then
+    if [ ! -z "${PROXY_POETRY}" ]; then
         poetry source add --priority=primary langsam $PROXY_POETRY
     fi
 
