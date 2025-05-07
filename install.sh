@@ -195,18 +195,18 @@ install_immich_web_server () {
 
     # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
     cd server
-    npm ci # --verbose --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci # --verbose --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     cd ../..
 
     cd web
-    npm ci # --verbose --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     cd ..
 
@@ -285,7 +285,7 @@ install_immich_machine_learning () {
     else
         poetry install $poetry_args cpu
     fi
-    
+
     # Reset the settings
     if [ ! -z "${PROXY_POETRY}" ]; then
         # Remove the source
