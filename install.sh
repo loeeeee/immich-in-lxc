@@ -285,6 +285,13 @@ install_immich_machine_learning () {
     else
         poetry install $poetry_args cpu
     fi
+    
+    # Reset the settings
+    if [ ! -z "${PROXY_POETRY}" ]; then
+        # Remove the source
+        # https://python-poetry.org/docs/cli/#source-remove
+        poetry source remove langsam
+    fi
 
     # Work around for bad poetry config
     pip install "numpy<2" -i $PROXY_POETRY
@@ -298,12 +305,6 @@ install_immich_machine_learning () {
         cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
     fi
 
-    # Reset the settings
-    if [ ! -z "${PROXY_POETRY}" ]; then
-        # Remove the source
-        # https://python-poetry.org/docs/cli/#source-remove
-        poetry source remove langsam
-    fi
 }
 
 install_immich_machine_learning
