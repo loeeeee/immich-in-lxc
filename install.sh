@@ -232,7 +232,8 @@ install_immich_web_server
 copy_build_lock () {
     # So that immich would not complain
     cd $SCRIPT_DIR
-    cp base-images/server/bin/build-lock.json $INSTALL_DIR_app/
+    shopt -s nullglob
+    cp base-images/server/sources/*.json "$INSTALL_DIR_app/"
 }
 
 copy_build_lock
