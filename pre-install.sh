@@ -27,6 +27,7 @@ function git_clone () {
     if [ ! -d "$2" ]; then
         git clone "$1" "$2"
     fi
+    git config --global --add safe.directory $2
     cd $2
     # Get updates
     git fetch
