@@ -118,6 +118,7 @@ MINOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f2) # No longer used, but might wort
 # they might not have good access to GitHub
 # Thus, build from source would be faster
 # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
+# Lastly, printing out build process looks cool :)
 if [ -n "$PROXY_NPM" ]; then
   isNPM_BUILD_FROM_SOURCE="true"
 else
@@ -202,7 +203,7 @@ install_immich_web_server () {
     if $isNPM_BUILD_FROM_SOURCE; then
         npm_args="--build-from-source --verbose --foreground-script"
     else
-        npm_args="--build-from-source"
+        npm_args=""
     fi
 
     # This solves fallback-to-build issue with bcrypt and utimes
