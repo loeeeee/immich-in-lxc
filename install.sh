@@ -189,24 +189,24 @@ install_immich_web_server () {
     fi
 
     # This solves fallback-to-build issue with bcrypt and utimes
-    npm install -g node-gyp node-pre-gyp
+    npm install -g node-gyp @mapbox/node-pre-gyp
     # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
     # npm config set audit false
 
     # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
     cd server
-    npm ci # --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci # --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     cd ../..
 
     cd web
-    npm ci # --cpu x64 --os linux
+    npm ci --verbose # --cpu x64 --os linux
     npm run build
     cd ..
 
@@ -251,10 +251,15 @@ install_immich_machine_learning () {
 
     # Use pypi if proxy does not present
     if [ -z "${PROXY_POETRY}" ]; then
-        PROXY_POETRY=https://pypi.org/simple/
+        PROXY_POETRY=https://pypi.org/simple/  
     fi
-    export POETRY_PYPI_MIRROR_URL=$PROXY_POETRY
     pip3 install poetry -i $PROXY_POETRY
+
+    # Set PROXY_POETRY as the primary source to download package from
+    # https://python-poetry.org/docs/repositories/#primary-package-sources
+    if [ ! -z "${PROXY_POETRY}" ]; then
+        poetry source add --priority=primary langsam $PROXY_POETRY
+    fi
 
     # Deal with python 3.12
     python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
@@ -282,6 +287,13 @@ install_immich_machine_learning () {
         poetry install $poetry_args cpu
     fi
 
+    # Reset the settings
+    if [ ! -z "${PROXY_POETRY}" ]; then
+        # Remove the source
+        # https://python-poetry.org/docs/cli/#source-remove
+        poetry source remove langsam
+    fi
+
     # Work around for bad poetry config
     pip install "numpy<2" -i $PROXY_POETRY
     )
@@ -293,6 +305,7 @@ install_immich_machine_learning () {
     else
         cp -a machine-learning/ann machine-learning/start.sh machine-learning/app $INSTALL_DIR_ml/
     fi
+
 }
 
 install_immich_machine_learning
