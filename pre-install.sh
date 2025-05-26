@@ -54,12 +54,12 @@ function remove_build_folder () {
 git_clone $REPO_URL $BASE_IMG_REPO_DIR main
 
 # -------------------
-# Change build-lock permission
+# Change lock file permission
 # -------------------
 
 change_permission () {
     # Change file permission so that install script could copy the content
-    chmod 666 $BASE_IMG_REPO_DIR/server/bin/build-lock.json
+    chmod 666 $BASE_IMG_REPO_DIR/server/sources/*.json
 }
 
 change_permission
@@ -104,7 +104,7 @@ build_libjxl () {
     JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
     JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
 
-    : "${LIBJXL_REVISION:=$(jq -cr '.sources[] | select(.name == "libjxl").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    : "${LIBJXL_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libjxl.json)}"
     set +e
 
     git_clone https://github.com/libjxl/libjxl.git $SOURCE $LIBJXL_REVISION
@@ -113,8 +113,8 @@ build_libjxl () {
 
     git submodule update --init --recursive --depth 1 --recommend-shallow
 
-    git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-empty-dht-marker.patch
-    git apply $BASE_IMG_REPO_DIR/server/bin/jpegli-icc-warning.patch
+    git apply $BASE_IMG_REPO_DIR/server/sources/libjxl-patches/jpegli-empty-dht-marker.patch
+    git apply $BASE_IMG_REPO_DIR/server/sources/libjxl-patches/jpegli-icc-warning.patch
 
     remove_build_folder $SOURCE
     
@@ -176,7 +176,7 @@ build_libheif () {
     SOURCE=$SOURCE_DIR/libheif
 
     set -e
-    : "${LIBHEIF_REVISION:=$(jq -cr '.sources[] | select(.name == "libheif").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    : "${LIBHEIF_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libheif.json)}"
     set +e
 
     git_clone https://github.com/strukturag/libheif.git $SOURCE $LIBHEIF_REVISION
@@ -217,7 +217,7 @@ build_libraw () {
     SOURCE=$SOURCE_DIR/libraw
 
     set -e
-    : "${LIBRAW_REVISION:=$(jq -cr '.sources[] | select(.name == "libraw").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    : "${LIBRAW_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libraw.json)}"
     set +e
 
     git_clone https://github.com/libraw/libraw.git $SOURCE $LIBRAW_REVISION
@@ -249,7 +249,7 @@ build_image_magick () {
     SOURCE=$SOURCE_DIR/image-magick
 
     set -e
-    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.sources[] | select(.name == "imagemagick").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    : "${IMAGEMAGICK_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/imagemagick.json)}"
     set +e
 
     git_clone https://github.com/ImageMagick/ImageMagick.git $SOURCE $IMAGEMAGICK_REVISION
@@ -278,7 +278,7 @@ build_libvips () {
     SOURCE=$SOURCE_DIR/libvips
 
     set -e
-    : "${LIBVIPS_REVISION:=$(jq -cr '.sources[] | select(.name == "libvips").revision' $BASE_IMG_REPO_DIR/server/bin/build-lock.json)}"
+    : "${LIBVIPS_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libvips.json)}"
     set +e
 
     git_clone https://github.com/libvips/libvips.git $SOURCE $LIBVIPS_REVISION
