@@ -114,6 +114,17 @@ REPO_URL="https://github.com/immich-app/immich"
 MAJOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f1) # No longer used, but might worth keeping it around
 MINOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f2) # No longer used, but might worth keeping it around
 
+# The idea is that when one needs to sets up a proxy for NPM, 
+# they might not have good access to GitHub
+# Thus, build from source would be faster
+# Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
+if [ -n "$PROXY_NPM" ]; then
+  isNPM_BUILD_FROM_SOURCE="true"
+else
+  isNPM_BUILD_FROM_SOURCE="false"
+fi
+
+
 # -------------------
 # Clean previous build
 # -------------------
@@ -187,26 +198,31 @@ install_immich_web_server () {
     if [ ! -z "${PROXY_NPM_DIST}" ]; then
         export npm_config_dist_url=$PROXY_NPM_DIST
     fi
+    # Set npm args
+    if $isNPM_BUILD_FROM_SOURCE; then
+        npm_args="--build-from-source --verbose --foreground-script"
+    else
+        npm_args="--build-from-source"
+    fi
 
     # This solves fallback-to-build issue with bcrypt and utimes
     npm install -g node-gyp @mapbox/node-pre-gyp
     # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
     # npm config set audit false
 
-    # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
     cd server
-    npm ci --verbose # --cpu x64 --os linux
+    npm ci $npm_args # --cpu x64 --os linux
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
 
     cd open-api/typescript-sdk
-    npm ci --verbose # --cpu x64 --os linux
+    npm ci $npm_args # --cpu x64 --os linux
     npm run build
     cd ../..
 
     cd web
-    npm ci --verbose # --cpu x64 --os linux
+    npm ci $npm_args # --cpu x64 --os linux
     npm run build
     cd ..
 
@@ -326,8 +342,14 @@ install_sharp_and_cli () {
     if [ ! -z "${PROXY_NPM}" ]; then
         npm config set registry=$PROXY_NPM
     fi
+    # Set npm args
+    if $isNPM_BUILD_FROM_SOURCE; then
+        npm_args="--verbose --foreground-script"
+    else
+        npm_args=""
+    fi
 
-    npm install --build-from-source sharp
+    npm install --build-from-source $npm_args sharp
 
     # Remove sharp dependency so that it use system library
     rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
