@@ -289,7 +289,21 @@ build_libvips () {
     remove_build_folder $SOURCE
     
     # -Djpeg-xl=disabled is added because previous broken install will break libvips
-    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled -Djpeg-xl=disabled
+    # Experimental build, currently broken
+    mesa_args="-Djpeg-xl=disabled"
+    while getopts "e" opt; do
+        case $opt in
+            e)
+            mesa_args=""
+            ;;
+            \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        esac
+    done
+    
+    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled $mesa_args
     cd build
     ninja install
     ldconfig /usr/local/lib
