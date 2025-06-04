@@ -40,9 +40,7 @@ remove_build_dependency () {
         libde265-dev \
         libexif-dev \
         libexpat1-dev \
-        libglib2.0-dev \
         libgsf-1-dev \
-        libjpeg62-turbo-dev \
         liblcms2-2 \
         librsvg2-dev \
         libspng-dev
