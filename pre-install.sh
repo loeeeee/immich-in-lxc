@@ -154,18 +154,19 @@ build_libjxl () {
     rm -rf $SOURCE/third_party/
 }
 
-# Experimental build, currently broken
-while getopts "e" opt; do
-    case $opt in
-        e)
-        build_libjxl
-        ;;
-        \?)
-        echo "Invalid option: -$OPTARG" >&2
-        exit 1
-        ;;
-    esac
-done
+# # Experimental build, currently broken
+# while getopts "e" opt; do
+#     case $opt in
+#         e)
+#         build_libjxl
+#         ;;
+#         \?)
+#         echo "Invalid option: -$OPTARG" >&2
+#         exit 1
+#         ;;
+#     esac
+# done
+build_libjxl
 
 # -------------------
 # Build libheif
@@ -238,7 +239,7 @@ build_libraw () {
 
 build_libraw
 # DO NOT ASK WHY, RUNNING ONE TIME NEVER WORK FOR ME
-build_libraw
+# build_libraw
 
 # -------------------
 # Build image magick
@@ -289,21 +290,7 @@ build_libvips () {
     remove_build_folder $SOURCE
     
     # -Djpeg-xl=disabled is added because previous broken install will break libvips
-    # Experimental build, currently broken
-    mesa_args="-Djpeg-xl=disabled"
-    while getopts "e" opt; do
-        case $opt in
-            e)
-            mesa_args=""
-            ;;
-            \?)
-            echo "Invalid option: -$OPTARG" >&2
-            exit 1
-            ;;
-        esac
-    done
-
-    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled $mesa_args
+    meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
     ninja install
     ldconfig /usr/local/lib
