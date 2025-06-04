@@ -46,7 +46,7 @@ remove_build_dependency () {
         liblcms2-2 \
         librsvg2-dev \
         libspng-dev
-    apt-get remove -t testing --no-install-recommends -y \
+    apt-get remove -y \
         libdav1d-dev \
         libhwy-dev \
         libwebp-dev \
@@ -83,7 +83,7 @@ add_runtime_dependency () {
         wget \
         zlib1g \
         ocl-icd-libopencl1
-    apt-get install -t testing --no-install-recommends -yqq \
+    apt-get install --no-install-recommends -y \
         libio-compress-brotli-perl \
         libwebp7 \
         libwebpdemux2 \
