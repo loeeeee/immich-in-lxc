@@ -11,8 +11,8 @@ copy_service_files () {
     # Remove deprecated service
     rm -f /etc/systemd/system/immich-microservices.service
     # Copy new services
-    cp immich-ml.service /etc/systemd/system/
-    cp immich-web.service /etc/systemd/system/
+    cp --update=none immich-ml.service /etc/systemd/system/
+    cp --update=none immich-web.service /etc/systemd/system/
 }
 
 copy_service_files
@@ -28,3 +28,12 @@ create_log_directory () {
 create_log_directory
 
 echo "Done!"
+
+
+# -------------------
+# Remove build dependency
+# -------------------
+
+remove_build_dependency () {
+    
+}
