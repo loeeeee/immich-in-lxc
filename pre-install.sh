@@ -80,7 +80,7 @@ setup_folders () {
 setup_folders
 
 # -------------------
-# Build libjxl
+# Change locale
 # -------------------
 
 change_locale () {
@@ -302,7 +302,7 @@ build_libvips () {
             ;;
         esac
     done
-    
+
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled $mesa_args
     cd build
     ninja install
