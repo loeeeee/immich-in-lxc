@@ -49,6 +49,96 @@ function remove_build_folder () {
 }
 
 # -------------------
+# Install runtime component
+# -------------------
+
+install_runtime_component () {
+    cd $SCRIPT_DIR
+
+    # Redis
+    apt install --no-install-recommends -y\
+        redis
+}
+
+install_runtime_component
+
+# -------------------
+# Install build dependency
+# -------------------
+
+install_build_dependency () {
+    # Source the os-release file to get access to its variables
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+    else
+        echo "Error: /etc/os-release not found."
+        exit 1
+    fi
+
+    # From immich/base-image
+    ## Install common tools
+    apt-get install --no-install-recommends -y\
+        curl git python3-venv python3-dev unzip
+
+    ## Install common build components
+    apt-get install --no-install-recommends -y\
+        autoconf \
+        build-essential \
+        cmake \
+        jq \
+        libbrotli-dev \
+        libde265-dev \
+        libexif-dev \
+        libexpat1-dev \
+        libglib2.0-dev \
+        libgsf-1-dev \
+        liblcms2-2 \
+        librsvg2-dev \
+        libspng-dev \
+        meson \
+        ninja-build \
+        pkg-config \
+        wget \
+        zlib1g \
+        cpanminus
+
+    # Check the ID and execute the corresponding script
+    case "$ID" in
+        ubuntu)
+            echo "Detected Ubuntu. Running Ubuntu-specific script..."
+            ./dep-ubuntu.sh
+            ;;
+        debian)
+            echo "Detected Debian. Running Debian-specific script..."
+            ./dep-debian.sh
+            ;;
+        fedora)
+            echo "Detected Fedora. Not supported, please open issue."
+            exit 1
+            ;;
+        centos)
+            echo "Detected CentOS. Not supported, please open issue."
+            exit 1
+            ;;
+        rhel)
+            echo "Detected RHEL. Not supported, please open issue."
+            exit 1
+            ;;
+        arch)
+            echo "Detected Arch Linux. Not supported, please open issue."
+            neofetch # Top priority
+            exit 1
+            ;;
+        *)
+            echo "Unsupported OS ID: $ID"
+            exit 1
+            ;;
+    esac
+}
+
+install_build_dependency
+
+# -------------------
 # Clone the base images repo
 # -------------------
 
@@ -317,3 +407,65 @@ remove_unused_packages () {
 # To fix it, apt --fix-broken install
 
 # remove_unused_packages
+
+
+# -------------------
+# Remove build dependency
+# -------------------
+
+remove_build_dependency () {
+    apt-get remove -y \
+        libbrotli-dev \
+        libde265-dev \
+        libexif-dev \
+        libexpat1-dev \
+        libgsf-1-dev \
+        liblcms2-2 \
+        librsvg2-dev \
+        libspng-dev
+    apt-get remove -y \
+        libdav1d-dev \
+        libhwy-dev \
+        libwebp-dev \
+        libio-compress-brotli-perl
+}
+
+remove_build_dependency
+
+# -------------------
+# Remove build dependency
+# -------------------
+
+add_runtime_dependency () {
+     apt-get install --no-install-recommends -yqq \
+        libde265-0 \
+        libexif12 \
+        libexpat1 \
+        libgcc-s1 \
+        libglib2.0-0 \
+        libgomp1 \
+        libgsf-1-114 \
+        liblcms2-2 \
+        liblqr-1-0 \
+        libltdl7 \
+        libmimalloc2.0 \
+        libopenexr-3-1-30 \
+        libopenjp2-7 \
+        librsvg2-2 \
+        libspng0 \
+        mesa-utils \
+        mesa-va-drivers \
+        mesa-vulkan-drivers \
+        tini \
+        wget \
+        zlib1g \
+        ocl-icd-libopencl1
+    apt-get install --no-install-recommends -y \
+        libio-compress-brotli-perl \
+        libwebp7 \
+        libwebpdemux2 \
+        libwebpmux3 \
+        libhwy1t64
+}
+
+add_runtime_dependency
