@@ -216,6 +216,13 @@ install_immich_web_server () {
     sed -i '0,/"sharp":/{/"sharp":/d}' "package.json"
     sed -i '0,/"sharp":/{/"sharp":/d}' "package-lock.json"
     npm ci $npm_args # --cpu x64 --os linux
+
+    # Manually install sharp
+    SHARP_IGNORE_GLOBAL_LIBVIPS=true npm install sharp
+    # Remove sharp dependency so that it use system library
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
+    # rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
+
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
