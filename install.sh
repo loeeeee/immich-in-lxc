@@ -212,6 +212,8 @@ install_immich_web_server () {
     # npm config set audit false
 
     cd server
+    # Do not install sharp at this step, because it will fail
+    sed -i '0,/"sharp":/{/"sharp":/d}' "package.json"
     npm ci $npm_args # --cpu x64 --os linux
     npm run build
     npm prune --omit=dev --omit=optional
