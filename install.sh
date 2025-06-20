@@ -212,16 +212,7 @@ install_immich_web_server () {
     # npm config set audit false
 
     cd server
-    # Do not install sharp at this step, because it will fail
-    npm uninstall sharp
     npm ci $npm_args # --cpu x64 --os linux
-
-    # Manually install sharp
-    SHARP_IGNORE_GLOBAL_LIBVIPS=true npm install sharp
-    # Remove sharp dependency so that it use system library
-    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
-    # rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
-
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
