@@ -5,3 +5,4 @@ playground*
 /image-source
 docker-compose.yml
 .intel-things-success-0
+node_modules/
