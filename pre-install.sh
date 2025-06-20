@@ -102,6 +102,9 @@ install_build_dependency () {
         zlib1g \
         cpanminus
 
+    ## Learned from compile failure
+    apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
+    
     # Check the ID and execute the corresponding script
     case "$ID" in
         ubuntu)

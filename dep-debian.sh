@@ -4,8 +4,6 @@ set -xeuo pipefail # Make my life easier
 
 # Install Dependency for Debian 12
 
-./dep-common.sh
-
 # Add source
 if [ ! -d "/etc/apt/sources.list.d/immich.list" ]; then
     cat > /etc/apt/sources.list.d/immich.list << EOL
