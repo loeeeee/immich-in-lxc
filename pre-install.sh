@@ -328,8 +328,6 @@ build_libraw () {
 }
 
 build_libraw
-# DO NOT ASK WHY, RUNNING ONE TIME NEVER WORK FOR ME
-# build_libraw
 
 # -------------------
 # Build image magick
@@ -430,10 +428,10 @@ remove_build_dependency () {
         libio-compress-brotli-perl
 }
 
-remove_build_dependency
+# remove_build_dependency
 
 # -------------------
-# Remove build dependency
+# Add runtime dependency
 # -------------------
 
 add_runtime_dependency () {
