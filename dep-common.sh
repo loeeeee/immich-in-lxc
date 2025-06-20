@@ -45,7 +45,7 @@ apt install --no-install-recommends -y\
 apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
 
 ## From libjxl guide
-apt install -y --no-install-recommends libgif-dev libjpeg-dev libopenexr-dev libpng-dev libwebp-dev
+apt install -y --no-install-recommends libgif-dev libjpeg62-dev libopenexr-dev libpng-dev libwebp-dev
 
 # Install runtime dependency
 apt install --no-install-recommends -y\
