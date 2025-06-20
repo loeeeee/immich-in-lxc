@@ -213,8 +213,7 @@ install_immich_web_server () {
 
     cd server
     # Do not install sharp at this step, because it will fail
-    sed -i '0,/"sharp":/{/"sharp":/d}' "package.json"
-    sed -i '0,/"sharp":/{/"sharp":/d}' "package-lock.json"
+    npm uninstall sharp
     npm ci $npm_args # --cpu x64 --os linux
 
     # Manually install sharp
