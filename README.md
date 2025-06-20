@@ -4,7 +4,7 @@ A complete guide for installing Immich in LXC, VM, or bare-metal without Docker,
 
 - **CUDA support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
-- **HEIF, RAW support**,
+- **HEIF, RAW, and JXL support**,
 - Experimental Intel iGPU/dGPU/NPU support for machine-learning (if one choose so), 
 - easy and fast upgrade, and
 - accessible proxy settings for PyPi and NPM registry.
