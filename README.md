@@ -364,7 +364,7 @@ Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.
 
 Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
 
-### Install compile tools
+### Install compile tools and compile 始める
 
 I have make some helper script in this repo, so all one needs to do is clone the repo. We change to the user immich so that the files we cloned will have proper permission. And, just in case one does not know, the commands are as follow.
 
@@ -380,47 +380,7 @@ Additionally, it is recommend to have our working directory set to the repo's di
 cd immich-in-lxc
 ```
 
-Now `exit` the immich user, as the upcoming commands should be run as `sudo/root` user.
-
-<details>
-<summary>Debian 12</summary>
-
-There used to have some complication for `Debian` in its very conservative package version, but now I have sorted it out. So, enjoy the script!
-
-All we need to do is to run the following command as `sudo/root` user (not immich user):
-
-```bash
-cd /home/immich/immich-in-lxc/
-./dep-debian.sh
-```
-
-Note, during the execution of the script there will be TUI pop-up.
-
-It will install all the dependency for coming steps.
-
-<br>
-</details>
-
-<details>
-<summary>Ubuntu 24.04</summary>
-
-Lucky boiiiii! Ubuntu package manager has everything we need. 
-
-All we need to do is to run the following command as `sudo/root` user (not immich user):
-
-```bash
-cd /home/immich/immich-in-lxc/
-./dep-ubuntu.sh
-```
-
-This will install all the dependencies for the upcoming steps.
-
-<br>
-</details>
-
-### Compile 始める
-
-After installing the essential bundle, run the following command as `sudo/root` user (not immich user):
+Now `exit` the immich user, as the upcoming commands should be run as `root` user.
 
 ```bash
 ./pre-install.sh
