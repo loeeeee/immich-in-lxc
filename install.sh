@@ -275,6 +275,7 @@ install_immich_machine_learning () {
     # Set PROXY_POETRY as the primary source to download package from
     # https://python-poetry.org/docs/repositories/#primary-package-sources
     if [ ! -z "${PROXY_POETRY}" ]; then
+        # langsam literally means slow
         poetry source add --priority=primary langsam $PROXY_POETRY
     fi
 
@@ -291,6 +292,12 @@ install_immich_machine_learning () {
         poetry install --no-root --extras cuda
     elif [ $isCUDA = "openvino" ]; then
         poetry install --no-root --extras openvino
+    elif [ $isCUDA = "rocm"]; then
+        # https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-onnx.html
+        poetry add onnxruntime-rocm
+        poetry install --no-root --extras rocm
+        # Verify installation
+        python3 -c "import onnxruntime as ort; print(ort.get_available_providers())"
     else
         poetry install --no-root --extras cpu
     fi
