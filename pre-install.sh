@@ -247,18 +247,6 @@ build_libjxl () {
     rm -rf $SOURCE/third_party/
 }
 
-# # Experimental build, currently broken
-# while getopts "e" opt; do
-#     case $opt in
-#         e)
-#         build_libjxl
-#         ;;
-#         \?)
-#         echo "Invalid option: -$OPTARG" >&2
-#         exit 1
-#         ;;
-#     esac
-# done
 build_libjxl
 
 # -------------------
