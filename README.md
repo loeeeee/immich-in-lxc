@@ -412,7 +412,7 @@ Then, we should have a `.env` file in current directory.
 - `REPO_TAG` is the version of the Immich that we are going to install,
 - `INSTALL_DIR` is where the `app` and `source` folders will resides in (e.g., it can be a `mnt` point),
 - `UPLOAD_DIR` is where the user uploads goes to  (it can be a `mnt` point), 
-- `isCUDA` when set to true, will install Immich with CUDA supprt. For other GPU Transcodings, this is likely to remain false.
+- `isCUDA` when set to true, will install Immich with CUDA supprt. For other GPU Transcodings, this is likely to remain false. (available flag: true, false, openvino, rocm)
 - For user with compromised network accessibility:
     - `PROXY_NPM` sets the mirror URL that npm will use, if empty, it will use the official one,
     - :new:`PROXY_NPM_DIST` sets the dist URL that node-gyp will use, if empty, it will use the official one, and
