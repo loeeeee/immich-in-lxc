@@ -93,7 +93,6 @@ install_build_dependency () {
         libglib2.0-dev \
         libgsf-1-dev \
         liblcms2-2 \
-        librsvg2-dev \
         libspng-dev \
         meson \
         ninja-build \
@@ -101,9 +100,11 @@ install_build_dependency () {
         wget \
         zlib1g \
         cpanminus
+        
+        # librsvg2-dev \ # This is installing incorrect libjpeg
 
     ## Learned from compile failure
-    apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool liblcms2-dev
+    apt install -y libgdk-pixbuf-2.0-dev libtool liblcms2-dev
     
     # Check the ID and execute the corresponding script
     case "$ID" in
@@ -410,8 +411,8 @@ remove_build_dependency () {
         libexpat1-dev \
         libgsf-1-dev \
         liblcms2-2 \
-        librsvg2-dev \
         libspng-dev
+#        librsvg2-dev \ This is installing incorrect libjpeg-dev (turbo)
     apt-get remove -y \
         libdav1d-dev \
         libhwy-dev \
