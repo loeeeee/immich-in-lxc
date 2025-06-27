@@ -94,6 +94,7 @@ install_build_dependency () {
         libgsf-1-dev \
         liblcms2-2 \
         libspng-dev \
+        librsvg2-dev \
         meson \
         ninja-build \
         pkg-config \
@@ -101,7 +102,6 @@ install_build_dependency () {
         zlib1g \
         cpanminus
         
-        # librsvg2-dev \ # This is installing incorrect libjpeg
 
     ## Learned from compile failure
     apt install -y libtool liblcms2-dev
@@ -196,8 +196,8 @@ build_libjxl () {
     set -e
 
     # Monitor these often
-    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
-    JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
+    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="8"
+    JPEGLI_LIBJPEG_LIBRARY_VERSION="8.2.2"
 
     : "${LIBJXL_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libjxl.json)}"
     set +e
@@ -397,7 +397,7 @@ remove_unused_packages () {
 # Skip this because this causes much headache down the road
 # To fix it, apt --fix-broken install
 
-remove_unused_packages
+# remove_unused_packages
 
 
 # -------------------
@@ -412,8 +412,8 @@ remove_build_dependency () {
         libexpat1-dev \
         libgsf-1-dev \
         liblcms2-2 \
+        librsvg2-dev \
         libspng-dev
-#        librsvg2-dev \ This is installing incorrect libjpeg-dev (turbo)
     apt-get remove -y \
         libdav1d-dev \
         libhwy-dev \
