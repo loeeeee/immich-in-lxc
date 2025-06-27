@@ -104,7 +104,7 @@ install_build_dependency () {
         # librsvg2-dev \ # This is installing incorrect libjpeg
 
     ## Learned from compile failure
-    apt install -y libgdk-pixbuf-2.0-dev libtool liblcms2-dev
+    apt install -y libtool liblcms2-dev
     
     # Check the ID and execute the corresponding script
     case "$ID" in
