@@ -356,11 +356,6 @@ build_image_magick
 
 build_libvips () {
 
-    # -------------------
-    # Cursed libjpeg
-    # -------------------
-    apt install -y libjpeg-turbo8-dev
-
     cd $SCRIPT_DIR
 
     SOURCE=$SOURCE_DIR/libvips
@@ -394,15 +389,15 @@ build_libvips
 remove_unused_packages () {
     # Dockerfile 109
     ## Debian
-    dpkg -r --force-depends libjpeg62-turbo
+    # dpkg -r --force-depends libjpeg62-turbo
     ## Ubuntu
-    dpkg -r --force-depends libjpeg-turbo8
+    dpkg -r --force-depends libjpeg-
 }
 
 # Skip this because this causes much headache down the road
 # To fix it, apt --fix-broken install
 
-# remove_unused_packages
+remove_unused_packages
 
 
 # -------------------
