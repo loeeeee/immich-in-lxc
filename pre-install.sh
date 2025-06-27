@@ -103,7 +103,7 @@ install_build_dependency () {
         cpanminus
 
     ## Learned from compile failure
-    apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
+    apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool liblcms2-dev
     
     # Check the ID and execute the corresponding script
     case "$ID" in
