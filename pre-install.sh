@@ -93,27 +93,32 @@ install_build_dependency () {
         libglib2.0-dev \
         libgsf-1-dev \
         liblcms2-2 \
-        librsvg2-dev \
         libspng-dev \
+        librsvg2-dev \
         meson \
         ninja-build \
         pkg-config \
         wget \
         zlib1g \
         cpanminus
+        
 
     ## Learned from compile failure
-    apt install -y libgdk-pixbuf-2.0-dev librsvg2-dev libtool
+    apt install -y libtool liblcms2-dev
     
     # Check the ID and execute the corresponding script
     case "$ID" in
         ubuntu)
             echo "Detected Ubuntu. Running Ubuntu-specific script..."
             ./dep-ubuntu.sh
+            JPEGLI_LIBJPEG_LIBRARY_SOVERSION="8"
+            JPEGLI_LIBJPEG_LIBRARY_VERSION="8.2.2"
             ;;
         debian)
             echo "Detected Debian. Running Debian-specific script..."
             ./dep-debian.sh
+            JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
+            JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
             ;;
         fedora)
             echo "Detected Fedora. Not supported, please open issue."
@@ -194,9 +199,9 @@ build_libjxl () {
 
     set -e
 
-    # Monitor these often
-    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
-    JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
+    # This is set based on distro, or which libjpeg-dev is available (ABI 62 or 80)
+    echo $JPEGLI_LIBJPEG_LIBRARY_SOVERSION
+    echo $JPEGLI_LIBJPEG_LIBRARY_VERSION
 
     : "${LIBJXL_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libjxl.json)}"
     set +e
@@ -354,6 +359,7 @@ build_image_magick
 # -------------------
 
 build_libvips () {
+
     cd $SCRIPT_DIR
 
     SOURCE=$SOURCE_DIR/libvips
@@ -379,24 +385,6 @@ build_libvips () {
 }
 
 build_libvips
-
-# -------------------
-# Remove unused packages
-# -------------------
-
-remove_unused_packages () {
-    # Dockerfile 109
-    ## Debian
-    dpkg -r --force-depends libjpeg62-turbo
-    ## Ubuntu
-    dpkg -r --force-depends libjpeg-turbo8
-}
-
-# Skip this because this causes much headache down the road
-# To fix it, apt --fix-broken install
-
-# remove_unused_packages
-
 
 # -------------------
 # Remove build dependency
