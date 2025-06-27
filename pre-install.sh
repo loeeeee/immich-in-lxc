@@ -355,6 +355,12 @@ build_image_magick
 # -------------------
 
 build_libvips () {
+
+    # -------------------
+    # Cursed libjpeg
+    # -------------------
+    apt install -y libjpeg-turbo8-dev
+
     cd $SCRIPT_DIR
 
     SOURCE=$SOURCE_DIR/libvips
