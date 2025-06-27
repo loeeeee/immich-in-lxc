@@ -111,10 +111,14 @@ install_build_dependency () {
         ubuntu)
             echo "Detected Ubuntu. Running Ubuntu-specific script..."
             ./dep-ubuntu.sh
+            JPEGLI_LIBJPEG_LIBRARY_SOVERSION="8"
+            JPEGLI_LIBJPEG_LIBRARY_VERSION="8.2.2"
             ;;
         debian)
             echo "Detected Debian. Running Debian-specific script..."
             ./dep-debian.sh
+            JPEGLI_LIBJPEG_LIBRARY_SOVERSION="62"
+            JPEGLI_LIBJPEG_LIBRARY_VERSION="62.3.0"
             ;;
         fedora)
             echo "Detected Fedora. Not supported, please open issue."
@@ -195,9 +199,9 @@ build_libjxl () {
 
     set -e
 
-    # Monitor these often
-    JPEGLI_LIBJPEG_LIBRARY_SOVERSION="8"
-    JPEGLI_LIBJPEG_LIBRARY_VERSION="8.2.2"
+    # This is set based on distro, or which libjpeg-dev is available (ABI 62 or 80)
+    echo $JPEGLI_LIBJPEG_LIBRARY_SOVERSION
+    echo $JPEGLI_LIBJPEG_LIBRARY_VERSION
 
     : "${LIBJXL_REVISION:=$(jq -cr '.revision' $BASE_IMG_REPO_DIR/server/sources/libjxl.json)}"
     set +e
@@ -381,24 +385,6 @@ build_libvips () {
 }
 
 build_libvips
-
-# -------------------
-# Remove unused packages
-# -------------------
-
-remove_unused_packages () {
-    # Dockerfile 109
-    ## Debian
-    # dpkg -r --force-depends libjpeg62-turbo
-    ## Ubuntu
-    dpkg -r --force-depends libjpeg-
-}
-
-# Skip this because this causes much headache down the road
-# To fix it, apt --fix-broken install
-
-# remove_unused_packages
-
 
 # -------------------
 # Remove build dependency
