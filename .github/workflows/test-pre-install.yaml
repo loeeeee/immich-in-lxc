@@ -211,39 +211,67 @@ jobs:
       - name: Install shellcheck
         run: |
           # Install shellcheck for linting with multiple fallback options
-          apt-get update
-          apt-get install -y wget curl
+          # Handle apt lock issues with retry logic
           
-          # Try to install shellcheck from default repositories
-          if apt-get install -y shellcheck; then
-            echo "✅ Shellcheck installed from default repositories"
-          else
-            echo "⚠️ Shellcheck not available in default repositories, trying alternative installation"
-            
-            # Try installing from universe repository (Ubuntu)
-            apt-get install -y software-properties-common
-            add-apt-repository universe || true
-            apt-get update
-            
-            if apt-get install -y shellcheck; then
-              echo "✅ Shellcheck installed from universe repository"
-            else
-              echo "⚠️ Shellcheck not available in repositories, trying direct download"
-              
-              # Try downloading shellcheck directly
-              SHELLCHECK_VERSION="v0.9.0"
-              SHELLCHECK_ARCH="x86_64"
-              
-              if wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SHELLCHECK_ARCH}.tar.xz" | tar -xJf - --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck; then
-                chmod +x shellcheck
-                mv shellcheck /usr/local/bin/
-                echo "✅ Shellcheck installed from direct download"
+          # Function to safely update apt
+          safe_apt_update() {
+            for i in {1..5}; do
+              if apt-get update; then
+                return 0
               else
-                echo "⚠️ Shellcheck installation failed, skipping linting"
-                echo "This is not critical for the workflow"
-                exit 0
+                echo "⚠️ apt-get update failed (attempt $i/5), waiting 10 seconds..."
+                sleep 10
               fi
+            done
+            return 1
+          }
+          
+          # Function to safely install packages
+          safe_apt_install() {
+            local packages="$@"
+            for i in {1..3}; do
+              if apt-get install -y $packages; then
+                return 0
+              else
+                echo "⚠️ apt-get install failed (attempt $i/3), waiting 5 seconds..."
+                sleep 5
+              fi
+            done
+            return 1
+          }
+          
+          # Try to update package lists with retry
+          if ! safe_apt_update; then
+            echo "❌ Failed to update package lists after retries"
+            echo "Proceeding with direct download method"
+          else
+            # Try to install wget and curl
+            if safe_apt_install wget curl; then
+              echo "✅ wget and curl installed"
+            else
+              echo "⚠️ Failed to install wget/curl, proceeding anyway"
             fi
+            
+            # Try to install shellcheck from default repositories
+            if safe_apt_install shellcheck; then
+              echo "✅ Shellcheck installed from default repositories"
+              exit 0
+            fi
+          fi
+          
+          echo "⚠️ Shellcheck not available in default repositories, trying direct download"
+          
+          # Try downloading shellcheck directly
+          SHELLCHECK_VERSION="v0.9.0"
+          SHELLCHECK_ARCH="x86_64"
+          
+          if wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SHELLCHECK_ARCH}.tar.xz" | tar -xJf - --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck; then
+            chmod +x shellcheck
+            mv shellcheck /usr/local/bin/
+            echo "✅ Shellcheck installed from direct download"
+          else
+            echo "⚠️ Shellcheck installation failed, skipping linting"
+            echo "This is not critical for the workflow"
           fi
 
       - name: Lint shell scripts
