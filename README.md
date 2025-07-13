@@ -545,8 +545,6 @@ The Immich server instance is designed to be stateless, meaning that deleting th
 
 - **v1.133.0+ Breaking Changes:** If upgrading to v1.133.0 or later, ensure you're upgrading from at least v1.107.2 or later. If you're on an older version, upgrade to v1.107.2 first and ensure Immich starts successfully before continuing.
 
-Before the update, one should **backup or at least snapshot the current container**.
-
 First thing to do is to stop the old instance.
 
 ```bash
