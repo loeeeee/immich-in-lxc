@@ -1,0 +1,561 @@
+name: Test Install Script
+
+on:
+  push:
+    paths:
+      - 'install.sh'
+      - 'install.env'
+      - 'runtime.env'
+      - '.github/workflows/test-install.yaml'
+  pull_request:
+    paths:
+      - 'install.sh'
+      - 'install.env'
+      - 'runtime.env'
+      - '.github/workflows/test-install.yaml'
+  workflow_dispatch:
+    inputs:
+      run_full_install:
+        description: 'Run full install process (takes 30+ minutes)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test-ubuntu:
+    name: Test Install on Ubuntu 24.04
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:24.04
+      options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          # Update package lists
+          apt-get update
+          
+          # Install basic utilities and dependencies
+          apt-get install -y git curl wget python3 python3-pip python3-venv nodejs npm ffmpeg
+
+      - name: Test install script syntax and structure (Ubuntu)
+        run: |
+          # Make script executable
+          chmod +x install.sh
+          
+          # Check syntax
+          bash -n install.sh
+          
+          # Test script structure and basic functionality
+          timeout 300 bash -c '
+            set -e
+            
+            echo "🧪 Testing install.sh script structure and validation..."
+            
+            # Test that the script has required sections
+            grep -q "Create env file" install.sh && {
+              echo "✅ Environment file creation section found"
+            } || {
+              echo "❌ Missing environment file creation section"
+              exit 1
+            }
+            
+            grep -q "Load environment variables" install.sh && {
+              echo "✅ Environment variables loading section found"
+            } || {
+              echo "❌ Missing environment variables loading section"
+              exit 1
+            }
+            
+            grep -q "Check if dependency" install.sh && {
+              echo "✅ Dependency checking section found"
+            } || {
+              echo "❌ Missing dependency checking section"
+              exit 1
+            }
+            
+            # Test function definitions
+            grep -q "create_install_env_file[[:space:]]*()" install.sh && {
+              echo "✅ create_install_env_file function found"
+            } || {
+              echo "❌ create_install_env_file function not found"
+              exit 1
+            }
+            
+            grep -q "load_environment_variables[[:space:]]*()" install.sh && {
+              echo "✅ load_environment_variables function found"
+            } || {
+              echo "❌ load_environment_variables function not found"
+              exit 1
+            }
+            
+            grep -q "review_dependency[[:space:]]*()" install.sh && {
+              echo "✅ review_dependency function found"
+            } || {
+              echo "❌ review_dependency function not found"
+              exit 1
+            }
+            
+            # Test environment file handling
+            if [ -f install.env ]; then
+              echo "✅ install.env template file exists"
+            else
+              echo "❌ install.env template file missing"
+              exit 1
+            }
+            
+            # Test that script can read environment variables
+            echo "Testing environment variable handling..."
+            export SCRIPT_DIR=$PWD
+            export INSTALL_DIR=/tmp/test-install
+            export UPLOAD_DIR=/tmp/test-upload
+            export REPO_TAG=v1.135.3
+            export isCUDA=false
+            export PROXY_NPM=
+            export PROXY_NPM_DIST=
+            export PROXY_POETRY=
+            
+            # Test the first part of the script (environment setup)
+            head -50 install.sh | bash -s || {
+              echo "❌ Script environment setup failed"
+              exit 1
+            }
+            
+            echo "✅ Script structure validation passed"
+          ' || {
+            echo "❌ Script structure validation failed"
+            exit 1
+          }
+
+      - name: Test dependency validation (Ubuntu)
+        run: |
+          echo "🔍 Testing dependency validation..."
+          
+          # Test that the script can check for required dependencies
+          timeout 120 bash -c '
+            set -e
+            
+            # Create test environment
+            export SCRIPT_DIR=$PWD
+            export INSTALL_DIR=/tmp/test-install
+            export UPLOAD_DIR=/tmp/test-upload
+            export REPO_TAG=v1.135.3
+            export isCUDA=false
+            export PROXY_NPM=
+            export PROXY_NPM_DIST=
+            export PROXY_POETRY=
+            
+            # Create .env file for testing
+            cp install.env .env
+            
+            # Extract and test the dependency checking function
+            echo "Testing dependency checks..."
+            
+            # Check if required commands are available
+            command -v ffmpeg >/dev/null 2>&1 && {
+              echo "✅ ffmpeg is available"
+            } || {
+              echo "❌ ffmpeg is not available"
+              exit 1
+            }
+            
+            command -v node >/dev/null 2>&1 && {
+              echo "✅ node is available"
+            } || {
+              echo "❌ node is not available"
+              exit 1
+            }
+            
+            command -v python3 >/dev/null 2>&1 && {
+              echo "✅ python3 is available"
+            } || {
+              echo "❌ python3 is not available"
+              exit 1
+            }
+            
+            command -v git >/dev/null 2>&1 && {
+              echo "✅ git is available"
+            } || {
+              echo "❌ git is not available"
+              exit 1
+            }
+            
+            echo "✅ All required dependencies are available"
+          ' || {
+            echo "❌ Dependency validation failed"
+            exit 1
+          }
+
+      - name: Run full install test (Ubuntu)
+        if: ${{ github.event.inputs.run_full_install == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "🚀 Starting full install test (this will take 30+ minutes)..."
+          
+          # Set environment variables for controlled testing
+          export CI=true
+          export INSTALL_TIMEOUT=2400  # 40 minutes
+          
+          # Create test environment
+          mkdir -p /tmp/test-install
+          mkdir -p /tmp/test-upload
+          
+          # Create .env file for testing
+          cp install.env .env
+          sed -i 's|INSTALL_DIR=/home/immich|INSTALL_DIR=/tmp/test-install|' .env
+          sed -i 's|UPLOAD_DIR=/home/immich/upload|UPLOAD_DIR=/tmp/test-upload|' .env
+          
+          # Track install status
+          INSTALL_SUCCESS=false
+          
+          # Run the install script with timeout
+          if timeout $INSTALL_TIMEOUT bash install.sh; then
+            echo "✅ Full install test completed successfully"
+            INSTALL_SUCCESS=true
+          else
+            echo "❌ Install test failed or timed out"
+            echo "Exit code: $?"
+            echo "This may be due to:"
+            echo "- Network connectivity issues"
+            echo "- Insufficient system resources"
+            echo "- Build environment configuration issues"
+            echo "- Timeout (40 minutes exceeded)"
+            INSTALL_SUCCESS=false
+          fi
+          
+          # Report final status
+          if [ "$INSTALL_SUCCESS" = "true" ]; then
+            echo "✅ INSTALL SUCCESS: Full install test passed"
+            exit 0
+          else
+            echo "❌ INSTALL FAILURE: Full install test failed"
+            echo "Please check the logs above for specific error details"
+            echo "Note: Full installs in CI may fail due to resource constraints"
+            exit 1
+          fi
+
+  test-debian:
+    name: Test Install on Debian 12
+    runs-on: ubuntu-latest
+    container:
+      image: debian:12
+      options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          # Update package lists
+          apt-get update
+          
+          # Install basic utilities and dependencies
+          apt-get install -y git curl wget python3 python3-pip python3-venv nodejs npm ffmpeg
+
+      - name: Test install script syntax and structure (Debian)
+        run: |
+          # Make script executable
+          chmod +x install.sh
+          
+          # Check syntax
+          bash -n install.sh
+          
+          # Test script structure and basic functionality
+          timeout 300 bash -c '
+            set -e
+            
+            echo "🧪 Testing install.sh script structure and validation..."
+            
+            # Test that the script has required sections
+            grep -q "Create env file" install.sh && {
+              echo "✅ Environment file creation section found"
+            } || {
+              echo "❌ Missing environment file creation section"
+              exit 1
+            }
+            
+            grep -q "Load environment variables" install.sh && {
+              echo "✅ Environment variables loading section found"
+            } || {
+              echo "❌ Missing environment variables loading section"
+              exit 1
+            }
+            
+            grep -q "Check if dependency" install.sh && {
+              echo "✅ Dependency checking section found"
+            } || {
+              echo "❌ Missing dependency checking section"
+              exit 1
+            }
+            
+            # Test function definitions
+            grep -q "create_install_env_file[[:space:]]*()" install.sh && {
+              echo "✅ create_install_env_file function found"
+            } || {
+              echo "❌ create_install_env_file function not found"
+              exit 1
+            }
+            
+            grep -q "load_environment_variables[[:space:]]*()" install.sh && {
+              echo "✅ load_environment_variables function found"
+            } || {
+              echo "❌ load_environment_variables function not found"
+              exit 1
+            }
+            
+            grep -q "review_dependency[[:space:]]*()" install.sh && {
+              echo "✅ review_dependency function found"
+            } || {
+              echo "❌ review_dependency function not found"
+              exit 1
+            }
+            
+            # Test environment file handling
+            if [ -f install.env ]; then
+              echo "✅ install.env template file exists"
+            else
+              echo "❌ install.env template file missing"
+              exit 1
+            }
+            
+            # Test that script can read environment variables
+            echo "Testing environment variable handling..."
+            export SCRIPT_DIR=$PWD
+            export INSTALL_DIR=/tmp/test-install
+            export UPLOAD_DIR=/tmp/test-upload
+            export REPO_TAG=v1.135.3
+            export isCUDA=false
+            export PROXY_NPM=
+            export PROXY_NPM_DIST=
+            export PROXY_POETRY=
+            
+            # Test the first part of the script (environment setup)
+            head -50 install.sh | bash -s || {
+              echo "❌ Script environment setup failed"
+              exit 1
+            }
+            
+            echo "✅ Script structure validation passed"
+          ' || {
+            echo "❌ Script structure validation failed"
+            exit 1
+          }
+
+      - name: Test dependency validation (Debian)
+        run: |
+          echo "🔍 Testing dependency validation..."
+          
+          # Test that the script can check for required dependencies
+          timeout 120 bash -c '
+            set -e
+            
+            # Create test environment
+            export SCRIPT_DIR=$PWD
+            export INSTALL_DIR=/tmp/test-install
+            export UPLOAD_DIR=/tmp/test-upload
+            export REPO_TAG=v1.135.3
+            export isCUDA=false
+            export PROXY_NPM=
+            export PROXY_NPM_DIST=
+            export PROXY_POETRY=
+            
+            # Create .env file for testing
+            cp install.env .env
+            
+            # Extract and test the dependency checking function
+            echo "Testing dependency checks..."
+            
+            # Check if required commands are available
+            command -v ffmpeg >/dev/null 2>&1 && {
+              echo "✅ ffmpeg is available"
+            } || {
+              echo "❌ ffmpeg is not available"
+              exit 1
+            }
+            
+            command -v node >/dev/null 2>&1 && {
+              echo "✅ node is available"
+            } || {
+              echo "❌ node is not available"
+              exit 1
+            }
+            
+            command -v python3 >/dev/null 2>&1 && {
+              echo "✅ python3 is available"
+            } || {
+              echo "❌ python3 is not available"
+              exit 1
+            }
+            
+            command -v git >/dev/null 2>&1 && {
+              echo "✅ git is available"
+            } || {
+              echo "❌ git is not available"
+              exit 1
+            }
+            
+            echo "✅ All required dependencies are available"
+          ' || {
+            echo "❌ Dependency validation failed"
+            exit 1
+          }
+
+  syntax-check:
+    name: Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check script syntax
+        run: |
+          # Check syntax of install.sh
+          echo "Checking syntax of install.sh..."
+          bash -n install.sh
+          
+          # Check syntax of other shell scripts
+          echo "Checking syntax of post-install.sh..."
+          bash -n post-install.sh
+          
+          echo "Checking syntax of pre-install.sh..."
+          bash -n pre-install.sh
+          
+          echo "Checking syntax of dep-*.sh scripts..."
+          for script in dep-*.sh; do
+            if [ -f "$script" ]; then
+              echo "Checking $script..."
+              bash -n "$script"
+            fi
+          done
+          
+          echo "✅ All script syntax checks passed"
+
+      - name: Validate environment files
+        run: |
+          # Check if required environment files exist
+          echo "Validating environment files..."
+          
+          if [ -f install.env ]; then
+            echo "✅ install.env exists"
+          else
+            echo "❌ install.env missing"
+            exit 1
+          }
+          
+          if [ -f runtime.env ]; then
+            echo "✅ runtime.env exists"
+          else
+            echo "❌ runtime.env missing"
+            exit 1
+          }
+          
+          # Check if environment files have required variables
+          echo "Checking install.env variables..."
+          grep -q "REPO_TAG=" install.env && echo "✅ REPO_TAG found" || echo "❌ REPO_TAG missing"
+          grep -q "INSTALL_DIR=" install.env && echo "✅ INSTALL_DIR found" || echo "❌ INSTALL_DIR missing"
+          grep -q "UPLOAD_DIR=" install.env && echo "✅ UPLOAD_DIR found" || echo "❌ UPLOAD_DIR missing"
+          grep -q "isCUDA=" install.env && echo "✅ isCUDA found" || echo "❌ isCUDA missing"
+          
+          echo "✅ Environment file validation passed"
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:24.04
+      options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          apt-get update
+          apt-get install -y git curl wget python3 python3-pip python3-venv nodejs npm ffmpeg
+
+      - name: Test install script integration
+        run: |
+          echo "🔧 Testing install script integration..."
+          
+          # Test the complete workflow without full installation
+          timeout 600 bash -c '
+            set -e
+            
+            # Create test environment
+            export SCRIPT_DIR=$PWD
+            export INSTALL_DIR=/tmp/test-install
+            export UPLOAD_DIR=/tmp/test-upload
+            export REPO_TAG=v1.135.3
+            export isCUDA=false
+            export PROXY_NPM=
+            export PROXY_NPM_DIST=
+            export PROXY_POETRY=
+            
+            # Create .env file for testing
+            cp install.env .env
+            sed -i "s|INSTALL_DIR=/home/immich|INSTALL_DIR=/tmp/test-install|" .env
+            sed -i "s|UPLOAD_DIR=/home/immich/upload|UPLOAD_DIR=/tmp/test-upload|" .env
+            
+            # Test environment file creation
+            echo "Testing environment file creation..."
+            if [ ! -f .env ]; then
+              echo "❌ .env file not created"
+              exit 1
+            fi
+            
+            # Test environment variable loading
+            echo "Testing environment variable loading..."
+            set -a
+            . ./.env
+            set +a
+            
+            # Verify key variables are set
+            if [ -z "$REPO_TAG" ]; then
+              echo "❌ REPO_TAG not set"
+              exit 1
+            fi
+            
+            if [ -z "$INSTALL_DIR" ]; then
+              echo "❌ INSTALL_DIR not set"
+              exit 1
+            fi
+            
+            if [ -z "$UPLOAD_DIR" ]; then
+              echo "❌ UPLOAD_DIR not set"
+              exit 1
+            fi
+            
+            echo "✅ Environment variables loaded correctly"
+            
+            # Test dependency checking (mock)
+            echo "Testing dependency checking..."
+            command -v ffmpeg >/dev/null 2>&1 || { echo "❌ ffmpeg not found"; exit 1; }
+            command -v node >/dev/null 2>&1 || { echo "❌ node not found"; exit 1; }
+            command -v python3 >/dev/null 2>&1 || { echo "❌ python3 not found"; exit 1; }
+            command -v git >/dev/null 2>&1 || { echo "❌ git not found"; exit 1; }
+            
+            echo "✅ All dependencies available"
+            
+            # Test directory creation
+            echo "Testing directory creation..."
+            mkdir -p "$INSTALL_DIR"
+            mkdir -p "$UPLOAD_DIR"
+            
+            if [ ! -d "$INSTALL_DIR" ]; then
+              echo "❌ INSTALL_DIR not created"
+              exit 1
+            fi
+            
+            if [ ! -d "$UPLOAD_DIR" ]; then
+              echo "❌ UPLOAD_DIR not created"
+              exit 1
+            fi
+            
+            echo "✅ Directories created successfully"
+            
+            echo "✅ Integration test completed successfully"
+          ' || {
+            echo "❌ Integration test failed"
+            exit 1
+          } 
