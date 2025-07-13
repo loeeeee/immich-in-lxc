@@ -53,14 +53,18 @@ jobs:
             # Create necessary directories
             mkdir -p $SOURCE_DIR
             
+            # Create a test version of the script without the problematic change_locale call
+            cp pre-install.sh pre-install-test.sh
+            sed -i "/^change_locale$/d" pre-install-test.sh
+            
             # Override the change_locale function to avoid locale.gen issues
             change_locale() {
               echo "Mock change_locale function - skipping locale setup for testing"
             }
             export -f change_locale
             
-            # Source the script to test syntax and basic functions
-            source pre-install.sh
+            # Source the modified script to test syntax and basic functions
+            source pre-install-test.sh
             
             # Test that the script can detect Ubuntu
             if [ -f /etc/os-release ]; then
@@ -135,14 +139,18 @@ jobs:
             # Create necessary directories
             mkdir -p $SOURCE_DIR
             
+            # Create a test version of the script without the problematic change_locale call
+            cp pre-install.sh pre-install-test.sh
+            sed -i "/^change_locale$/d" pre-install-test.sh
+            
             # Override the change_locale function to avoid locale.gen issues
             change_locale() {
               echo "Mock change_locale function - skipping locale setup for testing"
             }
             export -f change_locale
             
-            # Source the script to test syntax and basic functions
-            source pre-install.sh
+            # Source the modified script to test syntax and basic functions
+            source pre-install-test.sh
             
             # Test that the script can detect Debian
             if [ -f /etc/os-release ]; then
