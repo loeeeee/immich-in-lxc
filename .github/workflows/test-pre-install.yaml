@@ -210,40 +210,17 @@ jobs:
 
       - name: Install shellcheck
         run: |
-          # Install shellcheck for linting with multiple fallback options
-          apt-get update
-          apt-get install -y wget curl
+          # Try downloading shellcheck directly
+          SHELLCHECK_VERSION="v0.9.0"
+          SHELLCHECK_ARCH="x86_64"
           
-          # Try to install shellcheck from default repositories
-          if apt-get install -y shellcheck; then
-            echo "✅ Shellcheck installed from default repositories"
+          if wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SHELLCHECK_ARCH}.tar.xz" | tar -xJf - --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck; then
+            chmod +x shellcheck
+            mv shellcheck /usr/local/bin/
+            echo "✅ Shellcheck installed from direct download"
           else
-            echo "⚠️ Shellcheck not available in default repositories, trying alternative installation"
-            
-            # Try installing from universe repository (Ubuntu)
-            apt-get install -y software-properties-common
-            add-apt-repository universe || true
-            apt-get update
-            
-            if apt-get install -y shellcheck; then
-              echo "✅ Shellcheck installed from universe repository"
-            else
-              echo "⚠️ Shellcheck not available in repositories, trying direct download"
-              
-              # Try downloading shellcheck directly
-              SHELLCHECK_VERSION="v0.9.0"
-              SHELLCHECK_ARCH="x86_64"
-              
-              if wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SHELLCHECK_ARCH}.tar.xz" | tar -xJf - --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck; then
-                chmod +x shellcheck
-                mv shellcheck /usr/local/bin/
-                echo "✅ Shellcheck installed from direct download"
-              else
-                echo "⚠️ Shellcheck installation failed, skipping linting"
-                echo "This is not critical for the workflow"
-                exit 0
-              fi
-            fi
+            echo "❌ Shellcheck installation failed, skipping linting"
+            exit 1
           fi
 
       - name: Lint shell scripts
@@ -267,6 +244,7 @@ jobs:
             
             echo "✅ Shell script linting completed"
           else
-            echo "⚠️ Shellcheck not available, skipping linting"
-            echo "This is not critical for the workflow"
+            echo "❌ Shellcheck not available, skipping linting"
+            exit 1
+
           fi 
