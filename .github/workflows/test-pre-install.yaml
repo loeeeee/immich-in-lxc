@@ -44,6 +44,22 @@ jobs:
           # Test the script runs without errors (we'll stop early to avoid long builds)
           timeout 300 bash -c '
             set -e
+            
+            # Create mock environment for testing
+            export SCRIPT_DIR=$PWD
+            export BASE_IMG_REPO_DIR=$PWD/base-images
+            export SOURCE_DIR=$PWD/image-source
+            
+            # Create necessary directories
+            mkdir -p $SOURCE_DIR
+            
+            # Mock the locale.gen file to prevent errors
+            if [ ! -f /etc/locale.gen ]; then
+              echo "Creating mock locale.gen for testing..."
+              sudo mkdir -p /etc
+              echo "# en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen > /dev/null
+            fi
+            
             # Source the script to test syntax and basic functions
             source pre-install.sh
             
@@ -111,6 +127,22 @@ jobs:
           # Test the script runs without errors (we'll stop early to avoid long builds)
           timeout 300 bash -c '
             set -e
+            
+            # Create mock environment for testing
+            export SCRIPT_DIR=$PWD
+            export BASE_IMG_REPO_DIR=$PWD/base-images
+            export SOURCE_DIR=$PWD/image-source
+            
+            # Create necessary directories
+            mkdir -p $SOURCE_DIR
+            
+            # Mock the locale.gen file to prevent errors
+            if [ ! -f /etc/locale.gen ]; then
+              echo "Creating mock locale.gen for testing..."
+              sudo mkdir -p /etc
+              echo "# en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen > /dev/null
+            fi
+            
             # Source the script to test syntax and basic functions
             source pre-install.sh
             
