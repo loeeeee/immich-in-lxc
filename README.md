@@ -543,11 +543,7 @@ Additionally, for LXC with CUDA or other GPU Transcoding support enabled, one ne
 
 The Immich server instance is designed to be stateless, meaning that deleting the instance, i.e. the `INSTALL_DIR/app` folder, (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current Immich instance, all one needs to do is essentially install the latest Immich.
 
-**⚠️ Important Upgrade Notes:**
-
 - **v1.133.0+ Breaking Changes:** If upgrading to v1.133.0 or later, ensure you're upgrading from at least v1.107.2 or later. If you're on an older version, upgrade to v1.107.2 first and ensure Immich starts successfully before continuing.
-- **Database Migration:** Starting with v1.133.0, Immich automatically migrates from pgvecto.rs to VectorChord. This migration happens during the first startup after upgrading. Ensure you have a **database backup** before upgrading.
-- **Mobile App Compatibility:** For v1.133.0+, ensure your mobile app version matches the server version. Older mobile app versions may not work correctly with v1.133.0+ servers.
 
 Before the update, one should **backup or at least snapshot the current container**.
 
