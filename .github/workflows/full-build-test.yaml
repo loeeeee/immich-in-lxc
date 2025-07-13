@@ -46,8 +46,8 @@ jobs:
           bash -n pre-install.sh
           bash -n dep-*.sh
           
-          # Test basic functionality
-          timeout 600 bash -c '
+          # Test basic functionality without running the full script
+          timeout 300 bash -c '
             set -e
             
             # Create mock environment for testing
@@ -68,6 +68,7 @@ jobs:
             }
             export -f change_locale
             
+            # Source the script to test function definitions only
             source pre-install-test.sh
             
             # Test OS detection
@@ -95,10 +96,14 @@ jobs:
           export CI=true
           export BUILD_TIMEOUT=1800  # 30 minutes
           
+          # Create necessary environment for the build
+          mkdir -p image-source
+          
           # Run the pre-install script with timeout
           timeout $BUILD_TIMEOUT bash pre-install.sh || {
             echo "⚠️ Build test timed out or failed"
             echo "This is expected for CI testing - the script is designed for production use"
+            echo "The script may have failed due to missing dependencies or build environment issues"
             exit 0
           }
           
@@ -110,7 +115,7 @@ jobs:
           echo "🧪 Testing script execution (without full build)..."
           
           # Test that the script can run through its initial phases
-          timeout 900 bash -c '
+          timeout 600 bash -c '
             set -e
             
             # Create a mock environment for testing
@@ -118,12 +123,16 @@ jobs:
             export BASE_IMG_REPO_DIR=$PWD/base-images
             export SOURCE_DIR=$PWD/image-source
             
+            # Create necessary directories
+            mkdir -p $SOURCE_DIR
+            
             # Test the script can start and run through initial phases
+            # We'll run it in the background and monitor it
             bash pre-install.sh &
             SCRIPT_PID=$!
             
             # Wait for script to start and run for a bit
-            sleep 30
+            sleep 60
             
             # Check if script is still running
             if kill -0 $SCRIPT_PID 2>/dev/null; then
