@@ -119,15 +119,33 @@ jobs:
           # Create necessary environment for the build
           mkdir -p image-source
           
-          # Run the pre-install script with timeout
-          timeout $BUILD_TIMEOUT bash pre-install.sh || {
-            echo "⚠️ Build test timed out or failed"
-            echo "This is expected for CI testing - the script is designed for production use"
-            echo "The script may have failed due to missing dependencies or build environment issues"
-            exit 0
-          }
+          # Track build status
+          BUILD_SUCCESS=false
           
-          echo "✅ Full build test completed successfully"
+          # Run the pre-install script with timeout
+          if timeout $BUILD_TIMEOUT bash pre-install.sh; then
+            echo "✅ Full build test completed successfully"
+            BUILD_SUCCESS=true
+          else
+            echo "❌ Build test failed or timed out"
+            echo "Exit code: $?"
+            echo "This may be due to:"
+            echo "- Missing build dependencies"
+            echo "- Network connectivity issues"
+            echo "- Insufficient system resources"
+            echo "- Build environment configuration issues"
+            BUILD_SUCCESS=false
+          fi
+          
+          # Report final status
+          if [ "$BUILD_SUCCESS" = "true" ]; then
+            echo "✅ BUILD SUCCESS: Full build test passed"
+            exit 0
+          else
+            echo "❌ BUILD FAILURE: Full build test failed"
+            echo "Please check the logs above for specific error details"
+            exit 1
+          fi
 
       - name: Test script completion (without full build)
         if: ${{ github.event.inputs.run_full_build == 'false' }}
@@ -187,8 +205,9 @@ jobs:
             
             echo "✅ Script completion test passed"
           ' || {
-            echo "⚠️ Script execution test completed"
-            exit 0
+            echo "❌ Script execution test failed"
+            echo "This indicates issues with script startup or basic functionality"
+            exit 1
           }
 
       - name: Generate test report
