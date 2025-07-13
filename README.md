@@ -559,3 +559,11 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
+
+## Contributing
+
+When making changes to the pre-install script or dependency files:
+
+1. Ensure your changes pass the automated tests
+2. Test on both Ubuntu and Debian environments if possible
+3. Update the GitHub Actions workflows if needed
