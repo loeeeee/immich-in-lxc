@@ -181,6 +181,10 @@ Good luck and have fun!
 
 The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances. For postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 17. For VectorChord, visit [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages) for latest guide.
 
+
+<details>
+<summary>The Guide</summary>
+
 1. **Install PostgreSQL 17:**
 ```bash
 apt install -y postgresql-common
@@ -225,6 +229,9 @@ Note: change password, seriously.
 Note: To change back to the pre-su user, `exit` should do the trick.
 
 **Note:** The `runtime.env` file now uses `DB_VECTOR_EXTENSION=vectorchord` as the default setting for new installations.
+
+<br>
+</details>
 
 #### Database Migration for Existing Users (v1.133.0+)
 
