@@ -179,11 +179,15 @@ Good luck and have fun!
 
 As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 16 and adding extension repo, as immich depends on a vector extension.
 
+**Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability. This migration is automatic for new installations, but existing users may need to follow migration steps.
+
 ```bash
 apt install -y postgresql-common
 /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 apt install -y postgresql-17 postgresql-17-pgvector
 ```
+
+**Note:** The `postgresql-17-pgvector` package is still required as VectorChord includes pgvector compatibility. This ensures smooth operation and future compatibility.
 
 To prepare the database, we need to make some configuration.
 
@@ -207,6 +211,18 @@ ALTER USER immich WITH SUPERUSER;
 Note: change password, seriously.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
+
+#### Database Migration for Existing Users (v1.133.0+)
+
+If you're upgrading from a version prior to v1.133.0 and have an existing Immich installation, you may need to perform a database migration. The migration from pgvecto.rs to VectorChord is automatic, but you should:
+
+1. **Backup your database** before upgrading
+2. Ensure you're upgrading from at least v1.107.2 or later
+3. The migration will happen automatically during the first startup after upgrading
+
+**Note:** The `DB_VECTOR_EXTENSION=pgvector` setting in your `runtime.env` file remains unchanged. VectorChord includes pgvector compatibility, so no configuration changes are needed.
+
+For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
 
 ### FFmpeg with Hardware-acceleration
 
@@ -489,6 +505,12 @@ Additionally, for LXC with CUDA or other GPU Transcoding support enabled, one ne
 ## Update the Immich instance
 
 The Immich server instance is designed to be stateless, meaning that deleting the instance, i.e. the `INSTALL_DIR/app` folder, (NOT DATABASE OR OTHER STATEFUL THINGS) will not break anything. Thus, to upgrade the current Immich instance, all one needs to do is essentially install the latest Immich.
+
+**⚠️ Important Upgrade Notes:**
+
+- **v1.133.0+ Breaking Changes:** If upgrading to v1.133.0 or later, ensure you're upgrading from at least v1.107.2 or later. If you're on an older version, upgrade to v1.107.2 first and ensure Immich starts successfully before continuing.
+- **Database Migration:** Starting with v1.133.0, Immich automatically migrates from pgvecto.rs to VectorChord. This migration happens during the first startup after upgrading. Ensure you have a **database backup** before upgrading.
+- **Mobile App Compatibility:** For v1.133.0+, ensure your mobile app version matches the server version. Older mobile app versions may not work correctly with v1.133.0+ servers.
 
 Before the update, one should **backup or at least snapshot the current container**.
 
