@@ -210,8 +210,9 @@ jobs:
 
       - name: Install shellcheck
         run: |
-          # Install shellcheck for linting with fallback options
+          # Install shellcheck for linting with multiple fallback options
           apt-get update
+          apt-get install -y wget curl
           
           # Try to install shellcheck from default repositories
           if apt-get install -y shellcheck; then
@@ -227,9 +228,21 @@ jobs:
             if apt-get install -y shellcheck; then
               echo "✅ Shellcheck installed from universe repository"
             else
-              echo "⚠️ Shellcheck installation failed, skipping linting"
-              echo "This is not critical for the workflow"
-              exit 0
+              echo "⚠️ Shellcheck not available in repositories, trying direct download"
+              
+              # Try downloading shellcheck directly
+              SHELLCHECK_VERSION="v0.9.0"
+              SHELLCHECK_ARCH="x86_64"
+              
+              if wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.${SHELLCHECK_ARCH}.tar.xz" | tar -xJf - --strip-components=1 shellcheck-${SHELLCHECK_VERSION}/shellcheck; then
+                chmod +x shellcheck
+                mv shellcheck /usr/local/bin/
+                echo "✅ Shellcheck installed from direct download"
+              else
+                echo "⚠️ Shellcheck installation failed, skipping linting"
+                echo "This is not critical for the workflow"
+                exit 0
+              fi
             fi
           fi
 
