@@ -175,31 +175,43 @@ Good luck and have fun!
 
 ## Install utilities and databases
 
-### Postgresql
+### PostgreSQL with VectorChord
 
-As for postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 16 and adding extension repo, as immich depends on a vector extension.
+**Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
-**Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability. This migration is automatic for new installations, but existing users may need to follow migration steps.
+For postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 17. The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances. For VectorChord, follow the latest guide on [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
 
+1. **Install PostgreSQL 17:**
 ```bash
 apt install -y postgresql-common
 /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-apt install -y postgresql-17 postgresql-17-pgvector
+apt install -y postgresql-17
 ```
 
-**Note:** The `postgresql-17-pgvector` package is still required as VectorChord includes pgvector compatibility. This ensures smooth operation and future compatibility.
+2. **Install VectorChord Debian Package:**
+```bash
+wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+sudo apt install ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+```
 
-To prepare the database, we need to make some configuration.
+3. **Configure PostgreSQL to use VectorChord:**
+```bash
+psql -U postgres -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
+sudo systemctl restart postgresql.service
+```
 
-First, we need to become user `postgres`, and connect to the database,
-
+4. **Enable the VectorChord extension:**
 ```bash
 su postgres
 psql
 ```
 
-In the psql interface, we type in following SQL command,
+In the psql interface, run:
+```SQL
+CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
+```
 
+5. **Create the Immich database and user:**
 ```SQL
 CREATE DATABASE immich;
 CREATE USER immich WITH ENCRYPTED PASSWORD 'A_SEHR_SAFE_PASSWORD';
@@ -212,6 +224,8 @@ Note: change password, seriously.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
+**Note:** The `runtime.env` file now uses `DB_VECTOR_EXTENSION=vectorchord` as the default setting for new installations.
+
 #### Database Migration for Existing Users (v1.133.0+)
 
 If you're upgrading from a version prior to v1.133.0 and have an existing Immich installation, you may need to perform a database migration. The migration from pgvecto.rs to VectorChord is automatic, but you should:
@@ -220,7 +234,7 @@ If you're upgrading from a version prior to v1.133.0 and have an existing Immich
 2. Ensure you're upgrading from at least v1.107.2 or later
 3. The migration will happen automatically during the first startup after upgrading
 
-**Note:** The `DB_VECTOR_EXTENSION=pgvector` setting in your `runtime.env` file remains unchanged. VectorChord includes pgvector compatibility, so no configuration changes are needed.
+**Note:** If you have an existing `runtime.env` file with `DB_VECTOR_EXTENSION=pgvector`, you can update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
 
 For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
 
