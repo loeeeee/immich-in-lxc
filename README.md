@@ -257,7 +257,7 @@ If you're upgrading from a version prior to v1.133.0 and have an existing Immich
 2. Ensure you're upgrading from at least v1.107.2 or later
 3. The migration will happen automatically during the first startup after upgrading
 
-**Note:** If you have an existing `.env` file with `DB_VECTOR_EXTENSION=pgvector`, you should update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
+**Note:** If you have an existing `$INSTALL_DIR/runtime.env` (e.g. /home/immich/runtime.env) file with `DB_VECTOR_EXTENSION=pgvector`, you should update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
 
 For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
 
