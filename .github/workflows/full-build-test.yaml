@@ -115,19 +115,50 @@ jobs:
           # Set environment variables to control the build
           export CI=true
           export BUILD_TIMEOUT=1800  # 30 minutes
-          
+
           # Create necessary environment for the build
           mkdir -p image-source
           
-          # Run the pre-install script with timeout
-          timeout $BUILD_TIMEOUT bash pre-install.sh || {
-            echo "⚠️ Build test timed out or failed"
-            echo "This is expected for CI testing - the script is designed for production use"
-            echo "The script may have failed due to missing dependencies or build environment issues"
-            exit 0
-          }
+          # Fix locale.gen issue for container environment
+          if [ ! -f /etc/locale.gen ]; then
+            echo "Creating locale.gen for container environment..."
+            mkdir -p /etc
+            echo "# en_US.UTF-8 UTF-8" > /etc/locale.gen
+          fi
           
-          echo "✅ Full build test completed successfully"
+          # Create a modified version of the script without the change_locale call
+          cp pre-install.sh pre-install-modified.sh
+          sed -i '/^change_locale$/d' pre-install-modified.sh
+          
+          # Track build status
+          BUILD_SUCCESS=false
+          
+          # Run the modified pre-install script with timeout
+          if timeout $BUILD_TIMEOUT bash pre-install-modified.sh; then
+            echo "✅ Full build test completed successfully"
+            BUILD_SUCCESS=true
+          else
+            echo "❌ Build test failed or timed out"
+            echo "Exit code: $?"
+            echo "This may be due to:"
+            echo "- Missing build dependencies"
+            echo "- Network connectivity issues"
+            echo "- Insufficient system resources"
+            echo "- Build environment configuration issues"
+            echo "- Timeout (30 minutes exceeded)"
+            BUILD_SUCCESS=false
+          fi
+          
+          # Report final status
+          if [ "$BUILD_SUCCESS" = "true" ]; then
+            echo "✅ BUILD SUCCESS: Full build test passed"
+            exit 0
+          else
+            echo "❌ BUILD FAILURE: Full build test failed"
+            echo "Please check the logs above for specific error details"
+            echo "Note: Full builds in CI may fail due to resource constraints"
+            exit 1
+          fi
 
       - name: Test script completion (without full build)
         if: ${{ github.event.inputs.run_full_build == 'false' }}
@@ -187,8 +218,9 @@ jobs:
             
             echo "✅ Script completion test passed"
           ' || {
-            echo "⚠️ Script execution test completed"
-            exit 0
+            echo "❌ Script execution test failed"
+            echo "This indicates issues with script startup or basic functionality"
+            exit 1
           }
 
       - name: Generate test report
