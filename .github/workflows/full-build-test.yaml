@@ -115,18 +115,7 @@ jobs:
           # Set environment variables to control the build
           export CI=true
           export BUILD_TIMEOUT=1800  # 30 minutes
-          
-          # Install minimal build dependencies
-          echo "📦 Installing minimal build dependencies..."
-          apt-get update
-          apt-get install -y \
-            build-essential \
-            cmake \
-            git \
-            curl \
-            wget \
-            jq
-          
+
           # Create necessary environment for the build
           mkdir -p image-source
           
