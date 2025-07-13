@@ -246,4 +246,5 @@ jobs:
           else
             echo "❌ Shellcheck not available, skipping linting"
             exit 1
+
           fi 
