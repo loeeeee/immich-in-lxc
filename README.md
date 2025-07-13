@@ -440,7 +440,11 @@ After several minutes, ideally, it would say,
 Done. Please install the systemd services to start using Immich.
 ```
 
-Lastly, we need to review and modify the `runtime.env` that is inside your specified `INSTALL_DIR` (not the runtime.env inside this repo). The default values could also work, unless you changed the `DB_PASSWORD` when installing Postgres. For Timezones `TZ`, you can consult them in the [TZ Database Wiki](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
+Lastly, we need to review and modify the `runtime.env` that is inside your specified `INSTALL_DIR` (not the runtime.env inside this repo). The default values could also work, unless you changed the `DB_PASSWORD` when installing Postgres. 
+
+**Note:** If your `DB_PASSWORD` contains special characters (such as `$`, `!`, etc.), you must wrap the value in single quotes, e.g., `DB_PASSWORD='your$pec!alP@ss'`. This prevents shell expansion issues when the environment file is sourced. (See [issue #95](https://github.com/loeeeee/immich-in-lxc/issues/95) for details.)
+
+For Timezones `TZ`, you can consult them in the [TZ Database Wiki](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
 
 ### Post install script
 
