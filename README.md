@@ -198,24 +198,40 @@ wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgres
 apt install ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
 ```
 
-3. **Configure PostgreSQL to use VectorChord:**
-```bash
-psql -U postgres -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
-systemctl restart postgresql.service
-```
+4. **Enter psql control interface:**
 
-4. **Enable the VectorChord extension:**
+As root user,
+
 ```bash
 su postgres
 psql
 ```
 
+5. **Configure PostgreSQL to use VectorChord (1):**
+
 In the psql interface, run:
+```SQL
+ALTER SYSTEM SET shared_preload_libraries = "vchord";
+\q
+```
+
+Restart postgres server as root
+```bash
+exit
+# Now is root time
+systemctl restart postgresql.service
+```
+
+6. **Configure PostgreSQL to use VectorChord (2):**
+
+Follow step 4, enter the psql interface
 ```SQL
 CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
 ```
 
 5. **Create the Immich database and user:**
+
+In the psql interface, run:
 ```SQL
 CREATE DATABASE immich;
 CREATE USER immich WITH ENCRYPTED PASSWORD 'A_SEHR_SAFE_PASSWORD';
@@ -228,7 +244,7 @@ Note: change password, seriously.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
-**Note:** The `runtime.env` file now uses `DB_VECTOR_EXTENSION=vectorchord` as the default setting for new installations.
+Note: The `runtime.env` file now uses `DB_VECTOR_EXTENSION=vectorchord` as the default setting for new installations.
 
 <br>
 </details>
