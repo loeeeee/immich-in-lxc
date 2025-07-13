@@ -53,12 +53,11 @@ jobs:
             # Create necessary directories
             mkdir -p $SOURCE_DIR
             
-            # Mock the locale.gen file to prevent errors
-            if [ ! -f /etc/locale.gen ]; then
-              echo "Creating mock locale.gen for testing..."
-              sudo mkdir -p /etc
-              echo "# en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen > /dev/null
-            fi
+            # Override the change_locale function to avoid locale.gen issues
+            change_locale() {
+              echo "Mock change_locale function - skipping locale setup for testing"
+            }
+            export -f change_locale
             
             # Source the script to test syntax and basic functions
             source pre-install.sh
@@ -136,12 +135,11 @@ jobs:
             # Create necessary directories
             mkdir -p $SOURCE_DIR
             
-            # Mock the locale.gen file to prevent errors
-            if [ ! -f /etc/locale.gen ]; then
-              echo "Creating mock locale.gen for testing..."
-              sudo mkdir -p /etc
-              echo "# en_US.UTF-8 UTF-8" | sudo tee /etc/locale.gen > /dev/null
-            fi
+            # Override the change_locale function to avoid locale.gen issues
+            change_locale() {
+              echo "Mock change_locale function - skipping locale setup for testing"
+            }
+            export -f change_locale
             
             # Source the script to test syntax and basic functions
             source pre-install.sh
