@@ -179,7 +179,7 @@ Good luck and have fun!
 
 **Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
-For postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 17. The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances. For VectorChord, follow the latest guide on [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
+The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances. For postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 17. For VectorChord, visit [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages) for latest guide.
 
 1. **Install PostgreSQL 17:**
 ```bash
@@ -191,13 +191,13 @@ apt install -y postgresql-17
 2. **Install VectorChord Debian Package:**
 ```bash
 wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
-sudo apt install ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+apt install ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
 ```
 
 3. **Configure PostgreSQL to use VectorChord:**
 ```bash
 psql -U postgres -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
-sudo systemctl restart postgresql.service
+systemctl restart postgresql.service
 ```
 
 4. **Enable the VectorChord extension:**
@@ -234,7 +234,7 @@ If you're upgrading from a version prior to v1.133.0 and have an existing Immich
 2. Ensure you're upgrading from at least v1.107.2 or later
 3. The migration will happen automatically during the first startup after upgrading
 
-**Note:** If you have an existing `runtime.env` file with `DB_VECTOR_EXTENSION=pgvector`, you can update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
+**Note:** If you have an existing `.env` file with `DB_VECTOR_EXTENSION=pgvector`, you should update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
 
 For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
 
