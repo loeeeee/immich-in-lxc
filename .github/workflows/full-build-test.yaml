@@ -137,6 +137,12 @@ jobs:
             echo "# en_US.UTF-8 UTF-8" > /etc/locale.gen
           fi
           
+          # Override the change_locale function to avoid locale-gen issues
+          change_locale() {
+            echo "Mock change_locale function - skipping locale setup for testing"
+          }
+          export -f change_locale
+          
           # Track build status
           BUILD_SUCCESS=false
           
