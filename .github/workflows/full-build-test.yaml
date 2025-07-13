@@ -126,24 +126,15 @@ jobs:
             echo "# en_US.UTF-8 UTF-8" > /etc/locale.gen
           fi
           
-          # Override the change_locale function to avoid locale-gen issues
-          # Create a wrapper script that overrides the problematic function
-          cat > mock_locale.sh << 'EOF'
-          #!/bin/bash
-          change_locale() {
-            echo "Mock change_locale function - skipping locale setup for testing"
-          }
-          export change_locale
-          # Source the original script with our override
-          source pre-install.sh "$@"
-          EOF
-          chmod +x mock_locale.sh
+          # Create a modified version of the script without the change_locale call
+          cp pre-install.sh pre-install-modified.sh
+          sed -i '/^change_locale$/d' pre-install-modified.sh
           
           # Track build status
           BUILD_SUCCESS=false
           
-          # Run the pre-install script with timeout using our wrapper
-          if timeout $BUILD_TIMEOUT bash mock_locale.sh; then
+          # Run the modified pre-install script with timeout
+          if timeout $BUILD_TIMEOUT bash pre-install-modified.sh; then
             echo "✅ Full build test completed successfully"
             BUILD_SUCCESS=true
           else
