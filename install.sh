@@ -369,7 +369,7 @@ install_sharp_and_cli () {
     fi
 }
 
-install_sharp_and_cli
+# install_sharp_and_cli
 
 # -------------------
 # Setup upload directory
