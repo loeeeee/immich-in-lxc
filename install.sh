@@ -210,6 +210,8 @@ install_immich_web_server () {
     npm install -g node-gyp @mapbox/node-pre-gyp
     # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
     # npm config set audit false
+    # Install immich cli
+    npm i -g @immich/cli
 
     cd server
     npm ci $npm_args # --cpu x64 --os linux
@@ -373,8 +375,6 @@ install_sharp_and_cli () {
     # Remove sharp dependency so that it use system library
     rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
     rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
-
-    npm i -g @immich/cli
 
     # Unset mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
