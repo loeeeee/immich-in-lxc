@@ -69,6 +69,7 @@ install_runtime_component
 install_build_dependency () {
     # Source the os-release file to get access to its variables
     if [ -f /etc/os-release ]; then
+        # $ID comes from here
         . /etc/os-release
     else
         echo "Error: /etc/os-release not found."
@@ -145,6 +146,27 @@ install_build_dependency () {
 }
 
 install_build_dependency
+
+# -------------------
+# Install ffmpeg automatically
+# -------------------
+
+install_ffmpeg () {
+    # Don't install ffmpeg over and over again
+    if ! command -v ffmpeg &> /dev/null; then
+        curl https://repo.jellyfin.org/install-debuntu.sh | sed '/apt install --yes jellyfin/,$d' | bash
+        # Installation
+        apt install jellyfin-ffmpeg7
+        # Link to common location
+        ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
+        ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
+    else
+        echo "Skipping ffmpeg installation, because it is already installed"
+    fi
+
+}
+
+install_ffmpeg
 
 # -------------------
 # Clone the base images repo
