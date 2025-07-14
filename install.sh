@@ -110,6 +110,7 @@ INSTALL_DIR_src=$INSTALL_DIR/source
 INSTALL_DIR_app=$INSTALL_DIR/app
 INSTALL_DIR_ml=$INSTALL_DIR_app/machine-learning
 INSTALL_DIR_geo=$INSTALL_DIR/geodata
+TMP_DIR=/tmp/$(whoami)/immich-in-lxc/
 REPO_URL="https://github.com/immich-app/immich"
 MAJOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f1) # No longer used, but might worth keeping it around
 MINOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f2) # No longer used, but might worth keeping it around
@@ -157,6 +158,9 @@ create_folders () {
 
     # GeoNames
     mkdir -p $INSTALL_DIR_geo
+
+    # Create a temporary folder for the json files
+    mkdir -p $TMP_DIR
 }
 
 create_folders
@@ -253,10 +257,6 @@ generate_build_lock () {
     cd $SCRIPT_DIR
 
     cd base-images/server/
-    
-    # Create a temporary folder for the json files
-    TMP_DIR=/tmp/$(whoami)/immich-in-lxc/
-    mkdir -p $TMP_DIR
 
     # From base-images/server/Dockerfile line 110
     jq -s '.' packages/*.json > $TMP_DIR/packages.json
