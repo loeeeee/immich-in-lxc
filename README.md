@@ -33,6 +33,10 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
 
 ## Immich Components
 
+
+<details>
+<summary>Not so important</summary>
+
 - Immich
     - Web Server
     - Machine Learning Server
@@ -56,11 +60,20 @@ As one could tell, it is a lot of works, and a lot of things to get right. Howev
 
 For the simplicity of the guide, all the components are installed in a single LXC container. However, it is always possible to run different components in different LXC containers. As it is always a design choice.
 
+<br>
+</details>
+
 ## Host setup
+
+<details>
+<summary>Not so important</summary>
 
 I am using `Proxmox VE 8` as the LXC host, which is based on `Debian 12`, and I have a NVIDIA GPU, with a proprietary driver (550) installed. Some others are using a N100 mini PC box with Intel Quick Sync. And all of these do not matter.
 
 However, if possible, use an LXC or VM with `Ubuntu 24.04 LTS` as it offers an easier set-up.
+
+<br>
+</details>
 
 ## Prepare the LXC container, or whatever
 
@@ -69,14 +82,6 @@ First, create a LXC/VM normally. Make sure there is reasonable amount CPU and me
 Also, there is no need for a privileged container (which is not recommended in almost all scenarios), if one does not plan to mount a file system, e.g., NFS, SMB, etc., directly inside the LXC container.
 
 This tutorial is tested on `Ubuntu 24.04 LTS` and `Debian 12` LXCs. Things will differ slightly in different distributions, though. Additionally, if one wants to have HW-accelerated ML, it is not recommend to use older release of `Ubuntu`, as it has older version of dependency in its repository, introducing additional complexity, like package pinning.
-
-## Mount host volume to LXC container (Optional)
-
-This part of the guide is about mounting a directory from the host to a unprivileged container. The directory can be a SMB or a NFS share that is already mounted on the host, or any other local directory.
-
-Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook-of-gpu-in-lxc/blob/main/src/mount-host-volume.md) of mine.
-
-And, that is it, EZ, right?
 
 ## Hardware-accelerated machine learning
 
