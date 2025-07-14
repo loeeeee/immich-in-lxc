@@ -1,8 +1,8 @@
-# Immich with CUDA Support in LXC (w/o Docker)
+# Immich with CUDA/ROCm Support in LXC (w/o Docker)
 
 A complete guide for installing Immich in LXC, VM, or bare-metal without Docker, but with 
 
-- **CUDA support for machine-learning** (if one choose so), 
+- **CUDA/ROCm support for machine-learning** (if one choose so), 
 - **hardware acceleration for transcoding**,
 - **HEIF, RAW, and JXL support**,
 - Experimental Intel iGPU/dGPU/NPU support for machine-learning (if one choose so), 
@@ -49,6 +49,8 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
 - (Optional) NVIDIA
     - Driver (i.e. CUDA Runtime)
     - CuDNN (Version 9)
+- (Optional) AMD
+    - ROCm driver (6.4.1)
 
 As one could tell, it is a lot of works, and a lot of things to get right. However, Immich is quite resilience and will fall-back to a baseline default when hardware acceleration does not work.
 
