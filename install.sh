@@ -13,6 +13,8 @@ check_user_id () {
     fi
 }
 
+check_user_id
+
 # -------------------
 # Create env file if it does not exists
 # -------------------
@@ -73,6 +75,26 @@ review_install_information () {
 }
 
 review_install_information
+
+# -------------------
+# Check if node are installed
+# -------------------
+
+install_node () {
+    # node.js
+    if ! command -v node &> /dev/null; then
+        echo "ERROR: Node.js is not installed."
+        echo "Installing Node.js for current user"
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+        \. "$HOME/.nvm/nvm.sh"
+        nvm install --lts
+        echo "Finish installing latest LTS node"
+    fi
+    echo "npm version: {$(npm -v)}"
+    echo "node version: {$(node -v)}"
+}
+
+install_node
 
 # -------------------
 # Check if dependency are met
