@@ -312,6 +312,8 @@ install_immich_machine_learning () {
         pip3 install onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.4.1/
         # Verify installation
         python3 -c "import onnxruntime as ort; print(ort.get_available_providers())"
+        # ROCm needs numpy < 2 [workaround](https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-onnx.html)
+        pip install "numpy<2" -i $PROXY_POETRY
     else
         poetry install --no-root --extras cpu
     fi
