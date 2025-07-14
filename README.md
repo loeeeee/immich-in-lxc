@@ -293,39 +293,6 @@ adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
 
 After creating the user, we should first install node.js for the user, Immich.
 
-### Node.js
-
-Immich works on a recent Node.js 20 LTS, and Ubuntu ships an ancient node.js. Thus. we need to go to [Node.js's download site](https://nodejs.org/en/download/package-manager) for the modern version.
-
-Because npm/nvm by default uses user installation, i.e, installing the binary at the home directory of current user, the following code should be executed in the shell environment of whichever user that runs Immich. Other installations, besides the coming installation script (`install.sh`), in this tutorial are global, however, meaning that they should be executed in sudo/root privilege.
-
-Assume one is currently login as user root, to change to the user we just created,
-
-```bash
-su immich
-```
-
-To change back to the pre-su user, `exit` should do the trick.
-
-After change to the Immich user, 
-
-(The following script is copy-pasted from the node.js's download website.)
-
-```bash
-# installs nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-# download and install Node.js (you may need to restart the terminal)
-nvm install --lts
-# verifies the right Node.js version is in the environment
-node -v # should print `v22.*.*`
-# verifies the right npm version is in the environment
-npm -v # should print `10.*.*`
-```
-
-Now `exit` the immich user.
-
-Note: We may set `NVM_NODEJS_ORG_MIRROR` [environment variables](https://github.com/nvm-sh/nvm/issues/2378) in bash to use a proxy for installing node js
-
 ## Install custom photo-processing library
 
 Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
