@@ -243,17 +243,30 @@ install_immich_web_server () {
 install_immich_web_server
 
 # -------------------
-# Copy build-lock
+# Generate build-lock
 # -------------------
 
-copy_build_lock () {
+generate_build_lock () {
     # So that immich would not complain
     cd $SCRIPT_DIR
-    shopt -s nullglob
-    cp base-images/server/sources/*.json "$INSTALL_DIR_app/"
+
+    cd base-images/server/
+    
+    # Create a temporary folder for the json files
+    TMP_DIR=/tmp/$(whoami)/immich-in-lxc/
+    mkdir -p $TMP_DIR
+
+    # From base-images/server/Dockerfile line 110
+    jq -s '.' packages/*.json > $TMP_DIR/packages.json
+    jq -s '.' sources/*.json > $TMP_DIR/sources.json
+    jq -n \
+        --slurpfile sources $TMP_DIR/sources.json \
+        --slurpfile packages $TMP_DIR/packages.json \
+        '{sources: $sources[0], packages: $packages[0]}' \
+        > $INSTALL_DIR_app/build-lock.json
 }
 
-copy_build_lock
+generate_build_lock
 
 # -------------------
 # Install Immich-machine-learning
