@@ -156,7 +156,7 @@ install_ffmpeg () {
     if ! command -v ffmpeg &> /dev/null; then
         curl https://repo.jellyfin.org/install-debuntu.sh | sed '/apt install --yes jellyfin/,$d' | bash
         # Installation
-        apt install jellyfin-ffmpeg7
+        apt install -y jellyfin-ffmpeg7
         # Link to common location
         ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
         ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
