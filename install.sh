@@ -219,6 +219,9 @@ install_immich_web_server () {
 
     cd server
     npm ci $npm_args # --cpu x64 --os linux
+    # From immich-app/server/Dockerfile line 7
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
@@ -243,6 +246,9 @@ install_immich_web_server () {
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
     cp -a server/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
+    cp -a i18n $INSTALL_DIR/
+    cp -a open-api/typescript-sdk $INSTALL_DIR_app/
+    cp -a docker/scripts/get-cpus.sh $INSTALL_DIR_app/
     cd ..
 }
 
@@ -374,8 +380,7 @@ install_sharp_and_cli () {
     npm install --build-from-source $npm_args sharp
 
     # Remove sharp dependency so that it use system library
-    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
-    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
+
 
     # Unset mirror for npm
     if [ ! -z "${PROXY_NPM}" ]; then
