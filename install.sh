@@ -3,6 +3,17 @@
 set -xeuo pipefail # Make people's life easier
 
 # -------------------
+# Check current user
+# -------------------
+
+check_user_id () {
+    if [ "$EUID" -eq 0 ]; then
+        echo "Error: This script should NOT be run as root."
+        exit 1
+    fi
+}
+
+# -------------------
 # Create env file if it does not exists
 # -------------------
 SCRIPT_DIR=$PWD
