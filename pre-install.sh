@@ -190,6 +190,8 @@ install_postgresql () {
     # Config PostgreSQL to use VectorCord
     runuser -u postgres -- psql -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
     systemctl restart postgresql.service
+    # Wait for restart
+    sleep 5
     runuser -u postgres -- psql -c 'CREATE EXTENSION IF NOT EXISTS vchord CASCADE'
 }
 
