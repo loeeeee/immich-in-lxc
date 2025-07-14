@@ -222,6 +222,8 @@ install_immich_web_server () {
     # From immich-app/server/Dockerfile line 7
     rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
     rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
+    # Install non-trivial dependency
+    npm i exiftool-vendored.pl
     npm run build
     npm prune --omit=dev --omit=optional
     cd ..
