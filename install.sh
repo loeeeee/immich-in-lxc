@@ -70,21 +70,26 @@ review_dependency () {
     # ffmpeg
     if ! command -v ffmpeg &> /dev/null; then
         echo "ERROR: ffmpeg is not installed."
+        echo "ERROR: Please run pre-install.sh first"
+        exit 1
     fi
 
     # node.js
     if ! command -v node &> /dev/null; then
         echo "ERROR: Node.js is not installed."
+        exit 1
     fi
 
     # python3
     if ! command -v python3 &> /dev/null; then
         echo "ERROR: Python is not installed."
+        exit 1
     fi
 
     # git
     if ! command -v git &> /dev/null; then
         echo "ERROR: Git is not installed."
+        exit 1
     fi
 
     # (Optional) Nvidia Driver
@@ -95,7 +100,6 @@ review_dependency () {
         fi
     fi
 
-    # (Optional) Nvidia CuDNN
 }
 
 review_dependency
