@@ -25,6 +25,7 @@ create_install_env_file () {
         if [ -f $SCRIPT_DIR/install.env ]; then
             cp install.env .env
             echo "New .env file created from the template, exiting"
+            echo "Please review the .env before rerunning the script"
             exit 0
         else
             echo ".env.template not found, please clone the entire repo, exiting"
