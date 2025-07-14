@@ -307,7 +307,7 @@ install_immich_machine_learning () {
         poetry install --no-root --extras cuda
     elif [ $isCUDA = "openvino" ]; then
         poetry install --no-root --extras openvino
-    elif [ $isCUDA = "rocm"]; then
+    elif [ $isCUDA = "rocm" ]; then
         # https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-onnx.html
         poetry add onnxruntime-rocm
         poetry install --no-root --extras rocm
