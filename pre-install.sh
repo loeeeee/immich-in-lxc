@@ -185,7 +185,7 @@ install_postgresql () {
     # VectorCord
     # [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
     PG_VC_FILE_NAME=postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
-    if [ -f "$PG_VC_FILE_NAME" ]; then
+    if [ ! -f "$PG_VC_FILE_NAME" ]; then
         wget -P /root/ https://github.com/tensorchord/VectorChord/releases/download/0.4.3/$PG_VC_FILE_NAME
     fi
     apt install -y /root/$PG_VC_FILE_NAME
