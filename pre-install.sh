@@ -154,8 +154,9 @@ install_build_dependency
 install_ffmpeg () {
     # Don't install ffmpeg over and over again
     if ! command -v ffmpeg &> /dev/null; then
-        SKIP_CONFIRM=true
+        export SKIP_CONFIRM=true
         curl https://repo.jellyfin.org/install-debuntu.sh | sed '/apt install --yes jellyfin/,$d' | bash
+        unset $SKIP_CONFIRM
         # Installation
         apt install -y jellyfin-ffmpeg7
         # Link to common location
