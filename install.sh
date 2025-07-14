@@ -3,6 +3,19 @@
 set -xeuo pipefail # Make people's life easier
 
 # -------------------
+# Check current user
+# -------------------
+
+check_user_id () {
+    if [ "$EUID" -eq 0 ]; then
+        echo "Error: This script should NOT be run as root."
+        exit 1
+    fi
+}
+
+check_user_id
+
+# -------------------
 # Create env file if it does not exists
 # -------------------
 SCRIPT_DIR=$PWD
@@ -14,6 +27,7 @@ create_install_env_file () {
         if [ -f $SCRIPT_DIR/install.env ]; then
             cp install.env .env
             echo "New .env file created from the template, exiting"
+            echo "Please review the .env before rerunning the script"
             exit 0
         else
             echo ".env.template not found, please clone the entire repo, exiting"
@@ -63,6 +77,28 @@ review_install_information () {
 review_install_information
 
 # -------------------
+# Check if node are installed
+# -------------------
+
+install_node () {
+    # node.js
+    if ! command -v node &> /dev/null; then
+        echo "ERROR: Node.js is not installed."
+        echo "Installing Node.js for current user"
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+        \. "$HOME/.nvm/nvm.sh"
+        # use $PROXY_NPM_DIST 
+        NVM_NODEJS_ORG_MIRROR=$PROXY_NPM_DIST
+        nvm install --lts
+        echo "Finish installing latest LTS node"
+    fi
+    echo "npm version: {$(npm -v)}"
+    echo "node version: {$(node -v)}"
+}
+
+install_node
+
+# -------------------
 # Check if dependency are met
 # -------------------
 
@@ -70,21 +106,26 @@ review_dependency () {
     # ffmpeg
     if ! command -v ffmpeg &> /dev/null; then
         echo "ERROR: ffmpeg is not installed."
+        echo "Please run pre-install.sh first"
+        exit 1
     fi
 
     # node.js
     if ! command -v node &> /dev/null; then
         echo "ERROR: Node.js is not installed."
+        exit 1
     fi
 
     # python3
     if ! command -v python3 &> /dev/null; then
         echo "ERROR: Python is not installed."
+        exit 1
     fi
 
     # git
     if ! command -v git &> /dev/null; then
         echo "ERROR: Git is not installed."
+        exit 1
     fi
 
     # (Optional) Nvidia Driver
@@ -95,7 +136,7 @@ review_dependency () {
         fi
     fi
 
-    # (Optional) Nvidia CuDNN
+    echo "Dependency check passed!"
 }
 
 review_dependency

@@ -69,6 +69,7 @@ install_runtime_component
 install_build_dependency () {
     # Source the os-release file to get access to its variables
     if [ -f /etc/os-release ]; then
+        # $ID comes from here
         . /etc/os-release
     else
         echo "Error: /etc/os-release not found."
@@ -145,6 +146,59 @@ install_build_dependency () {
 }
 
 install_build_dependency
+
+# -------------------
+# Install ffmpeg automatically
+# -------------------
+
+install_ffmpeg () {
+    # Don't install ffmpeg over and over again
+    if ! command -v ffmpeg &> /dev/null; then
+        export SKIP_CONFIRM=true
+        curl https://repo.jellyfin.org/install-debuntu.sh | sed '/apt install --yes jellyfin/,$d' | bash
+        unset $SKIP_CONFIRM
+        # Installation
+        apt install -y jellyfin-ffmpeg7
+        # Link to common location
+        ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
+        ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
+    else
+        echo "Skipping ffmpeg installation, because it is already installed"
+    fi
+
+}
+
+install_ffmpeg
+
+
+# -------------------
+# Install PostgreSQL with VectorCord
+# -------------------
+
+install_postgresql () {
+    # PostgreSQL
+    # [official guide](https://www.postgresql.org/download/linux/ubuntu/)
+    apt install -y postgresql-common
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+    apt install -y postgresql-17 postgresql-17-pgvector
+
+    # VectorCord
+    # [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
+    PG_VC_FILE_NAME=postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+    if [ ! -f "$PG_VC_FILE_NAME" ]; then
+        wget -P /root/ https://github.com/tensorchord/VectorChord/releases/download/0.4.3/$PG_VC_FILE_NAME
+    fi
+    apt install -y /root/$PG_VC_FILE_NAME
+
+    # Config PostgreSQL to use VectorCord
+    runuser -u postgres -- psql -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
+    systemctl restart postgresql.service
+    # Wait for restart
+    sleep 5
+    runuser -u postgres -- psql -c 'CREATE EXTENSION IF NOT EXISTS vchord CASCADE'
+}
+
+install_postgresql
 
 # -------------------
 # Clone the base images repo
