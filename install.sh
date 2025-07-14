@@ -87,6 +87,8 @@ install_node () {
         echo "Installing Node.js for current user"
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
         \. "$HOME/.nvm/nvm.sh"
+        # use $PROXY_NPM_DIST 
+        NVM_NODEJS_ORG_MIRROR=$PROXY_NPM_DIST
         nvm install --lts
         echo "Finish installing latest LTS node"
     fi
@@ -104,7 +106,7 @@ review_dependency () {
     # ffmpeg
     if ! command -v ffmpeg &> /dev/null; then
         echo "ERROR: ffmpeg is not installed."
-        echo "ERROR: Please run pre-install.sh first"
+        echo "Please run pre-install.sh first"
         exit 1
     fi
 
@@ -134,6 +136,7 @@ review_dependency () {
         fi
     fi
 
+    echo "Dependency check passed!"
 }
 
 review_dependency
