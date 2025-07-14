@@ -168,6 +168,29 @@ install_ffmpeg () {
 
 install_ffmpeg
 
+
+# -------------------
+# Install PostgreSQL with VectorCord
+# -------------------
+
+install_postgresql () {
+    # PostgreSQL
+    apt install -y postgresql-common
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+    apt install -y postgresql-17
+
+    # VectorCord
+    wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+    apt install -y ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+
+    # Config PostgreSQL to use VectorCord
+    runuser -u postgres -- psql -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
+    systemctl restart postgresql.service
+    runuser -u postgres -- psql -c 'CREATE EXTENSION IF NOT EXISTS vchord CASCADE'
+}
+
+install_postgresql
+
 # -------------------
 # Clone the base images repo
 # -------------------
