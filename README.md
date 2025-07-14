@@ -191,63 +191,20 @@ Good luck and have fun!
 <br>
 </details>
 
+
 ## Install utilities and databases
 
 ### PostgreSQL with VectorChord
 
 **Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
-The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances. For postgresql, visit [official guide](https://www.postgresql.org/download/linux/ubuntu/) for latest guide on installing postgresql 17. For VectorChord, visit [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages) for latest guide.
+The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances.
 
 
 <details>
 <summary>The Guide</summary>
 
-1. **Install PostgreSQL 17:**
-```bash
-apt install -y postgresql-common
-/usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-apt install -y postgresql-17
-```
-
-2. **Install VectorChord Debian Package:**
-```bash
-wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
-apt install ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
-```
-
-4. **Enter psql control interface:**
-
-As root user,
-
-```bash
-su postgres
-psql
-```
-
-5. **Configure PostgreSQL to use VectorChord (1):**
-
-In the psql interface, run:
-```SQL
-ALTER SYSTEM SET shared_preload_libraries = "vchord";
-\q
-```
-
-Restart postgres server as root
-```bash
-exit
-# Now is root time
-systemctl restart postgresql.service
-```
-
-6. **Configure PostgreSQL to use VectorChord (2):**
-
-Follow step 4, enter the psql interface
-```SQL
-CREATE EXTENSION IF NOT EXISTS vchord CASCADE;
-```
-
-5. **Create the Immich database and user:**
+1. **Create the Immich database and user:**
 
 In the psql interface, run:
 ```SQL
@@ -278,20 +235,6 @@ If you're upgrading from a version prior to v1.133.0 and have an existing Immich
 **Note:** If you have an existing `$INSTALL_DIR/runtime.env` (e.g. /home/immich/runtime.env) file with `DB_VECTOR_EXTENSION=pgvector`, you should update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
 
 For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
-
-### Immich User Creation
-
-First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
-
-```bash
-adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
-# --shell changes the default shell the immich user is using. In this case it will use /bin/bash, instead of the default /bin/sh, which lacks many eye-candy
-# --disabled-password skips creating password, and (sort of) only allows using su to access the user. If you need to change the password of the user, use the command: passwd immich
-# --comment adds user contact info, not super useful but mandatory, probably thanks to Unix legacy.
-# If the user immich needs sudo permissions, which is very very unlikely, use the command as root user: usermod -aG sudo immich
-```
-
-After creating the user, we should first install node.js for the user, Immich.
 
 ## Install custom photo-processing library
 

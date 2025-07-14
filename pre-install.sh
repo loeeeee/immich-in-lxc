@@ -175,11 +175,13 @@ install_ffmpeg
 
 install_postgresql () {
     # PostgreSQL
+    # [official guide](https://www.postgresql.org/download/linux/ubuntu/)
     apt install -y postgresql-common
     /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
     apt install -y postgresql-17
 
     # VectorCord
+    # [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
     wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
     apt install -y ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
 
