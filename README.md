@@ -192,9 +192,52 @@ Good luck and have fun!
 </details>
 
 
-## Install utilities and databases
+## Immich Installation
 
-### PostgreSQL with VectorChord
+### User creation
+
+First of all, create a Immich user, if you already done so in the above optional section, you may safely skip the following code block. The user created here will run Immich server.
+
+```bash
+adduser --shell /bin/bash --disabled-password immich --comment "Immich Mich"
+# --shell changes the default shell the immich user is using. In this case it will use /bin/bash, instead of the default /bin/sh, which lacks many eye-candy
+# --disabled-password skips creating password, and (sort of) only allows using su to access the user. If you need to change the password of the user, use the command: passwd immich
+# --comment adds user contact info, not super useful but mandatory, probably thanks to Unix legacy.
+# If the user immich needs sudo permissions, which is very very unlikely, use the command as root user: usermod -aG sudo immich
+```
+
+### Clone the repo
+
+I have make some helper script in this repo, so all one needs to do is clone the repo. We change to the user immich so that the files we cloned will have proper permission. And, just in case one does not know, the commands are as follow.
+
+```bash
+su immich
+cd ~
+git clone https://github.com/loeeeee/immich-in-lxc.git
+```
+
+Additionally, it is recommend to have our working directory set to the repo's directory.
+
+```bash
+cd immich-in-lxc
+```
+
+### Install custom photo-processing library
+
+Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
+
+#### Install compile tools and compile 始める
+
+
+Now `exit` the immich user, as the upcoming commands should be run as `root` user.
+
+```bash
+./pre-install.sh
+```
+
+It is just so satisfying to see the compiling log rolling down the terminal, ain't it? Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
+
+### Config PostgreSQL like a champ
 
 **Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
@@ -236,35 +279,7 @@ If you're upgrading from a version prior to v1.133.0 and have an existing Immich
 
 For more details on the VectorChord migration, see the [official Immich v1.133.0 release notes](https://github.com/immich-app/immich/releases/tag/v1.133.0).
 
-## Install custom photo-processing library
-
-Likely because of license issue, many libraries included by distribution package managers do not support all the image format we want, e.g., HEIF, RAW, etc. Thus, we need compile these libraries from source. It can be painful to figure out how to do this, but luckily, I have already sorted out for you.
-
-### Install compile tools and compile 始める
-
-I have make some helper script in this repo, so all one needs to do is clone the repo. We change to the user immich so that the files we cloned will have proper permission. And, just in case one does not know, the commands are as follow.
-
-```bash
-su immich
-cd ~
-git clone https://github.com/loeeeee/immich-in-lxc.git
-```
-
-Additionally, it is recommend to have our working directory set to the repo's directory.
-
-```bash
-cd immich-in-lxc
-```
-
-Now `exit` the immich user, as the upcoming commands should be run as `root` user.
-
-```bash
-./pre-install.sh
-```
-
-It is just so satisfying to see the compiling log rolling down the terminal, ain't it? Look carefully at the log, though. There should not be any error. However, some warning about relink will pop up, which is normal.
-
-## Install Immich Server
+### Install Immich Server
 
 The star of the show is the install script, i.e. `install.sh` in this repo. It installs or updates the current Immich instance. The Immich instance itself is stateless, thanks to its design. Thus, it is safe to delete the `app` folder that will resides inside `INSTALL_DIR` folder that we are about to config. 
 
@@ -272,7 +287,7 @@ Note: **DO NOT DELETE UPLOAD FOLDER SPECIFIED BY `INSTALL_DIR` IN `.env`**. It s
 
 Also note: One should always do a snapshot of the media folder during the updating or installation process, just in case something goes horribly wrong.
 
-### The environment variables
+#### The environment variables
 
 An example .env file that will be generated when no `.env` file is found inside current working directory when executing the script.
 
@@ -298,7 +313,7 @@ Note: The `immich` user should have read and write access to both `INSTALL_DIR` 
 
 Note: :new: means user might need to create the empty entry to make script run.
 
-### Run the script
+#### Run the script
 
 After the `.env` is properly configured, we are now ready to do the actual installation.
 
@@ -322,7 +337,7 @@ Lastly, we need to review and modify the `runtime.env` that is inside your speci
 
 For Timezones `TZ`, you can consult them in the [TZ Database Wiki](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
 
-### Post install script
+#### Post install script
 
 The post install script will copy the systemd service files to proper location (and overwrite the original ones), assuming one is using Ubuntu, or something similar. Additionally, it creates a folder for log at `/var/log/`. Both operation requires `sudo/root` privilege, so make sure to review the script before proceeding.
 
@@ -356,7 +371,7 @@ systemctl enable immich-ml && \
 systemctl enable immich-web
 ```
 
-### Immich config
+#### Immich config
 
 Because we are install Immich instance in a none docker environment, some DNS lookup will not work. For instance, we need to change the URL inside `Administration > Settings > Machine Learning Settings > URL` to `http://localhost:3003`, otherwise the web server cannot communicate with the ML backend.
 
@@ -382,11 +397,3 @@ Then, the modify `REPO_TAG` value in `.env` file based on the one in `install.en
 Finally, run the `install.sh` and it will update Immich, hopefully without problems.
 
 Also, don't forget to start the service again, to load the latest Immich instance.
-
-## Contributing
-
-When making changes to the pre-install script or dependency files:
-
-1. Ensure your changes pass the automated tests
-2. Test on both Ubuntu and Debian environments if possible
-3. Update the GitHub Actions workflows if needed
