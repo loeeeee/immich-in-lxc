@@ -104,7 +104,7 @@ install_build_dependency () {
         
 
     ## Learned from compile failure
-    apt install -y libtool liblcms2-dev
+    apt install -y libtool liblcms2-dev libgif-dev libpango1.0-dev
     
     # Check the ID and execute the corresponding script
     case "$ID" in
