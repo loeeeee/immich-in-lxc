@@ -239,15 +239,17 @@ It is just so satisfying to see the compiling log rolling down the terminal, ain
 
 ### Config PostgreSQL like a champ
 
-**Important Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
 The following steps apply to both `Debian 12` and `Ubuntu 24.04` instances.
 
+Enter PostgreSQL control interface
 
-<details>
-<summary>The Guide</summary>
-
-1. **Create the Immich database and user:**
+```bash
+# As root
+su postgres
+# Now you are user:postgres
+psql
+```
 
 In the psql interface, run:
 ```SQL
@@ -262,18 +264,14 @@ Note: change password, seriously.
 
 Note: To change back to the pre-su user, `exit` should do the trick.
 
-Note: The `runtime.env` file now uses `DB_VECTOR_EXTENSION=vectorchord` as the default setting for new installations.
-
-<br>
-</details>
-
 #### Database Migration for Existing Users (v1.133.0+)
+
+**Note:** Starting with Immich v1.133.0, the project has migrated from pgvecto.rs to [VectorChord](https://github.com/tensorchord/VectorChord) for better performance and stability.
 
 If you're upgrading from a version prior to v1.133.0 and have an existing Immich installation, you may need to perform a database migration. The migration from pgvecto.rs to VectorChord is automatic, but you should:
 
 1. **Backup your database** before upgrading
 2. Ensure you're upgrading from at least v1.107.2 or later
-3. The migration will happen automatically during the first startup after upgrading
 
 **Note:** If you have an existing `$INSTALL_DIR/runtime.env` (e.g. /home/immich/runtime.env) file with `DB_VECTOR_EXTENSION=pgvector`, you should update it to `DB_VECTOR_EXTENSION=vectorchord` for the new VectorChord extension.
 
