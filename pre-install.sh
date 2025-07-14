@@ -179,7 +179,7 @@ install_postgresql () {
     # PostgreSQL
     # [official guide](https://www.postgresql.org/download/linux/ubuntu/)
     apt install -y postgresql-common
-    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
     apt install -y postgresql-17
 
     # VectorCord
