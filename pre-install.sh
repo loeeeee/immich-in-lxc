@@ -184,8 +184,8 @@ install_postgresql () {
 
     # VectorCord
     # [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
-    wget https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
-    apt install -y ./postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+    wget -P /root/ https://github.com/tensorchord/VectorChord/releases/download/0.4.3/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
+    apt install -y /root/postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
 
     # Config PostgreSQL to use VectorCord
     runuser -u postgres -- psql -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
