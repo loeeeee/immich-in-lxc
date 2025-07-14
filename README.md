@@ -39,9 +39,9 @@ Lastly, by using this repo, one could reliably set up a hardware-accelerated Imm
 - Database
     - Redis
     - Postgresql
-        - PG-vector
+        - VectorChord
 - System
-    - FFmpeg
+    - Jellyfin-ffmpeg
     - Node.js
     - git
 - (Optional) Reverse Proxy
@@ -78,7 +78,10 @@ Follow the guide at [another repository](https://github.com/loeeeee/loe-handbook
 
 And, that is it, EZ, right?
 
-## Hardware-accelerated machine learning: NVIDIA (Optional)
+## Hardware-accelerated machine learning
+
+<details>
+<summary>Nvidia</summary>
 
 Firstly, prepare a LXC with GPU available by following the guide at [another repository](https://github.com/loeeeee/loe-handbook-of-gpu-in-lxc/blob/main/src/gpu-passthrough.md) of mine. This process is referred to as NVIDIA GPU pass-through in LXC.
 
@@ -138,7 +141,12 @@ apt install -y cuda-toolkit
 
 Zu easy, innit?
 
-## Hardware-accelerated machine learning: Intel/OpenVINO (Optional, Experimental)
+<br>
+</details>
+
+
+<details>
+<summary>Intel/OpenVINO</summary>
 
 This part is intended for users who would like to utilize Intel's OpenVINO execution provider. ([System requirement](https://docs.openvino.ai/2024/about-openvino/release-notes-openvino/system-requirements.html), [List of supported devices](https://docs.openvino.ai/2024/about-openvino/compatibility-and-support/supported-devices.html)) The document listed the support for not only Intel iGPU and dGPU, but also its NPU, which seems very cool.
 
@@ -167,13 +175,21 @@ Now, when installing Immich, it will be using OpenVINO as its ML backend.
 <br>
 </details>
 
-## Hardware-accelerated machine learning: Others (Optional)
+<br>
+</details>
+
+
+<details>
+<summary>Others</summary>
 
 Since Immich depends on ONNX runtime, it is **possible** that other hardware that is not officially supported by Immich can be used to do machine learning tasks. The idea here is that installing the dependency for the hardware following [ONNX's instruction](https://onnxruntime.ai/docs/execution-providers/#summary-of-supported-execution-providers). 
 
 Some users have also reported successful results using GPU Transcoding in Immich by following the Proxmox configurations from this video: [iGPU Transcoding In Proxmox with Jellyfin Media Center](https://www.youtube.com/watch?v=XAa_qpNmzZs) - Just avoid all the Jellyfin stuff and do the configurations on the Immich container instead. At the end, you should be able to use your iGPU Transcoding in Immich by going to needs to go to `Administration > Settings > Video Transcoding Settings > Hardware Acceleration > Acceleration API` and select `Quick Sync` to explicitly use the GPU to do the transcoding.
 
 Good luck and have fun!
+
+<br>
+</details>
 
 ## Install utilities and databases
 
