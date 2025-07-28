@@ -87,7 +87,7 @@ install_node () {
         echo "Installing Node.js for current user"
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
         \. "$HOME/.nvm/nvm.sh"
-        # use $PROXY_NPM_DIST 
+        # use $PROXY_NPM_DIST
         NVM_NODEJS_ORG_MIRROR=$PROXY_NPM_DIST
         nvm install --lts
         echo "Finish installing latest LTS node"
@@ -156,7 +156,7 @@ REPO_URL="https://github.com/immich-app/immich"
 MAJOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f1) # No longer used, but might worth keeping it around
 MINOR_VERSION=$(echo $REPO_TAG | cut -d'.' -f2) # No longer used, but might worth keeping it around
 
-# The idea is that when one needs to sets up a proxy for NPM, 
+# The idea is that when one needs to sets up a proxy for NPM,
 # they might not have good access to GitHub
 # Thus, build from source would be faster
 # Add --build-from-source in npm ci is the solution if node-pre-gyp stuck at GET http https://github.com.....
@@ -287,11 +287,11 @@ install_immich_web_server () {
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
     cp -a web/build $INSTALL_DIR_app/www
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
-    cp -a server/start*.sh $INSTALL_DIR_app/
+    cp -a server/bin/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a open-api/typescript-sdk $INSTALL_DIR_app/
-    cp -a docker/scripts/get-cpus.sh $INSTALL_DIR_app/
+    cp -a server/bin/get-cpus.sh $INSTALL_DIR_app/
     cd ..
 }
 
@@ -332,7 +332,7 @@ install_immich_machine_learning () {
 
     # Use pypi if proxy does not present
     if [ -z "${PROXY_POETRY}" ]; then
-        PROXY_POETRY=https://pypi.org/simple/  
+        PROXY_POETRY=https://pypi.org/simple/
     fi
     pip3 install poetry -i $PROXY_POETRY
 
@@ -350,12 +350,15 @@ install_immich_machine_learning () {
         sed -i -e 's/<3.12/<4/g' pyproject.toml
         poetry update
     fi
-    
+    poetry lock
+
     # Install CUDA parts only when necessary
     if [ $isCUDA = true ]; then
         poetry install --no-root --extras cuda
     elif [ $isCUDA = "openvino" ]; then
-        poetry install --no-root --extras openvino
+        poetry add "numpy<2"
+        poetry update --lock
+        poetry install --no-root --extras openvino        
     elif [ $isCUDA = "rocm" ]; then
         # https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-onnx.html
         pip3 install onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.4.1/
