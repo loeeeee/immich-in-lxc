@@ -287,11 +287,11 @@ install_immich_web_server () {
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
     cp -a web/build $INSTALL_DIR_app/www
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
-    cp -a server/start*.sh $INSTALL_DIR_app/
+    cp -a server/bin/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a open-api/typescript-sdk $INSTALL_DIR_app/
-    cp -a docker/scripts/get-cpus.sh $INSTALL_DIR_app/
+    cp -a server/bin/get-cpus.sh $INSTALL_DIR_app/
     cd ..
 }
 
@@ -355,7 +355,9 @@ install_immich_machine_learning () {
     if [ $isCUDA = true ]; then
         poetry install --no-root --extras cuda
     elif [ $isCUDA = "openvino" ]; then
-        poetry install --no-root --extras openvino
+        poetry add "numpy<2"
+        poetry update --lock
+        poetry install --no-root --extras openvino    
     elif [ $isCUDA = "rocm" ]; then
         # https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/install-onnx.html
         pip3 install onnxruntime-rocm -f https://repo.radeon.com/rocm/manylinux/rocm-rel-6.4.1/

@@ -2,7 +2,7 @@
 
 set -xeuo pipefail # Make my life easier
 
-# Install Dependency for Debian 12
+# Install dependencys for Debian 12
 
 # Add source
 if [ ! -d "/etc/apt/sources.list.d/immich.list" ]; then
@@ -23,26 +23,8 @@ fi
 # Update before install from new sources
 apt update
 
-# libjpeg62-turbo-dev
-apt install --no-install-recommends -y \
-        libjpeg62-turbo-dev
-## libjpeg-turbo is faster than libjpeg
-
-# Dockerfile 35
+# Install dev libraries from testing
 apt install -t testing --no-install-recommends -yqq \
-        libdav1d-dev \
         libhwy-dev \
-        libwebp-dev \
-        libio-compress-brotli-perl
-
-## Dockerfile 92
-apt install -t testing --no-install-recommends -y \
-        libio-compress-brotli-perl \
-        libwebp7 \
-        libwebpdemux2 \
-        libwebpmux3 \
-        libhwy1t64
-
-## Dockerfile 104
-# apt install -t stable --no-install-recommends -y \
-#         intel-media-va-driver
+        libsharpyuv-dev \
+        libwebp-dev

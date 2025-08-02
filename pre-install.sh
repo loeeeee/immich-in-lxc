@@ -78,35 +78,40 @@ install_build_dependency () {
 
     # From immich/base-image
     ## Install common tools
-    apt-get install --no-install-recommends -y\
+    apt install --no-install-recommends -yqq \
         curl git python3-venv python3-dev unzip
 
     ## Install common build components
-    apt-get install --no-install-recommends -y\
+    apt install --no-install-recommends -yqq \
         autoconf \
         build-essential \
         cmake \
+        cpanminus \
         jq \
         libbrotli-dev \
+        libdav1d-dev \
         libde265-dev \
         libexif-dev \
         libexpat1-dev \
+        libgif-dev \
         libglib2.0-dev \
         libgsf-1-dev \
         liblcms2-2 \
-        libspng-dev \
+        liblcms2-dev \
+        libpango1.0-dev \
         librsvg2-dev \
+        libspng-dev \
+        libtool \
+        libwebp-dev \
+        libwebp7 \
+        libwebpdemux2 \
+        libwebpmux3 \
         meson \
         ninja-build \
         pkg-config \
         wget \
-        zlib1g \
-        cpanminus
-        
+        zlib1g
 
-    ## Learned from compile failure
-    apt install -y libtool liblcms2-dev libgif-dev libpango1.0-dev
-    
     # Check the ID and execute the corresponding script
     case "$ID" in
         ubuntu)
@@ -160,8 +165,8 @@ install_ffmpeg () {
         # Installation
         apt install -y jellyfin-ffmpeg7
         # Link to common location
-        ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg  /usr/bin/ffmpeg
-        ln -s /usr/lib/jellyfin-ffmpeg/ffprobe  /usr/bin/ffprobe
+        ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/bin/ffmpeg
+        ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/bin/ffprobe
     else
         echo "Skipping ffmpeg installation, because it is already installed"
     fi
@@ -186,15 +191,14 @@ install_postgresql () {
     # [*VectorChord Installation Documentation*](https://docs.vectorchord.ai/vectorchord/getting-started/installation.html#debian-packages)
     PG_VC_FILE_NAME=postgresql-17-vchord_0.4.3-1_$(dpkg --print-architecture).deb
     if [ ! -f "$PG_VC_FILE_NAME" ]; then
-        wget -P /root/ https://github.com/tensorchord/VectorChord/releases/download/0.4.3/$PG_VC_FILE_NAME
+        wget -P /tmp/ https://github.com/tensorchord/VectorChord/releases/download/0.4.3/$PG_VC_FILE_NAME
     fi
-    apt install -y /root/$PG_VC_FILE_NAME
+    apt install -y /tmp/$PG_VC_FILE_NAME
+    rm -f /tmp/$PG_VC_FILE_NAME
 
     # Config PostgreSQL to use VectorCord
     runuser -u postgres -- psql -c 'ALTER SYSTEM SET shared_preload_libraries = "vchord"'
-    systemctl restart postgresql.service
-    # Wait for restart
-    sleep 5
+    systemctl restart postgresql.service && timeout 5s bash -c 'until systemctl is-active --quiet postgresql.service; do sleep 0.5; done'
     runuser -u postgres -- psql -c 'CREATE EXTENSION IF NOT EXISTS vchord CASCADE'
 }
 
@@ -270,7 +274,7 @@ build_libjxl () {
     git apply $BASE_IMG_REPO_DIR/server/sources/libjxl-patches/jpegli-icc-warning.patch
 
     remove_build_folder $SOURCE
-    
+
     mkdir build
     cd build
     cmake \
@@ -425,9 +429,9 @@ build_libvips () {
     git_clone https://github.com/libvips/libvips.git $SOURCE $LIBVIPS_REVISION
 
     cd $SOURCE
-    
+
     remove_build_folder $SOURCE
-    
+
     # -Djpeg-xl=disabled is added because previous broken install will break libvips
     meson setup build --buildtype=release --libdir=lib -Dintrospection=disabled -Dtiff=disabled
     cd build
@@ -445,58 +449,57 @@ build_libvips
 # -------------------
 
 remove_build_dependency () {
-    apt-get remove -y \
+    apt remove -yqq \
         libbrotli-dev \
         libde265-dev \
-        libexif-dev \
         libexpat1-dev \
         libgsf-1-dev \
         liblcms2-2 \
         librsvg2-dev \
         libspng-dev
-    apt-get remove -y \
-        libdav1d-dev \
-        libhwy-dev \
-        libwebp-dev \
-        libio-compress-brotli-perl
 }
 
-# remove_build_dependency
+remove_build_dependency
 
 # -------------------
 # Add runtime dependency
 # -------------------
 
 add_runtime_dependency () {
-     apt-get install --no-install-recommends -yqq \
+    apt install --no-install-recommends -yqq \
+        libcairo2-dev \
         libde265-0 \
         libexif12 \
         libexpat1 \
+        libexpat1-dev \
+        libexif-dev \
         libgcc-s1 \
         libglib2.0-0 \
         libgomp1 \
         libgsf-1-114 \
+        libhwy1t64 \
         liblcms2-2 \
+        liblcms2-dev \
         liblqr-1-0 \
         libltdl7 \
         libmimalloc2.0 \
         libopenexr-3-1-30 \
         libopenjp2-7 \
-        librsvg2-2 \
+        libspng-dev \
         libspng0 \
-        mesa-utils \
-        mesa-va-drivers \
-        mesa-vulkan-drivers \
-        tini \
-        wget \
-        zlib1g \
-        ocl-icd-libopencl1
-    apt-get install --no-install-recommends -y \
-        libio-compress-brotli-perl \
+        libwebp-dev \
+        libvips-dev \
         libwebp7 \
         libwebpdemux2 \
         libwebpmux3 \
-        libhwy1t64
+        librsvg2-2 \
+        librsvg2-dev \
+        mesa-utils \
+        mesa-va-drivers \
+        mesa-vulkan-drivers \
+        ocl-icd-libopencl1 \
+        python3-dev \
+        zlib1g
 }
 
 add_runtime_dependency
