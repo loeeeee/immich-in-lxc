@@ -287,11 +287,11 @@ install_immich_web_server () {
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
     cp -a web/build $INSTALL_DIR_app/www
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
-    cp -a server/start*.sh $INSTALL_DIR_app/
+    cp -a server/bin/start*.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a open-api/typescript-sdk $INSTALL_DIR_app/
-    cp -a docker/scripts/get-cpus.sh $INSTALL_DIR_app/
+    cp -a server/bin/get-cpus.sh $INSTALL_DIR_app/
     cd ..
 }
 
