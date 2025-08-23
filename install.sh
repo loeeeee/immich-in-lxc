@@ -92,8 +92,15 @@ install_node () {
         nvm install --lts
         echo "Finish installing latest LTS node"
     fi
+
+    if ! command -v pnpm &> /dev/null; then
+        echo "Installing pnpm"
+        npm install -g pnpm@10
+    fi
+
     echo "npm version: {$(npm -v)}"
     echo "node version: {$(node -v)}"
+    echo "pnpm version: {$(pnpm -v)}"
 }
 
 install_node
@@ -233,6 +240,44 @@ clone_the_repo
 # Install immich-web-server
 # -------------------
 
+install_immich_web_server_pnpm () {
+    cd $INSTALL_DIR_src
+
+    # Set mirror for pnpm (if needed)
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config set registry=$PROXY_NPM
+    fi
+
+    rm -r $INSTALL_DIR_app 
+    
+    # Install dependencies
+    pnpm install --frozen-lockfile
+
+    pnpm --filter immich build
+    pnpm --filter @immich/sdk --filter immich-web build
+    # Build and deploy the server component.
+    SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --prod deploy $INSTALL_DIR_app
+
+    # Build and deploy the CLI.
+    pnpm --filter @immich/cli --prod --no-optional deploy $INSTALL_DIR_app/cli
+
+    ln -s ../cli/bin/immich $INSTALL_DIR_app/bin/immich
+
+    # Copy the built Web UI to the target directory.
+    cp -a web/build $INSTALL_DIR_app/www
+
+    # Copy remaining assets.
+    cp -a LICENSE $INSTALL_DIR_app/
+    cp -a i18n $INSTALL_DIR/
+    cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
+
+    # Unset mirror for pnpm (if it was set)
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config delete registry
+    fi
+}
+
+
 install_immich_web_server () {
     cd $INSTALL_DIR_src
 
@@ -295,7 +340,7 @@ install_immich_web_server () {
     cd ..
 }
 
-install_immich_web_server
+install_immich_web_server_pnpm
 
 # -------------------
 # Generate build-lock
@@ -405,6 +450,28 @@ replace_usr_src
 # -------------------
 # Install sharp and CLI
 # -------------------
+
+install_sharp_and_cli_pnpm () {
+    cd $INSTALL_DIR_app
+
+    # Set mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config set registry=$PROXY_NPM
+    fi
+    # Set npm args
+    if $isNPM_BUILD_FROM_SOURCE; then
+        npm_args="true"
+    else
+        npm_args="false"
+    fi
+
+    npm_config_build_from_source=$npm_args pnpm add --force sharp
+
+    # Unset mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config delete registry
+    fi
+}
 
 install_sharp_and_cli () {
     cd $INSTALL_DIR_app
