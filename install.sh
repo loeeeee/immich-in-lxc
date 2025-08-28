@@ -249,24 +249,24 @@ install_immich_web_server_pnpm () {
     fi
 
     rm -r $INSTALL_DIR_app 
-    
+
     # Install dependencies
     pnpm install --frozen-lockfile
+    npm_config_sharp_binary_host="" SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm install
 
-    pnpm --filter immich build
-    pnpm --filter @immich/sdk --filter immich-web build
+    pnpm --filter immich --frozen-lockfile build
+    pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile build
     # Build and deploy the server component.
-    SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --prod deploy $INSTALL_DIR_app
+    pnpm --filter immich --prod deploy $INSTALL_DIR_app
 
     # Build and deploy the CLI.
-    pnpm --filter @immich/cli --prod --no-optional deploy $INSTALL_DIR_app/cli
+    pnpm --filter @immich/cli --frozen-lockfile --prod --no-optional deploy $INSTALL_DIR_app/cli
 
     ln -s ../cli/bin/immich $INSTALL_DIR_app/bin/immich
 
     # Copy the built Web UI to the target directory.
     cp -a web/build $INSTALL_DIR_app/www
 
-    # Copy remaining assets.
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
@@ -333,7 +333,7 @@ install_immich_web_server () {
     cp -a web/build $INSTALL_DIR_app/www
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
     # start.sh locates here, get-cpus locates here
-    cp -a server/bin/* $INSTALL_DIR_app/bin/ 
+    cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a open-api/typescript-sdk $INSTALL_DIR_app/
@@ -450,28 +450,6 @@ replace_usr_src
 # -------------------
 # Install sharp and CLI
 # -------------------
-
-install_sharp_and_cli_pnpm () {
-    cd $INSTALL_DIR_app
-
-    # Set mirror for npm
-    if [ ! -z "${PROXY_NPM}" ]; then
-        pnpm config set registry=$PROXY_NPM
-    fi
-    # Set npm args
-    if $isNPM_BUILD_FROM_SOURCE; then
-        npm_args="true"
-    else
-        npm_args="false"
-    fi
-
-    npm_config_build_from_source=$npm_args pnpm add --force sharp
-
-    # Unset mirror for npm
-    if [ ! -z "${PROXY_NPM}" ]; then
-        pnpm config delete registry
-    fi
-}
 
 install_sharp_and_cli () {
     cd $INSTALL_DIR_app
