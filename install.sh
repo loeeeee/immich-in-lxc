@@ -92,8 +92,15 @@ install_node () {
         nvm install --lts
         echo "Finish installing latest LTS node"
     fi
+
+    if ! command -v pnpm &> /dev/null; then
+        echo "Installing pnpm"
+        npm install -g pnpm@10
+    fi
+
     echo "npm version: {$(npm -v)}"
     echo "node version: {$(node -v)}"
+    echo "pnpm version: {$(pnpm -v)}"
 }
 
 install_node
@@ -233,6 +240,47 @@ clone_the_repo
 # Install immich-web-server
 # -------------------
 
+install_immich_web_server_pnpm () {
+    cd $INSTALL_DIR_src
+
+    # Set mirror for pnpm (if needed)
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config set registry=$PROXY_NPM
+    fi
+
+    rm -r $INSTALL_DIR_app 
+
+    # Install dependencies
+    pnpm install --frozen-lockfile
+    npm_config_sharp_binary_host="" SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm install
+
+    pnpm --filter immich --frozen-lockfile build
+    # Fix for Unsupported compression heifsave
+    rm -r $INSTALL_DIR_src/node_modules/.pnpm/sharp@*
+    npm install --no-save --build-from-source --verbose sharp
+    pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile build
+    # Build and deploy the server component.
+    pnpm --filter immich --prod deploy $INSTALL_DIR_app
+
+    # Build and deploy the CLI.
+    pnpm --filter @immich/cli --frozen-lockfile --prod --no-optional deploy $INSTALL_DIR_app/cli
+
+    ln -s ../cli/bin/immich $INSTALL_DIR_app/bin/immich
+
+    # Copy the built Web UI to the target directory.
+    cp -a web/build $INSTALL_DIR_app/www
+
+    cp -a LICENSE $INSTALL_DIR_app/
+    cp -a i18n $INSTALL_DIR/
+    cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
+
+    # Unset mirror for pnpm (if it was set)
+    if [ ! -z "${PROXY_NPM}" ]; then
+        pnpm config delete registry
+    fi
+}
+
+
 install_immich_web_server () {
     cd $INSTALL_DIR_src
 
@@ -287,15 +335,15 @@ install_immich_web_server () {
     cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
     cp -a web/build $INSTALL_DIR_app/www
     cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
-    cp -a server/start*.sh $INSTALL_DIR_app/
+    # start.sh locates here, get-cpus locates here
+    cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
     cp -a LICENSE $INSTALL_DIR_app/
     cp -a i18n $INSTALL_DIR/
     cp -a open-api/typescript-sdk $INSTALL_DIR_app/
-    cp -a docker/scripts/get-cpus.sh $INSTALL_DIR_app/
     cd ..
 }
 
-install_immich_web_server
+install_immich_web_server_pnpm
 
 # -------------------
 # Generate build-lock
@@ -330,30 +378,26 @@ install_immich_machine_learning () {
     # Initiate subshell to setup venv
     . $INSTALL_DIR_ml/venv/bin/activate
 
-    # Use pypi if proxy does not present
-    if [ -z "${PROXY_POETRY}" ]; then
-        PROXY_POETRY=https://pypi.org/simple/  
-    fi
-    pip3 install poetry -i $PROXY_POETRY
+    pip3 install uv
 
     # Set PROXY_POETRY as the primary source to download package from
     # https://python-poetry.org/docs/repositories/#primary-package-sources
-    if [ ! -z "${PROXY_POETRY}" ]; then
-        # langsam literally means slow
-        poetry source add --priority=primary langsam $PROXY_POETRY
-    fi
+    #if [ ! -z "${PROXY_POETRY}" ]; then
+    #    # langsam literally means slow
+    #    poetry source add --priority=primary langsam $PROXY_POETRY
+    #fi
 
     # Deal with python 3.12
-    python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
-    if [ $python3_version = 12 ]; then
-        # Allow Python 3.12 (e.g., Ubuntu 24.04)
-        sed -i -e 's/<3.12/<4/g' pyproject.toml
-        poetry update
-    fi
+    #python3_version=$(python3 --version 2>&1 | awk -F' ' '{print $2}' | awk -F'.' '{print $2}')
+    #if [ $python3_version = 12 ]; then
+    #    # Allow Python 3.12 (e.g., Ubuntu 24.04)
+    #    sed -i -e 's/<3.12/<4/g' pyproject.toml
+    #    poetry update
+    #fi
     
     # Install CUDA parts only when necessary
     if [ $isCUDA = true ]; then
-        poetry install --no-root --extras cuda
+        uv sync --extra cuda --active --no-cache
     elif [ $isCUDA = "openvino" ]; then
         poetry install --no-root --extras openvino
     elif [ $isCUDA = "rocm" ]; then
@@ -368,11 +412,11 @@ install_immich_machine_learning () {
     fi
 
     # Reset the settings
-    if [ ! -z "${PROXY_POETRY}" ]; then
-        # Remove the source
-        # https://python-poetry.org/docs/cli/#source-remove
-        poetry source remove langsam
-    fi
+    #if [ ! -z "${PROXY_POETRY}" ]; then
+    #    # Remove the source
+    #    # https://python-poetry.org/docs/cli/#source-remove
+    #    poetry source remove langsam
+    #fi
 
     )
 

@@ -12,7 +12,7 @@ Type=simple
 Restart=on-failure
 UMask=0077
 
-ExecStart=/bin/bash /home/immich/app/start.sh
+ExecStart=/bin/bash /home/immich/app/bin/start.sh
 
 SyslogIdentifier=immich-web
 StandardOutput=append:/var/log/immich/web.log
