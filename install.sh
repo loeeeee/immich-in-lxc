@@ -212,6 +212,7 @@ install_immich_web_server_pnpm () {
 
     # Install dependencies
     pnpm install --frozen-lockfile
+    npm_config_build_from_source=true pnpm rebuild sharp
 
     # Use global LibVips - happens by default no flags needed
     pnpm --filter immich --frozen-lockfile build
@@ -220,11 +221,7 @@ install_immich_web_server_pnpm () {
     pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile build
 
     # Build and deploy the server component.
-    # This part does not copy does not copy prebuilt sharp 
-    #   which is built against our system.
-    pnpm --filter immich --prod deploy "$INSTALL_DIR_app"
-    # So we are rebuilding Sharp again that it links correctly
-    (cd $INSTALL_DIR_app/node_modules/sharp; npm rebuild sharp --build-from-source)
+    SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --prod deploy $INSTALL_DIR_app
 
     # Build and deploy the CLI.
     pnpm --filter @immich/cli --frozen-lockfile --prod --no-optional deploy $INSTALL_DIR_app/cli
@@ -244,6 +241,69 @@ install_immich_web_server_pnpm () {
     fi
 }
 
+
+install_immich_web_server () {
+    cd $INSTALL_DIR_src
+
+    # Set mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config set registry=$PROXY_NPM
+    fi
+    # Set mirror for npm dist
+    if [ ! -z "${PROXY_NPM_DIST}" ]; then
+        export npm_config_dist_url=$PROXY_NPM_DIST
+    fi
+    # Set npm args
+    if $isNPM_BUILD_FROM_SOURCE; then
+        npm_args="--build-from-source --verbose --foreground-script"
+    else
+        npm_args=""
+    fi
+
+    # This solves fallback-to-build issue with bcrypt and utimes
+    npm install -g node-gyp @mapbox/node-pre-gyp
+    # Solve audit stuck by skipping it, [Additional info](https://overreacted.io/npm-audit-broken-by-design/)
+    # npm config set audit false
+    # Install immich cli
+    npm i -g @immich/cli
+
+    cd server
+    npm ci $npm_args # --cpu x64 --os linux
+    # From immich-app/server/Dockerfile line 7
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-libvips*
+    rm -rf $INSTALL_DIR_app/node_modules/@img/sharp-linuxmusl-x64
+    # Install non-trivial dependency
+    npm i exiftool-vendored.pl
+    npm run build
+    npm prune --omit=dev --omit=optional
+    cd ..
+
+    cd open-api/typescript-sdk
+    npm ci $npm_args # --cpu x64 --os linux
+    npm run build
+    cd ../..
+
+    cd web
+    npm ci $npm_args # --cpu x64 --os linux
+    npm run build
+    cd ..
+
+    # Unset mirror for npm
+    if [ ! -z "${PROXY_NPM}" ]; then
+        npm config delete registry
+    fi
+
+    cp -a server/node_modules server/dist server/bin $INSTALL_DIR_app/
+    cp -a web/build $INSTALL_DIR_app/www
+    cp -a server/resources server/package.json server/package-lock.json $INSTALL_DIR_app/
+    cp -a server/bin/get-cpus.sh server/bin/start.sh $INSTALL_DIR_app/
+    cp -a LICENSE $INSTALL_DIR_app/
+    cp -a i18n $INSTALL_DIR/
+    cp -a open-api/typescript-sdk $INSTALL_DIR_app/
+    cd ..
+}
+
+install_immich_web_server_pnpm
 
 # -------------------
 # Generate build-lock
@@ -467,56 +527,3 @@ create_runtime_env_file () {
 echo "----------------------------------------------------------------"
 echo "Done. Please install the systemd services to start using Immich."
 echo "----------------------------------------------------------------"
-
-
-# -------------------
-# Helper function that checks user consent
-# -------------------
-
-confirm_destruction() {
-    local target="${1:-}"
-
-    if [[ -z "$target" ]]; then
-        echo "Error: no target path provided to confirm_destruction()" >&2
-        exit 1
-    fi
-
-    echo "⚠️  WARNING: This operation would permanently DELETE everything under:"
-    echo "    $target"
-    echo
-    read -rp "Are you sure you want to continue? Type 'Y' to proceed: " confirm
-
-    if [[ "$confirm" != "Y" ]]; then
-        echo "Aborted. Nothing will be deleted."
-        exit 1
-    fi
-    return 0
-}
-
-set -xeuo pipefail # Make people's life easier
-
-check_user_id
-create_install_env_file
-load_environment_variables
-set_common_variables
-review_install_information
-
-install_node
-set +x
-review_dependency
-clean_previous_build
-create_folders
-safe_git_checkout "$REPO_URL" "$INSTALL_DIR_src" "$REPO_TAG"
-git_patch
-install_immich_web_server_pnpm
-# # generate_build_lock <- I dont know if we stil need it I havent had immich complaining
-install_immich_machine_learning
-replace_usr_src
-setup_upload_folder
-download_geonames
-create_custom_start_script
-create_runtime_env_file
-
-echo "Installation Completed"
-echo "Restart the service:"
-echo "systemctl restart immich-web immich-ml"

@@ -1,0 +1,171 @@
+name: Build immich on new release
+
+on:
+  # Automated trigger
+  workflow_run:
+    workflows: ["build_dependencies.yml"]
+    types:
+      - completed
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Immich release tag to be released'
+        required: true
+      deps_run_id:
+        description: 'Dependency building workflow run ID for manual run'
+        required: true
+
+
+jobs:
+  Build-immich:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Automated Run: Prepare environment'
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: dependencies-and-metadata
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./metadata
+
+      - name: 'Automated Run: Set variables from artifact'
+        if: github.event_name == 'workflow_run'
+        run: |
+          echo "VERSION=$(cat metadata/version.txt)" >> $GITHUB_ENV
+          echo "IS_NEW_RELEASE=$(cat metadata/is_new_release.txt)" >> $GITHUB_ENV
+          echo "DEPS_RUN_ID=${{ github.event.workflow_run.id }}" >> $GITHUB_ENV
+
+      - name: 'Manual Run: Set variables from inputs'
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "IS_NEW_RELEASE=false" >> $GITHUB_ENV 
+          echo "DEPS_RUN_ID=${{ github.event.inputs.deps_run_id }}" >> $GITHUB_ENV
+
+      - name: Checkout my fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download dependencies artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dependencies-and-metadata
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          run-id: ${{ env.DEPS_RUN_ID }}
+          path: .
+
+      - name: Extract compiled dependencies
+        run: |
+          # Extract compiled dependencies to $HOME
+          # $HOME/deps/stow contains the packages grouped from GNU stow
+          # $HOME/deps/json contains the version of the libraries
+          # $HOME/deps/json/build-lock.json needs to be copied to the immich-in-lxc folder
+          tar -xf dependencies.tar.gz 
+          mv deps/json/build-lock.json .
+          rm -f dependencies.tar.gz
+          for lib in $(ls -d deps/stow/*/); do
+              echo "Merging $lib..."
+              sudo rsync -a "$lib" /usr/local/
+          done
+          sudo ldconfig
+          rm -rf deps
+
+      - name: Create user immich
+        run: |
+          sudo adduser --shell /bin/bash --disabled-password immich
+          
+      - name: Install Jellyfin ffmpeg (mock)
+        run: |
+          # ./install/sh checks if ffmpeg exists, but we are only aiming to build, not run, the server, so no need to install it
+          sudo touch /usr/bin/ffmpeg
+          sudo chmod +x /usr/bin/ffmpeg
+          sudo touch /usr/bin/ffprobe
+          sudo chmod +x /usr/bin/ffprobe
+
+      - name: Install Python 3.11
+        run: |
+          # install Python 3.11
+          # before onnxruntime-openvino is bumped, we can only use Python 3.11
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt update
+          sudo apt install -y python3.11 python3.11-venv python3.11-dev
+
+      # this is global install which works for all users
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install build tools
+        run: |
+          sudo apt install -yqq build-essential
+          npm install -g pnpm@10
+
+      - name: Modify the installation script
+        run: |
+          # cp install.sh install.sh.old
+          sed -i "/poetry install --no-root --extras openvino/i\ \ \ \ \ \ \ \ poetry add 'numpy<2'\n\ \ \ \ \ \ \ \ poetry update --lock" install.sh
+          # sed -i "s/# install_sharp_and_cli/install_sharp_and_cli_pnpm/g" install.sh
+          sed -i "s/^generate_build_lock[[:space:]]*\$/cp \$SCRIPT_DIR\/build-lock.json \$INSTALL_DIR_app/" install.sh
+          # debugging output
+          # examine the full content of the install.sh script
+          # diff install.sh.old install.sh || echo "No changes made to install.sh"
+
+      - name: Pre-build
+        env:
+          IMMICH_VERSION: ${{ env.VERSION }}
+          UPLOAD_DIR: ${{ vars.UPLOAD_DIR }}
+        run: |
+          export INSTALL_DIR=/home/immich
+          echo "INSTALL_DIR=/home/immich" >> $GITHUB_ENV
+          sudo mkdir -p $UPLOAD_DIR
+          # create .env
+          cat << EOF > ${{ github.workspace }}/.env
+          REPO_TAG=$IMMICH_VERSION
+          INSTALL_DIR=$INSTALL_DIR
+          UPLOAD_DIR=$UPLOAD_DIR
+          isCUDA=openvino
+          PROXY_NPM=
+          PROXY_NPM_DIST=
+          PROXY_POETRY=
+          EOF
+          sudo cp -r ${{ github.workspace }} /home/immich
+          sudo chown -R immich:immich /home/immich/immich-in-lxc
+          cd /home/immich/immich-in-lxc
+      
+      - name: Build immich server
+        id: build
+        run: |
+            # overwrite the default Python version
+            sudo ln -sf /usr/bin/python3.11 /usr/bin/python3
+            sudo -iu immich env "PATH=$PATH" bash -c '
+              alias pnpm=/usr/local/bin/pnpm;
+              export XDG_CONFIG_HOME=$HOME/.config;
+              export POETRY_CONFIG_DIR=$HOME/.config/pypoetry;
+              export NVM_DIR=$HOME/.nvm;
+              cd /home/immich/immich-in-lxc;
+              ./install.sh;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python3;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python3.11
+            '
+            echo "timestamp=$(date)" >> $GITHUB_OUTPUT
+
+      - name: Archive app folder
+        run: |
+          tar -czf server.tar.gz -C $INSTALL_DIR app geodata
+
+      - name: Upload server and metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-and-metadata
+          path: |
+            server.tar.gz
+            version.txt
+            is_new_release.txt
+            deps_run_id.txt

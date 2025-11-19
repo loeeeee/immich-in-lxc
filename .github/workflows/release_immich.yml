@@ -1,0 +1,169 @@
+name: Release and Update immich
+
+on:
+  # Automated trigger
+  workflow_run:
+    workflows: ["build_server.yml"]
+    types:
+      - completed
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Immich release tag to be released'
+        required: true
+      deps_run_id:
+        description: 'Dependency building workflow run ID'
+        required: true
+      svr_run_id:
+        description: 'Server building workflow run ID'
+        required: true
+      timestamp:
+        description: 'Timestamp of the release'
+        required: true
+
+jobs:
+  release-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed for creating GitHub Releases
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Automated Run: Download server artifact and metadata'
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: server-and-metadata
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./build-metadata
+        
+      - name: 'Automated Run: Set variables and check for release condition'
+        id: prepare_release
+        if: github.event_name == 'workflow_run'
+        run: |
+          IS_NEW_RELEASE=$(cat build-metadata/is_new_release.txt)
+          if [ "$IS_NEW_RELEASE" != "true" ]; then
+            echo "::notice::Not a new release, skipping the release process."
+            echo "continue=false" >> $GITHUB_OUTPUT
+          else
+            echo "::notice::New release detected, proceeding with release."
+            echo "continue=true" >> $GITHUB_OUTPUT
+            echo "VERSION=$(cat build-metadata/version.txt)" >> $GITHUB_ENV
+            echo "DEPS_RUN_ID=$(cat build-metadata/deps_run_id.txt)" >> $GITHUB_ENV
+            echo "SVR_RUN_ID=${{ github.event.workflow_run.id }}" >> $GITHUB_ENV
+            echo "TIMESTAMP=$(date)" >> $GITHUB_ENV
+            # Move the server artifact to the correct location for the release step
+            mv build-metadata/server.tar.gz server.tar.gz
+          fi
+
+      - name: 'Continue if new release or manual run'
+        if: ${{ steps.prepare_release.outputs.continue == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: echo "Proceeding..."
+      
+      - name: 'Manual Run: Set variables'
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${{ github.event.inputs.timestamp }}" >> $GITHUB_ENV
+          echo "DEPS_RUN_ID=${{ github.event.inputs.deps_run_id }}" >> $GITHUB_ENV
+          echo "SVR_RUN_ID=${{ github.event.inputs.svr_run_id }}" >> $GITHUB_ENV
+
+      - name: Download dependencies artifact
+        if: ${{ steps.prepare_release.outputs.continue == 'true' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: dependencies-and-metadata
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          run-id: ${{ env.DEPS_RUN_ID }}
+          path: dependencies-release
+
+      - name: Download server artifact (for manual run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/download-artifact@v4
+        with:
+          name: server-and-metadata # The name of the artifact from build_server
+          github-token: ${{ secrets.ACTIONS_PAT }}
+          run-id: ${{ env.SVR_RUN_ID }}
+          path: server-release-temp
+
+      - name: 'Manual Run: Prepare server artifact'
+        if: github.event_name == 'workflow_dispatch'
+        run: mv server-release-temp/server.tar.gz server.tar.gz
+
+      
+      - name: Create GitHub Release
+        if: ${{ steps.prepare_release.outputs.continue == 'true' || github.event_name == 'workflow_dispatch' }}
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.VERSION }}
+          name: immich server ${{ env.VERSION }} with openvino for Ubuntu 24.04
+          body: |
+            This release contains the latest build of immich server:
+            - Version: **${{ env.VERSION }}**
+            - Built on: **${{ env.TIMESTAMP }}**
+            - Built for: Ubuntu 24.04 LTS with openvino for ML
+
+            **How to install**:  
+            - Follow the setup steps in the README up to (but not including) `pre-install.sh`.
+            - Install Python 3.11 as `onnxruntime-openvino=1.18.0` was not built for Python 3.12.
+              ```shell
+              add-apt-repository ppa:deadsnakes/ppa
+              apt update
+              # venv and header files are needed as well
+              apt install python3.11 python3.11-venv python3.11-dev
+              ```
+            - Stop the `immich-ml` and `immich-web` services: `systemctl stop immich-ml immich-web`.
+            - Download `dependencies.tar.gz` into the home folder of your LXC's root user.
+            - To update the dependency libraries
+              - If you have installed dependencies with `pre-install.sh`, you must first uninstall them. Navigate to each library's source folder (e.g., `/root/immich-in-lxc/image-source/libheif`) and run the uninstall command.
+              - Extract `tar -xf dependencies.tar.gz --no-same-owner`.
+              - Create the shared /opt/deps directory if it doesn't already exist and move your extracted files into it. This location ensures the libraries are accessible to all users.
+                ```shell
+                mkdir -p /opt/stow
+                mv $HOME/deps /opt/stow
+                ```
+              - Install with Stow
+                ```shell
+                apt install stow
+                cd /opt/stow
+                for lib in $(ls -d */); do
+                  stow -v -t /usr/local $lib
+                done
+                ```
+              - Copy build lock file
+                ```shell
+                cp ${HOME}/deps/json/build-lock.json /opt/stow/
+                ```
+              - Remove the tarball and extracted folder with
+                ```shell
+                rm -rf ~/deps ~/dependencies.tar.gz
+                ```
+            - Switch to the immich user: `su - immich`.
+            - Download `server.tar.gz` into the home folder.
+            - Remove `/home/immich/app` and `/home/immich/geodata` folders. For safety, you can rename them first: `mv /home/immich/app /home/immich/app.old` and `mv /home/immich/geodata /home/immich/geodata.old`.
+            - Extract the server tarball: `tar -xf server.tar.gz`.
+            - Ensure that the `app/upload` directory is linked correctly: `ln -sf /your/upload/path /home/immich/app/upload`.
+            - If necessary, manually update runtime.env or run `./post-install.sh` to install/update systemd services. Since these files generally do not change with respect to immich updates, they are not included in the tarball.
+            - Restart `immich-ml` and `immich-web` services.
+            - Verify that all services are running correctly: `systemctl status immich-ml immich-web`.
+            - If everything is working, you can remove the old app and geodata folders: `rm -rf /home/immich/app.old /home/immich/geodata.old`.
+            - If you encounter issues, you can restore the old folders: `mv /home/immich/app.old /home/immich/app` and `mv /home/immich/geodata.old /home/immich/geodata`. 
+
+            **Release details**:  
+            This release was created automatically by GitHub Actions. You can track the build process here: [GitHub Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          draft: false
+          prerelease: false
+          artifacts: server.tar.gz,dependencies-release/dependencies.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update LATEST_IMMICH_RELEASE variable
+        if: ${{ steps.prepare_release.outputs.continue == 'true' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          LATEST_TAG=${{ env.VERSION }}
+          echo "::notice file=README.md::Successfully created new release $LATEST_TAG. Updating repository variable."
+          curl -X PATCH \
+          -H "Authorization: token ${{ secrets.ACTIONS_PAT }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/variables/LATEST_IMMICH_RELEASE \
+          -d '{"value":"'$LATEST_TAG'"}'

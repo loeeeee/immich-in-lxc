@@ -1,0 +1,293 @@
+name: Build Immich Dependencies
+
+on:
+  workflow_run:
+    workflows: ["Check for New Immich Version"] 
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Immich release tag'
+        required: true
+      is_new_release:
+        description: 'Flag to indicate if this should result in a new release'
+        required: false
+        default: 'false'
+      rebuild:
+        description: 'Force rebuild the dependencies'
+        required: false
+        default: 'false'
+
+jobs:
+  Build-dependencies:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 'Automated Run: Download parameters artifact'
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: run-parameters
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: ./run-parameters
+
+      - name: 'Automated Run: Read parameters'
+        id: read_params
+        if: github.event_name == 'workflow_run'
+        run: |
+          VERSION=$(cat run-parameters/version.txt)
+          IS_NEW_RELEASE=$(cat run-parameters/is_new_release.txt)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "is_new_release=${IS_NEW_RELEASE}" >> $GITHUB_OUTPUT
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "IS_NEW_RELEASE=${IS_NEW_RELEASE}" >> $GITHUB_ENV
+          echo "REBUILD=false" >> $GITHUB_ENV
+
+      - name: 'Manual Run: Set parameters'
+        id: set_params_manual
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # For a manual run, we always build but don't trigger a release
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          echo "is_new_release=false" >> $GITHUB_OUTPUT
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "IS_NEW_RELEASE=false" >> $GITHUB_ENV
+          echo "REBUILD=${{ github.event.inputs.rebuild }}" >> $GITHUB_ENV
+
+      - name: Find base-image commit
+        id: find_commit
+        run: |
+          IMMICH_VERSION=${{ github.event.inputs.version }}
+          # get the Dockerfile content from GitHub API and parse the base image tag
+          BASE_IMAGE_TAG=$(curl -sL \
+            -H "Accept: application/vnd.github.v3.raw" \
+            "https://api.github.com/repos/immich-app/immich/contents/server/Dockerfile?ref=${IMMICH_VERSION}" | \
+            grep 'FROM ghcr.io/immich-app/base-server-dev:' | \
+            awk -F'[:@]' '{print $2}')
+
+          echo "Found base image tag: $BASE_IMAGE_TAG"
+
+          # use the GitHub Releases API to find the commit SHA for that tag
+          COMMIT_SHA=$(curl -sL \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/immich-app/base-images/releases/tags/$BASE_IMAGE_TAG" | \
+            jq -r '.target_commitish')
+
+          echo "Found commit SHA: $COMMIT_SHA"
+
+          # set the output for subsequent steps to use
+          echo "base_commit=${COMMIT_SHA}" >> "$GITHUB_ENV"
+
+      - name: Checkout base-images repo
+        uses: actions/checkout@v4
+        with:
+          repository: immich-app/base-images
+          ref: ${{ env.base_commit }}
+          path: ./base-images
+
+      - name: Prepare build environment
+        id: prepare_build
+        run: |
+          # Create the dependency folders
+          mkdir -p "$HOME/deps/stow"
+          mkdir -p "$HOME/deps/json"
+
+          # force rebuilding everything
+          if [ ${{ env.REBUILD }} == "true" ]; then
+            echo "Rebuild flag is set. Skipping download of previous dependencies. Directly proceed to build."
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            LIBRARIES="libjxl libheif libraw imagemagick libvips"
+            echo "UPDATES_REQUIRED=${LIBRARIES}" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          
+          # We will try to restore the dependencies built from the latest (last) release
+          # Then check if there is any update in the new release
+          # The file is expected to be named dependencies.tar.gz
+          # containing dummy deps/stow folder with all the dependencies and a deps/json folder saving the versions of the dependencies
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/latest/download/dependencies.tar.gz"
+          # The `|| true` prevents the step from failing if the download URL returns a 404,
+          # allowing us to handle the error gracefully.
+          curl -L -s -f -o dependencies.tar.gz "$DOWNLOAD_URL" || true
+    
+          # Check if the file was successfully downloaded
+          if [ -f "dependencies.tar.gz" ]; then
+            echo "Previous artifact found and downloaded."
+            echo "Unpacking previous artifact..."
+            tar -xzf dependencies.tar.gz -C "$HOME"
+            echo "PREVIOUS_ARTIFACT_FOUND=true" >> $GITHUB_ENV
+            for lib in $(ls -d ${HOME}/deps/stow/*/); do
+              echo "Merging $lib..."
+              sudo rsync -a "$lib" /usr/local/
+            done
+            sudo ldconfig
+          else
+            echo "No previous artifact found or download failed. All packages will be built."
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            LIBRARIES="libjxl libheif libraw imagemagick libvips"
+            echo "UPDATES_REQUIRED=${LIBRARIES}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Check for updates
+        id: check_updates
+        if: ${{ env.PREVIOUS_ARTIFACT_FOUND == 'true' }}
+        run: |
+          UPDATES_REQUIRED=()
+          LIBRARIES=("libjxl" "libheif" "libraw" "imagemagick" "libvips")
+          REBUILD_VIPS=false
+
+          cd base-images/server/sources
+          for package_name in "${LIBRARIES[@]}"; do
+            json_file="${package_name}.json"
+            current_rev=$(jq -r '.revision' "$json_file")
+            previous_rev=$(jq -r '.revision' "$HOME/deps/json/$json_file" 2>/dev/null || echo "")
+            
+            if [ "$current_rev" != "$previous_rev" ]; then
+              echo "Package: $package_name requires a rebuild (current: $current_rev, previous: $previous_rev)"
+              UPDATES_REQUIRED+=("$package_name")
+              if [ "$package_name" != "libvips" ]; then
+                REBUILD_VIPS=true
+              fi
+            else
+              echo "Package: $package_name is up-to-date."
+            fi
+          done
+
+          if [ "$REBUILD_VIPS" = "true" ] && [[ ! " ${UPDATES_REQUIRED[@]} " =~ " libvips " ]]; then
+            UPDATES_REQUIRED+=("libvips")
+          fi
+          
+          if [ ${#UPDATES_REQUIRED[@]} -ne 0 ]; then
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            echo "UPDATES_REQUIRED=${UPDATES_REQUIRED[@]}" >> "$GITHUB_ENV"
+          else
+            echo "BUILD_NEEDED=false" >> "$GITHUB_ENV"
+            echo "UPDATES_REQUIRED=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install dependencies
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          sudo apt update
+          packages=(
+            # jq
+            # curl
+            # git
+            # autoconf
+            build-essential
+            cmake
+            libbrotli-dev
+            libde265-dev
+            libexif-dev
+            libexpat1-dev
+            libglib2.0-dev
+            libgsf-1-dev
+            liblcms2-2
+            libspng-dev
+            librsvg2-dev
+            meson
+            ninja-build
+            pkg-config
+            wget
+            zlib1g
+            libltdl-dev
+            cpanminus
+            libtool
+            liblcms2-dev
+            libgif-dev
+            libpango1.0-dev
+            libdav1d-dev
+            libhwy-dev
+            libwebp-dev
+            libio-compress-brotli-perl
+            libaom-dev
+          )
+
+          for pkg in "${packages[@]}"; do
+            echo "Installing $pkg..."
+            sudo apt install --no-install-recommends -yqq "$pkg"
+          done
+
+      - name: Modify build scripts
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          cd base-images/server/sources
+          # modify the scripts
+          # autoreconf behaves differently in GitHub runner
+          sed -i "/autoreconf --install/i sed -i '1iAC_CONFIG_AUX_DIR([.])' configure.ac" libraw.sh
+          # install to a custom location so we can repack it later and install with stow
+          # libjxl to $HOME/deps/stow/libjxl
+          sed -i 's#^ *cmake --install \.#&\nDESTDIR='"$HOME"'/deps/stow/libjxl & --prefix=/usr/local#' libjxl.sh
+          # libheif to $HOME/deps/stow/libheif
+          sed -i 's#^ *make -j"$(nproc)" install#&\n& DESTDIR='"$HOME"'/deps/stow/libheif#' libheif.sh
+          # libraw to $HOME/deps/stow/libraw
+          sed -i 's#^ *make install#&\n& DESTDIR='"$HOME"'/deps/stow/libraw#' libraw.sh
+          # imagemagick to $HOME/deps/stow/imagemagick
+          # version number is omitted here, but $HOME/deps/imagemagick/usr/local/lib/imagemagick-x.y.z is kept
+          sed -i 's#^ *make install#&\n& DESTDIR='"$HOME"'/deps/stow/imagemagick#' imagemagick.sh
+          # libvips to $HOME/deps/stow/libvips
+          sed -i 's#^ *ninja install#&\nexport DESTDIR='"$HOME"'/deps/stow/libvips\n&#g' libvips.sh
+
+      - name: Build Dependencies
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        id: build_packages
+        run: |
+          LIBRARIES=(${{ env.UPDATES_REQUIRED }})
+
+          cd base-images/server/sources
+          # build as needed
+          for package_name in "${LIBRARIES[@]}"; do
+            json_file="${package_name}.json"
+            sh_file="${package_name}.sh"
+            
+            echo "Building package: $package_name (current: $current_rev, previous: $previous_rev)"
+            if [ "$package_name" = "libjxl" ]; then
+              args="--JPEGLI_LIBJPEG_LIBRARY_SOVERSION 8 --JPEGLI_LIBJPEG_LIBRARY_VERSION 8.2.2"
+            else
+              args=""
+            fi
+            STOW_PKG_DIR="${HOME}/deps/stow/$package_name"
+            rm -rf "$STOW_PKG_DIR"
+            mkdir -p "$STOW_PKG_DIR"
+            chmod u+x "$sh_file"
+            sudo ./"$sh_file" $args
+            NESTED_DIR="$STOW_PKG_DIR/usr/local"
+            if [ -d "$NESTED_DIR" ]; then  
+              shopt -s dotglob
+              mv "$NESTED_DIR"/* "$STOW_PKG_DIR/"
+              shopt -u dotglob
+              rm -rf "$STOW_PKG_DIR/usr"
+            fi
+            cp "$json_file" "$HOME/deps/json/"
+          done
+
+      - name: Create build-lock.json
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          cd base-images/server/
+
+          # From base-images/server/Dockerfile line 110
+          jq -s '.' packages/*.json > /tmp/packages.json
+          jq -s '.' sources/*.json > /tmp/sources.json
+          jq -n \
+              --slurpfile sources /tmp/sources.json \
+              --slurpfile packages /tmp/packages.json \
+              '{sources: $sources[0], packages: $packages[0]}' \
+              > $HOME/deps/json/build-lock.json
+          
+      - name: Archive dependencies
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          echo "Archiving dependencies..."
+          tar -czf dependencies.tar.gz -C "$HOME" deps
+
+      - name: Upload dependencies and metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencies-and-metadata
+          path: |
+            dependencies.tar.gz
+            version.txt
+            is_new_release.txt

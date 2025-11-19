@@ -1,5 +1,7 @@
 # Immich with CUDA/ROCm Support in LXC (w/o Docker)
 
+[![Build immich on new release](https://github.com/tautomer/immich-in-lxc/actions/workflows/auto_build_immich.yml/badge.svg)](https://github.com/tautomer/immich-in-lxc/actions/workflows/auto_build_immich.yml)
+
 A complete guide for installing Immich in LXC, VM, or bare-metal without Docker, but with 
 
 - **CUDA/ROCm support for machine-learning** (if one choose so), 

@@ -1,0 +1,646 @@
+name: Auto Build Workflow
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Immich release tag (leave empty to check latest)'
+        required: false
+        type: string
+      action:
+        description: 'What to build'
+        required: true
+        default: 'check-and-build'
+        type: choice
+        options:
+        - check-and-build
+        - force-rebuild-all
+        - dependencies-only
+        - server-only
+        - release-existing
+      skip_dependency_check:
+        description: 'Skip dependency version check (force rebuild deps)'
+        required: false
+        default: false
+        type: boolean
+      skip_release:
+        description: 'Skip creating release (for testing)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  orchestrator:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build_deps: ${{ steps.decisions.outputs.should_build_deps }}
+      should_build_server: ${{ steps.decisions.outputs.should_build_server }}
+      should_release: ${{ steps.decisions.outputs.should_release }}
+      version: ${{ steps.check_version.outputs.version }}
+      is_new_release: ${{ steps.decisions.outputs.is_new_release }}
+    steps:
+      - name: Get Immich version
+        id: check_version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "Using manual version: $VERSION"
+          else
+            VERSION=$(curl -sL https://api.github.com/repos/immich-app/immich/releases/latest | jq -r '.tag_name')
+            if [ -z "$VERSION" ] || [ "$VERSION" == "null" ]; then
+              echo "::error::Failed to fetch latest release tag"
+              exit 1
+            fi
+            echo "Latest version: $VERSION"
+          fi
+          
+          # Validate version format
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+            echo "::error::Invalid version format: $VERSION"
+            exit 1
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Make build decisions
+        id: decisions
+        env:
+          CURRENT_VERSION: ${{ steps.check_version.outputs.version }}
+          STORED_VERSION: ${{ vars.LATEST_IMMICH_RELEASE }}
+          ACTION: ${{ github.event.inputs.action || 'check-and-build' }}
+          SKIP_DEP_CHECK: ${{ github.event.inputs.skip_dependency_check || 'false' }}
+          SKIP_RELEASE: ${{ github.event.inputs.skip_release || 'false' }}
+        run: |
+          echo "Current version: $CURRENT_VERSION"
+          echo "Stored version: $STORED_VERSION"
+          echo "Action: $ACTION"
+          echo "Event name: ${{ github.event_name }}"
+          
+          # Determine if this is a new release
+          if [ "$CURRENT_VERSION" != "$STORED_VERSION" ]; then
+            IS_NEW_RELEASE=true
+            echo "::notice::New release detected: $CURRENT_VERSION"
+          else
+            IS_NEW_RELEASE=false
+            echo "::notice::No new release detected"
+          fi
+          
+          # For scheduled runs, override action to check-and-build
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            ACTION="check-and-build"
+            echo "Scheduled run detected, using action: $ACTION"
+          fi
+          
+          # Decision logic based on action
+          case "$ACTION" in
+            "check-and-build")
+              if [ "$IS_NEW_RELEASE" == "true" ]; then
+                BUILD_DEPS=true
+                BUILD_SERVER=true
+                CREATE_RELEASE=true
+                echo "::notice::New release found, will build everything"
+              else
+                BUILD_DEPS=false
+                BUILD_SERVER=false
+                CREATE_RELEASE=false
+                echo "::notice::No new release, skipping build"
+              fi
+              ;;
+            "force-rebuild-all")
+              BUILD_DEPS=true
+              BUILD_SERVER=true
+              CREATE_RELEASE=true
+              echo "::notice::Force rebuild requested"
+              ;;
+            "dependencies-only")
+              BUILD_DEPS=true
+              BUILD_SERVER=false
+              CREATE_RELEASE=false
+              echo "::notice::Building dependencies only"
+              ;;
+            "server-only")
+              BUILD_DEPS=false
+              BUILD_SERVER=true
+              CREATE_RELEASE=false
+              echo "::notice::Building server only"
+              ;;
+            "release-existing")
+              BUILD_DEPS=false
+              BUILD_SERVER=false
+              CREATE_RELEASE=true
+              echo "::notice::Creating release from existing artifacts"
+              ;;
+            *)
+              echo "::error::Unknown action: $ACTION"
+              exit 1
+              ;;
+          esac
+          
+          # Override release decision if skip_release is true
+          if [ "$SKIP_RELEASE" == "true" ]; then
+            CREATE_RELEASE=false
+            echo "::notice::Release skipped due to skip_release flag"
+          fi
+          
+          echo "should_build_deps=$BUILD_DEPS" >> $GITHUB_OUTPUT
+          echo "should_build_server=$BUILD_SERVER" >> $GITHUB_OUTPUT
+          echo "should_release=$CREATE_RELEASE" >> $GITHUB_OUTPUT
+          echo "is_new_release=$IS_NEW_RELEASE" >> $GITHUB_OUTPUT
+          
+          echo "::notice::Final decisions - Deps: $BUILD_DEPS, Server: $BUILD_SERVER, Release: $CREATE_RELEASE"
+
+  build-dependencies:
+    needs: orchestrator
+    runs-on: ubuntu-latest
+    if: needs.orchestrator.outputs.should_build_deps == 'true'
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "VERSION=${{ needs.orchestrator.outputs.version }}" >> $GITHUB_ENV
+          echo "SKIP_DEP_CHECK=${{ github.event.inputs.skip_dependency_check }}" >> $GITHUB_ENV
+
+      - name: Find base-image commit
+        id: find_commit
+        run: |
+          IMMICH_VERSION=${{ env.VERSION }}
+          # Get the Dockerfile content from GitHub API and parse the base image tag
+          BASE_IMAGE_TAG=$(curl -sL \
+            -H "Accept: application/vnd.github.v3.raw" \
+            "https://api.github.com/repos/immich-app/immich/contents/server/Dockerfile?ref=${IMMICH_VERSION}" | \
+            grep 'FROM ghcr.io/immich-app/base-server-dev:' | \
+            awk -F'[:@]' '{print $2}')
+
+          echo "Found base image tag: $BASE_IMAGE_TAG"
+
+          # Use the GitHub Releases API to find the commit SHA for that tag
+          COMMIT_SHA=$(curl -sL \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/immich-app/base-images/git/refs/tags/$BASE_IMAGE_TAG" | \
+            jq -r '.object.sha')
+
+          echo "Found commit SHA: $COMMIT_SHA"
+          echo "base_commit=${COMMIT_SHA}" >> "$GITHUB_ENV"
+
+      - name: Checkout base-images repo
+        uses: actions/checkout@v4
+        with:
+          repository: immich-app/base-images
+          ref: ${{ env.base_commit }}
+          path: ./base-images
+
+      - name: Prepare build environment
+        id: prepare_build
+        run: |
+          # Create the dependency folders
+          mkdir -p "$HOME/deps/stow"
+          mkdir -p "$HOME/deps/json"
+
+          # Force rebuilding everything if skip_dependency_check is true
+          if [ "${{ env.SKIP_DEP_CHECK }}" == "true" ]; then
+            echo "Skip dependency check flag is set. Forcing rebuild of all dependencies."
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            LIBRARIES="libjxl libheif libraw imagemagick libvips"
+            echo "UPDATES_REQUIRED=${LIBRARIES}" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          
+          # Try to restore the dependencies built from the latest release
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/latest/download/dependencies.tar.gz"
+          curl -L -s -f -o dependencies.tar.gz "$DOWNLOAD_URL" || true
+    
+          # Check if the file was successfully downloaded
+          if [ -f "dependencies.tar.gz" ]; then
+            echo "Previous artifact found and downloaded."
+            echo "Unpacking previous artifact..."
+            tar -xzf dependencies.tar.gz -C "$HOME"
+            echo "PREVIOUS_ARTIFACT_FOUND=true" >> $GITHUB_ENV
+            for lib in $(ls -d ${HOME}/deps/stow/*/); do
+              echo "Merging $lib..."
+              sudo rsync -a "$lib" /usr/local/
+            done
+            sudo ldconfig
+          else
+            echo "No previous artifact found or download failed. All packages will be built."
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            LIBRARIES="libjxl libheif libraw imagemagick libvips"
+            echo "UPDATES_REQUIRED=${LIBRARIES}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Check for updates
+        id: check_updates
+        if: ${{ env.PREVIOUS_ARTIFACT_FOUND == 'true' }}
+        run: |
+          UPDATES_REQUIRED=()
+          LIBRARIES=("libjxl" "libheif" "libraw" "imagemagick" "libvips")
+          REBUILD_VIPS=false
+
+          cd base-images/server/sources
+          for package_name in "${LIBRARIES[@]}"; do
+            json_file="${package_name}.json"
+            current_rev=$(jq -r '.revision' "$json_file")
+            previous_rev=$(jq -r '.revision' "$HOME/deps/json/$json_file" 2>/dev/null || echo "")
+            
+            if [ "$current_rev" != "$previous_rev" ]; then
+              echo "Package: $package_name requires a rebuild (current: $current_rev, previous: $previous_rev)"
+              UPDATES_REQUIRED+=("$package_name")
+              if [ "$package_name" != "libvips" ]; then
+                REBUILD_VIPS=true
+              fi
+            else
+              echo "Package: $package_name is up-to-date."
+            fi
+          done
+
+          if [ "$REBUILD_VIPS" = "true" ] && [[ ! " ${UPDATES_REQUIRED[@]} " =~ " libvips " ]]; then
+            UPDATES_REQUIRED+=("libvips")
+          fi
+          
+          if [ ${#UPDATES_REQUIRED[@]} -ne 0 ]; then
+            echo "BUILD_NEEDED=true" >> "$GITHUB_ENV"
+            echo "UPDATES_REQUIRED=${UPDATES_REQUIRED[@]}" >> "$GITHUB_ENV"
+          else
+            echo "BUILD_NEEDED=false" >> "$GITHUB_ENV"
+            echo "UPDATES_REQUIRED=" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install dependencies
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          sudo apt update
+          packages=(
+            build-essential
+            cmake
+            libbrotli-dev
+            libde265-dev
+            libexif-dev
+            libexpat1-dev
+            libglib2.0-dev
+            libgsf-1-dev
+            liblcms2-2
+            libspng-dev
+            librsvg2-dev
+            meson
+            ninja-build
+            pkg-config
+            wget
+            zlib1g
+            libltdl-dev
+            cpanminus
+            libtool
+            liblcms2-dev
+            libgif-dev
+            libpango1.0-dev
+            libdav1d-dev
+            libhwy-dev
+            libwebp-dev
+            libio-compress-brotli-perl
+            libaom-dev
+          )
+
+          for pkg in "${packages[@]}"; do
+            echo "Installing $pkg..."
+            sudo apt install --no-install-recommends -yqq "$pkg"
+          done
+
+      - name: Modify build scripts
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          cd base-images/server/sources
+          # Modify the scripts for custom installation paths
+          sed -i "/autoreconf --install/i sed -i '1iAC_CONFIG_AUX_DIR([.])' configure.ac" libraw.sh
+          sed -i 's#^ *cmake --install \.#&\nDESTDIR='"$HOME"'/deps/stow/libjxl & --prefix=/usr/local#' libjxl.sh
+          sed -i 's#^ *make -j"$(nproc)" install#&\n& DESTDIR='"$HOME"'/deps/stow/libheif#' libheif.sh
+          sed -i 's#^ *make install#&\n& DESTDIR='"$HOME"'/deps/stow/libraw#' libraw.sh
+          sed -i 's#^ *make install#&\n& DESTDIR='"$HOME"'/deps/stow/imagemagick#' imagemagick.sh
+          sed -i 's#^ *ninja install#&\nexport DESTDIR='"$HOME"'/deps/stow/libvips\n&#g' libvips.sh
+
+      - name: Build Dependencies
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        id: build_packages
+        run: |
+          LIBRARIES=(${{ env.UPDATES_REQUIRED }})
+
+          cd base-images/server/sources
+          for package_name in "${LIBRARIES[@]}"; do
+            json_file="${package_name}.json"
+            sh_file="${package_name}.sh"
+            
+            echo "Building package: $package_name"
+            if [ "$package_name" = "libjxl" ]; then
+              args="--JPEGLI_LIBJPEG_LIBRARY_SOVERSION 8 --JPEGLI_LIBJPEG_LIBRARY_VERSION 8.2.2"
+            else
+              args=""
+            fi
+            STOW_PKG_DIR="${HOME}/deps/stow/$package_name"
+            rm -rf "$STOW_PKG_DIR"
+            mkdir -p "$STOW_PKG_DIR"
+            chmod u+x "$sh_file"
+            sudo ./"$sh_file" $args
+            sudo chown -R $(whoami):$(whoami) "$STOW_PKG_DIR"
+            NESTED_DIR="$STOW_PKG_DIR/usr/local"
+            if [ -d "$NESTED_DIR" ]; then  
+              shopt -s dotglob
+              mv "$NESTED_DIR"/* "$STOW_PKG_DIR/"
+              shopt -u dotglob
+              rm -rf "$STOW_PKG_DIR/usr"
+            fi
+            cp "$json_file" "$HOME/deps/json/"
+          done
+
+      - name: Create build-lock.json
+        if: ${{ env.BUILD_NEEDED == 'true' }}
+        run: |
+          cd base-images/server/
+          jq -s '.' packages/*.json > /tmp/packages.json
+          jq -s '.' sources/*.json > /tmp/sources.json
+          jq -n \
+              --slurpfile sources /tmp/sources.json \
+              --slurpfile packages /tmp/packages.json \
+              '{sources: $sources[0], packages: $packages[0]}' \
+              > $HOME/deps/json/build-lock.json
+          
+      - name: Archive dependencies
+        run: |
+          echo "Archiving dependencies..."
+          tar -czf dependencies.tar.gz -C "$HOME" deps
+
+      - name: Upload dependencies artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencies
+          path: dependencies.tar.gz
+
+  build-server:
+    needs: [orchestrator, build-dependencies]
+    runs-on: ubuntu-latest
+    if: |
+      always() && 
+      needs.orchestrator.outputs.should_build_server == 'true' && 
+      (needs.build-dependencies.result == 'success' || needs.build-dependencies.result == 'skipped')
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "VERSION=${{ needs.orchestrator.outputs.version }}" >> $GITHUB_ENV
+          echo "INSTALL_DIR=/home/immich" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download dependencies artifact
+        if: needs.build-dependencies.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: dependencies
+          path: .
+
+      - name: Download existing dependencies if not built
+        if: needs.build-dependencies.result == 'skipped'
+        run: |
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/latest/download/dependencies.tar.gz"
+          curl -L -s -f -o dependencies.tar.gz "$DOWNLOAD_URL" || {
+            echo "::error::No dependencies found and none were built"
+            exit 1
+          }
+
+      - name: Extract compiled dependencies
+        run: |
+          tar -xf dependencies.tar.gz 
+          mv deps/json/build-lock.json .
+          rm -f dependencies.tar.gz
+          for lib in $(ls -d deps/stow/*/); do
+              echo "Merging $lib..."
+              sudo rsync -a "$lib" /usr/local/
+          done
+          sudo ldconfig
+          rm -rf deps
+
+      - name: Create user immich
+        run: |
+          sudo adduser --shell /bin/bash --disabled-password immich
+          
+      - name: Install mock ffmpeg
+        run: |
+          sudo touch /usr/bin/ffmpeg
+          sudo chmod +x /usr/bin/ffmpeg
+          sudo touch /usr/bin/ffprobe
+          sudo chmod +x /usr/bin/ffprobe
+
+      - name: Install Python 3.11
+        run: |
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt update
+          sudo apt install -y python3.11 python3.11-venv python3.11-dev
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install build tools
+        run: |
+          npm install -g pnpm@10
+          packages=(
+            build-essential
+            libdav1d-dev
+            cmake
+            libbrotli-dev
+            libde265-dev
+            libexif-dev
+            libexpat1-dev
+            libglib2.0-dev
+            libgsf-1-dev
+            liblcms2-2
+            libspng-dev
+            librsvg2-dev
+            meson
+            ninja-build
+            zlib1g
+            libltdl-dev
+            cpanminus
+            libtool
+            liblcms2-dev
+            libgif-dev
+            libpango1.0-dev
+            libdav1d-dev
+            libhwy-dev
+            libwebp-dev
+            libio-compress-brotli-perl
+            libaom-dev
+          )
+
+          for pkg in "${packages[@]}"; do
+            echo "Installing $pkg..."
+            sudo apt install --no-install-recommends -yqq "$pkg"
+          done
+
+      - name: Check if vips works
+        run: |
+          vips --version  
+
+      - name: Modify the installation script
+        run: |
+          sed -i "/poetry install --no-root --extras openvino/i\ \ \ \ \ \ \ \ poetry add 'numpy<2'\n\ \ \ \ \ \ \ \ poetry update --lock" install.sh
+          sed -i "s/^generate_build_lock[[:space:]]*\$/cp \$SCRIPT_DIR\/build-lock.json \$INSTALL_DIR_app/" install.sh
+
+      - name: Pre-build setup
+        env:
+          IMMICH_VERSION: ${{ env.VERSION }}
+          UPLOAD_DIR: ${{ vars.UPLOAD_DIR }}
+        run: |
+          sudo mkdir -p ${{ vars.UPLOAD_DIR }}
+          cat << EOF > ${{ github.workspace }}/.env
+          REPO_TAG=$IMMICH_VERSION
+          INSTALL_DIR=$INSTALL_DIR
+          UPLOAD_DIR=${{ vars.UPLOAD_DIR }}
+          isCUDA=openvino
+          PROXY_NPM=
+          PROXY_NPM_DIST=
+          PROXY_POETRY=
+          EOF
+          sudo cp -r ${{ github.workspace }} /home/immich
+          sudo chown -R immich:immich /home/immich/immich-in-lxc
+      
+      - name: Build immich server
+        id: build
+        run: |
+            sudo ln -sf /usr/bin/python3.11 /usr/bin/python3
+            sudo -iu immich env "PATH=$PATH" bash -c '
+              alias pnpm=/usr/local/bin/pnpm;
+              export XDG_CONFIG_HOME=$HOME/.config;
+              export POETRY_CONFIG_DIR=$HOME/.config/pypoetry;
+              export NVM_DIR=$HOME/.nvm;
+              cd /home/immich/immich-in-lxc;
+              ./install.sh;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python3;
+              ln -sf /usr/bin/python3.11 /home/immich/app/machine-learning/venv/bin/python3.11
+            '
+            echo "timestamp=$(date)" >> $GITHUB_OUTPUT
+
+      - name: Archive app folder
+        run: |
+          tar -czf server.tar.gz -C $INSTALL_DIR app geodata
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server
+          path: server.tar.gz
+
+  release:
+    needs: [orchestrator, build-dependencies, build-server]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: |
+      always() && 
+      needs.orchestrator.outputs.should_release == 'true' && 
+      (needs.build-server.result == 'success' || 
+       (needs.orchestrator.outputs.should_release == 'true' && 
+        github.event.inputs.action == 'release-existing'))
+    steps:
+      - name: Set environment variables
+        run: |
+          echo "VERSION=${{ needs.orchestrator.outputs.version }}" >> $GITHUB_ENV
+          echo "TIMESTAMP=$(date)" >> $GITHUB_ENV
+
+      - name: Download dependencies artifact
+        if: needs.build-dependencies.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: dependencies
+          path: .
+
+      - name: Download existing dependencies if not built
+        if: needs.build-dependencies.result == 'skipped'
+        run: |
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/latest/download/dependencies.tar.gz"
+          curl -L -s -f -o dependencies.tar.gz "$DOWNLOAD_URL" || {
+            echo "::warning::No existing dependencies found for release"
+          }
+
+      - name: Download server artifact
+        if: needs.build-server.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: server
+          path: .
+
+      - name: Download existing server if not built
+        if: needs.build-server.result == 'skipped'
+        run: |
+          DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/latest/download/server.tar.gz"
+          curl -L -s -f -o server.tar.gz "$DOWNLOAD_URL" || {
+            echo "::error::No existing server found for release"
+            exit 1
+          }
+      
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.VERSION }}
+          name: immich server ${{ env.VERSION }} with openvino for Ubuntu 24.04
+          body: |
+            This release contains the latest build of immich server:
+            - Version: **${{ env.VERSION }}**
+            - Built on: **${{ env.TIMESTAMP }}**
+            - Built for: Ubuntu 24.04 LTS with openvino for ML
+            - New release: **${{ needs.orchestrator.outputs.is_new_release }}**
+
+            **How to install**:  
+            - Follow the setup steps in the README up to (but not including) `pre-install.sh`.
+            - Install Python 3.11 as `onnxruntime-openvino=1.18.0` was not built for Python 3.12.
+              ```shell
+              add-apt-repository ppa:deadsnakes/ppa
+              apt update
+              apt install python3.11 python3.11-venv python3.11-dev
+              ```
+            - Stop the `immich-ml` and `immich-web` services: `systemctl stop immich-ml immich-web`.
+            - Download `dependencies.tar.gz` into the home folder of your LXC's root user.
+            - To update the dependency libraries:
+              - If you have installed dependencies with `pre-install.sh`, you must first uninstall them.
+              - Extract `tar -xf dependencies.tar.gz --no-same-owner`.
+              - Create the shared /opt/deps directory and move extracted files:
+                ```shell
+                mkdir -p /opt/stow
+                mv $HOME/deps /opt/stow
+                ```
+              - Install with Stow:
+                ```shell
+                apt install stow
+                cd /opt/stow
+                for lib in $(ls -d */); do
+                  stow -v -t /usr/local $lib
+                done
+                ```
+              - Copy build lock file: `cp ${HOME}/deps/json/build-lock.json /opt/stow/`
+              - Clean up: `rm -rf ~/deps ~/dependencies.tar.gz`
+            - Switch to the immich user: `su - immich`.
+            - Download `server.tar.gz` into the home folder.
+            - Backup existing installation: `mv /home/immich/app /home/immich/app.old && mv /home/immich/geodata /home/immich/geodata.old`.
+            - Extract the server tarball: `tar -xf server.tar.gz`.
+            - Ensure upload directory is linked: `ln -sf /your/upload/path /home/immich/app/upload`.
+            - Update systemd services if needed: `./post-install.sh`.
+            - Restart services: `systemctl start immich-ml immich-web`.
+            - Verify: `systemctl status immich-ml immich-web`.
+
+            **Release details**:  
+            This release was created automatically by GitHub Actions. Build run: [GitHub Actions Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          draft: false
+          prerelease: false
+          artifacts: server.tar.gz,dependencies.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update LATEST_IMMICH_RELEASE variable
+        run: |
+          LATEST_TAG=${{ env.VERSION }}
+          echo "::notice::Successfully created new release $LATEST_TAG. Updating repository variable."
+          curl -X PATCH \
+          -H "Authorization: token ${{ secrets.ACTIONS_PAT }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/actions/variables/LATEST_IMMICH_RELEASE \
+          -d '{"value":"'$LATEST_TAG'"}'
